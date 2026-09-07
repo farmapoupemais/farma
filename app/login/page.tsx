@@ -56,7 +56,19 @@ export default function LoginPage() {
             router.push("/painel");
           }, 2000);
         }
-      } else {
+        const cleanEmail = email.trim().toLowerCase();
+        // Acesso dedicado para apresentação / convidados
+        if (
+          (cleanEmail === "apresentacao@poupemais.com" || cleanEmail === "demo@poupemais.com") &&
+          password === "PoupeMais@2026"
+        ) {
+          setSuccess("Acesso de apresentação autorizado! Entrando no painel...");
+          setTimeout(() => {
+            router.push("/painel/demo");
+          }, 800);
+          return;
+        }
+
         const { data, error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -345,9 +357,28 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "20px", borderTop: "1px solid var(--line)" }}>
-              <Link href="/painel/demo" style={{ color: "var(--teal)", fontSize: "0.8rem", fontWeight: 700 }}>
-                Ou veja o modo demonstrativo sem login →
+            <div
+              style={{
+                marginTop: "20px",
+                padding: "12px 16px",
+                background: "#f0fdf4",
+                border: "1px dashed #16a34a",
+                borderRadius: "10px",
+                fontSize: "0.82rem",
+                color: "#166534",
+                lineHeight: 1.5,
+              }}
+            >
+              <div style={{ fontWeight: 800, marginBottom: "4px", display: "flex", alignItems: "center", gap: "6px" }}>
+                <span>🔑</span> Acesso Rápido para Apresentação:
+              </div>
+              <div><strong>E-mail:</strong> <code>demo@poupemais.com</code></div>
+              <div><strong>Senha:</strong> <code>PoupeMais@2026</code></div>
+            </div>
+
+            <div style={{ textAlign: "center", marginTop: "20px", paddingTop: "16px", borderTop: "1px solid var(--line)" }}>
+              <Link href="/painel/demo" style={{ color: "var(--teal)", fontSize: "0.82rem", fontWeight: 700 }}>
+                Ou acesse diretamente a demonstração interativa →
               </Link>
             </div>
           </div>
