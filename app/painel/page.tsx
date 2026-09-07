@@ -33,32 +33,33 @@ export default function DashboardPage() {
         const email = session.user.email ?? "";
         const name = (session.user.user_metadata?.full_name as string) || email.split("@")[0] || "Administrador";
 
-        // Query user's role from Supabase
-        const { data: roleRecord } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("email", email.toLowerCase().trim())
-          .maybeSingle();
-
-        if (roleRecord?.role) {
-          setRole(roleRecord.role as Role);
+        // Check if designated owner or query user's role from Supabase
+        const ownerEmail = (process.env.NEXT_PUBLIC_OWNER_EMAIL || "raulgdc91@gmail.com").toLowerCase().trim();
+        if (email.toLowerCase().trim() === ownerEmail) {
+          setRole("owner");
         } else {
-          // If no role record exists yet, check if table is empty (first user is Owner)
-          const { count } = await supabase
+          const { data: roleRecord } = await supabase
             .from("user_roles")
-            .select("*", { count: "exact", head: true });
+            .select("role")
+            .eq("email", email.toLowerCase().trim())
+            .maybeSingle();
 
-          if (count === 0 || count === null) {
-            await supabase.from("user_roles").upsert({
-              email: email.toLowerCase().trim(),
-              role: "owner",
-              created_by: "system",
-            });
-            setRole("owner");
+          if (roleRecord?.role) {
+            setRole(roleRecord.role as Role);
           } else {
-            setRole("customer");
+            // If no role record exists yet, check if table is empty (first user is Owner)
+            const { count } = await supabase
+              .from("user_roles")
+              .select("*", { count: "exact", head: true });
+
+            if (count === 0 || count === null) {
+              setRole("owner");
+            } else {
+              setRole("customer");
+            }
           }
         }
+
 
         setUser({ email, name });
       } catch (err) {

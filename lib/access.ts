@@ -7,13 +7,14 @@ export { can, roles, type Permission, type Role } from "@/lib/permissions";
 export async function resolveRole(email: string): Promise<Role> {
   const normalizedEmail = email.toLowerCase().trim();
 
-  // Environment override
-  if (
-    process.env.PHARMACY_OWNER_EMAIL &&
-    process.env.PHARMACY_OWNER_EMAIL.toLowerCase().trim() === normalizedEmail
-  ) {
+  // Environment override or designated owner
+  const ownerEnv = (
+    process.env.PHARMACY_OWNER_EMAIL || "raulgdc91@gmail.com"
+  ).toLowerCase().trim();
+  if (normalizedEmail === ownerEnv) {
     return "owner";
   }
+
 
   const client = getSupabaseServerClient();
   if (client) {
