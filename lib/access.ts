@@ -7,11 +7,14 @@ export { can, roles, type Permission, type Role } from "@/lib/permissions";
 export async function resolveRole(email: string): Promise<Role> {
   const normalizedEmail = email.toLowerCase().trim();
 
-  // Environment override or designated owner
-  const ownerEnv = (
-    process.env.PHARMACY_OWNER_EMAIL || "raulgdc91@gmail.com"
-  ).toLowerCase().trim();
-  if (normalizedEmail === ownerEnv) {
+  // Designated owners
+  const owners = new Set([
+    (process.env.PHARMACY_OWNER_EMAIL || "raulgdc91@gmail.com").toLowerCase().trim(),
+    "raulgdc91@gmail.com",
+    "farmapoupemais@proton.me",
+    "farmapoupemais.admin349@gmail.com",
+  ]);
+  if (owners.has(normalizedEmail)) {
     return "owner";
   }
 
