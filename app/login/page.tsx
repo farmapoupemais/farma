@@ -35,8 +35,24 @@ export default function LoginPage() {
     }
 
     try {
+      const cleanEmail = email.trim().toLowerCase();
+
+      // Acesso Administrativo para Apresentação
+      if (
+        (cleanEmail === "admin@poupemais.com" ||
+          cleanEmail === "demo@poupemais.com" ||
+          cleanEmail === "apresentacao@poupemais.com") &&
+        (password === "PoupeMais@2026" || password === "admin123")
+      ) {
+        setSuccess("Acesso de Administrador (Owner) autorizado! Entrando no painel...");
+        setTimeout(() => {
+          router.push("/painel/demo");
+        }, 800);
+        return;
+      }
+
       if (mode === "signup") {
-        const { data, error: signUpError } = await supabase.auth.signUp({
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -48,35 +64,23 @@ export default function LoginPage() {
 
         if (signUpError) throw signUpError;
 
-        if (data.user) {
+        if (signUpData.user) {
           setSuccess(
-            "Conta criada com sucesso! Se você for o primeiro usuário, seu perfil foi definido como Proprietário (Owner) automaticamente. Redirecionando..."
+            "Conta criada com sucesso! Redirecionando para o painel..."
           );
           setTimeout(() => {
             router.push("/painel");
-          }, 2000);
+          }, 1500);
         }
-        const cleanEmail = email.trim().toLowerCase();
-        // Acesso dedicado para apresentação / convidados
-        if (
-          (cleanEmail === "apresentacao@poupemais.com" || cleanEmail === "demo@poupemais.com") &&
-          password === "PoupeMais@2026"
-        ) {
-          setSuccess("Acesso de apresentação autorizado! Entrando no painel...");
-          setTimeout(() => {
-            router.push("/painel/demo");
-          }, 800);
-          return;
-        }
-
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      } else {
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (signInError) throw signInError;
 
-        if (data.session) {
+        if (signInData.session) {
           setSuccess("Login realizado com sucesso! Acessando painel...");
           setTimeout(() => {
             router.push("/painel");
@@ -370,10 +374,10 @@ export default function LoginPage() {
               }}
             >
               <div style={{ fontWeight: 800, marginBottom: "4px", display: "flex", alignItems: "center", gap: "6px" }}>
-                <span>🔑</span> Acesso Rápido para Apresentação:
+                <span>🔑</span> Acesso Rápido de Administrador:
               </div>
-              <div><strong>E-mail:</strong> <code>demo@poupemais.com</code></div>
-              <div><strong>Senha:</strong> <code>PoupeMais@2026</code></div>
+              <div><strong>E-mail:</strong> <code>admin@poupemais.com</code></div>
+              <div><strong>Senha:</strong> <code>admin123</code></div>
             </div>
 
             <div style={{ textAlign: "center", marginTop: "20px", paddingTop: "16px", borderTop: "1px solid var(--line)" }}>
