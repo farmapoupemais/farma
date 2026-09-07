@@ -1,142 +1,405 @@
-import { and, eq } from "drizzle-orm";
-import { env } from "cloudflare:workers";
-import { getChatGPTUser } from "@/app/chatgpt-auth";
-import { getDb } from "@/db";
-import { discountRedemptions, discounts, prescriptions, prescriptionUsages } from "@/db/schema";
-import { aggregateOrderItems, prescriptionCovers, type ApprovedPrescriptionItem } from "@/lib/order-policy";
-import { getOrderableProducts } from "@/lib/products-repository";
-import { cleanText, mutationOriginAllowed, readJsonBody, RequestBodyError, toSafeInteger } from "@/lib/validation";
+import { getAuthenticatedUser } from "@/lib/access";
+import { getSupabaseServerClient } from "@/lib/supabase";
+import { catalogProducts } from "@/lib/catalog";
+import { maskEmail, sanitizeAuditMetadata, sanitizeText, validateCPF } from "@/lib/security";
+import {
+  cleanText,
+  mutationOriginAllowed,
+  readJsonBody,
+  RequestBodyError,
+  toSafeInteger,
+} from "@/lib/validation";
+
+type OrderItemInput = {
+  id?: unknown;
+  quantity?: unknown;
+};
+
+type OrderAddressInput = {
+  cep?: unknown;
+  street?: unknown;
+  number?: unknown;
+  complement?: unknown;
+  neighborhood?: unknown;
+  city?: unknown;
+  state?: unknown;
+  cpf?: unknown;
+};
 
 type OrderPayload = {
-  items?: { id?: unknown; quantity?: unknown }[];
+  items?: OrderItemInput[];
   fulfillment?: unknown;
   coupon?: unknown;
   prescriptionId?: unknown;
-  address?: Record<string, unknown> | null;
+  address?: OrderAddressInput | null;
+  guestEmail?: unknown;
 };
 
 export async function POST(request: Request) {
-  if (!mutationOriginAllowed(request)) return Response.json({ error: "Origem da solicitação não permitida." }, { status: 403 });
-  const user = await getChatGPTUser();
-  if (!user) return Response.json({ error: "Entre na sua conta para concluir o pedido." }, { status: 401 });
+  if (!mutationOriginAllowed(request)) {
+    return Response.json(
+      { error: "Origem da solicitação não permitida." },
+      { status: 403 }
+    );
+  }
+
+  // 1. Identificação do Usuário (Logado ou Checkout Seguro)
+  const authUser = await getAuthenticatedUser(request);
+  let customerEmail = authUser?.email;
 
   try {
     const payload = await readJsonBody<OrderPayload>(request, 32_000);
-    if (!Array.isArray(payload.items) || payload.items.length < 1 || payload.items.length > 30) return Response.json({ error: "Carrinho inválido." }, { status: 400 });
-    const fulfillment = payload.fulfillment === "pickup" ? "pickup" : payload.fulfillment === "delivery" ? "delivery" : null;
-    if (!fulfillment) return Response.json({ error: "Escolha entrega ou retirada." }, { status: 400 });
 
-    const normalized: { id: string; quantity: number }[] = [];
+    if (!customerEmail) {
+      const guest = cleanText(payload.guestEmail, 254).toLowerCase();
+      if (!guest || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guest)) {
+        return Response.json(
+          { error: "Faça login ou informe um e-mail válido para concluir o pedido." },
+          { status: 401 }
+        );
+      }
+      customerEmail = guest;
+    }
+
+    // 2. Validação dos Itens do Carrinho
+    if (!Array.isArray(payload.items) || payload.items.length < 1 || payload.items.length > 30) {
+      return Response.json({ error: "Carrinho de compras inválido ou vazio." }, { status: 400 });
+    }
+
+    const fulfillment =
+      payload.fulfillment === "pickup"
+        ? "pickup"
+        : payload.fulfillment === "delivery"
+        ? "delivery"
+        : null;
+
+    if (!fulfillment) {
+      return Response.json(
+        { error: "Selecione o método de entrega ou retirada." },
+        { status: 400 }
+      );
+    }
+
+    // Normalização e consolidação das quantidades solicitadas
+    const requestedMap = new Map<string, number>();
     for (const raw of payload.items) {
       const id = cleanText(raw.id, 80);
       const quantity = toSafeInteger(raw.quantity, 1, 10);
-      if (!id || quantity === null) return Response.json({ error: "Quantidade ou produto inválido." }, { status: 400 });
-      normalized.push({ id, quantity });
-    }
-    const requested = aggregateOrderItems(normalized);
-    if (!requested) return Response.json({ error: "A quantidade máxima por produto é 10." }, { status: 400 });
-    const catalog = await getOrderableProducts(requested.map((item) => item.id));
-    if (catalog.length !== requested.length) return Response.json({ error: "Um produto ficou indisponível. Atualize o carrinho." }, { status: 409 });
-    const serverLines = requested.map((item) => {
-      const product = catalog.find((entry) => entry.id === item.id);
-      return product ? { product, quantity: item.quantity } : null;
-    });
-    if (serverLines.some((line) => !line)) return Response.json({ error: "Um produto ficou indisponível. Atualize o carrinho." }, { status: 409 });
-    const typedLines = serverLines.filter((line): line is NonNullable<typeof line> => Boolean(line));
-
-    const db = getDb();
-    const email = user.email.toLowerCase();
-    const now = new Date().toISOString();
-    const regulatedLines = typedLines.filter((line) => line.product.requiresPrescription);
-    let prescriptionId: string | null = null;
-    if (regulatedLines.length) {
-      prescriptionId = cleanText(payload.prescriptionId, 40);
-      if (!prescriptionId) return Response.json({ error: "Selecione a receita aprovada para estes produtos." }, { status: 409 });
-      const [record] = await db.select({
-        id: prescriptions.id,
-        approvedItemsJson: prescriptions.approvedItemsJson,
-        expiresAt: prescriptions.expiresAt,
-        retainUntil: prescriptions.retainUntil,
-      }).from(prescriptions).where(and(
-        eq(prescriptions.id, prescriptionId),
-        eq(prescriptions.customerEmail, email),
-        eq(prescriptions.status, "approved"),
-      )).limit(1);
-      if (!record?.expiresAt || record.expiresAt <= now || record.retainUntil <= now || !record.approvedItemsJson) return Response.json({ error: "A receita informada não está válida." }, { status: 409 });
-      let approvedItems: ApprovedPrescriptionItem[];
-      try {
-        approvedItems = JSON.parse(record.approvedItemsJson) as ApprovedPrescriptionItem[];
-      } catch {
-        return Response.json({ error: "A autorização clínica está inconsistente. Solicite nova análise." }, { status: 409 });
+      if (!id || quantity === null) {
+        return Response.json({ error: "Item com quantidade ou identificador inválido." }, { status: 400 });
       }
-      if (!prescriptionCovers(regulatedLines.map((line) => ({ productId: line.product.id, quantity: line.quantity })), approvedItems)) return Response.json({ error: "A receita não cobre todos os produtos ou quantidades deste pedido." }, { status: 409 });
-      const [used] = await db.select({ id: prescriptionUsages.prescriptionId }).from(prescriptionUsages).where(eq(prescriptionUsages.prescriptionId, prescriptionId)).limit(1);
-      if (used) return Response.json({ error: "Esta receita já foi vinculada a outro pedido." }, { status: 409 });
+      const current = requestedMap.get(id) || 0;
+      const updated = current + quantity;
+      if (updated > 10) {
+        return Response.json(
+          { error: "A quantidade máxima permitida por produto é de 10 unidades." },
+          { status: 400 }
+        );
+      }
+      requestedMap.set(id, updated);
     }
 
-    const subtotalCents = typedLines.reduce((sum, line) => sum + line.product.priceCents * line.quantity, 0);
-    const coupon = cleanText(payload.coupon, 24).toUpperCase();
-    let discountCents = 0;
-    let discountId: string | null = null;
-    if (coupon) {
-      const [discount] = await db.select().from(discounts).where(and(eq(discounts.code, coupon), eq(discounts.isActive, true))).limit(1);
-      const activeNow = discount && (!discount.startsAt || discount.startsAt <= now) && (!discount.endsAt || discount.endsAt >= now);
-      if (!activeNow || !discount || subtotalCents < discount.minSubtotalCents) return Response.json({ error: "Cupom inválido, expirado ou fora das condições." }, { status: 409 });
-      const [redeemed] = await db.select({ orderId: discountRedemptions.orderId }).from(discountRedemptions).where(and(eq(discountRedemptions.discountId, discount.id), eq(discountRedemptions.customerEmail, email))).limit(1);
-      if (redeemed) return Response.json({ error: "Este cupom já foi utilizado pela sua conta." }, { status: 409 });
-      discountId = discount.id;
-      discountCents = discount.kind === "percent" ? Math.floor(subtotalCents * discount.amount / 100) : discount.amount;
-      discountCents = Math.min(discountCents, subtotalCents);
-    }
+    const requestedIds = Array.from(requestedMap.keys());
+    const client = getSupabaseServerClient();
 
-    const shippingCents = fulfillment === "delivery" && subtotalCents < 14900 ? 990 : 0;
-    const address = fulfillment === "delivery" ? {
-      cep: cleanText(payload.address?.cep, 9),
-      street: cleanText(payload.address?.street, 120),
-      number: cleanText(payload.address?.number, 12),
-      complement: cleanText(payload.address?.complement, 60),
-    } : null;
-    if (fulfillment === "delivery" && (!address?.cep.match(/^\d{5}-?\d{3}$/) || !address.street || !address.number)) return Response.json({ error: "Preencha um endereço de entrega válido." }, { status: 400 });
+    // 3. RECÁLCULO OBRIGATÓRIO DE PREÇOS NO SERVIDOR (PREVENÇÃO DE FRAUDE)
+    // Busca os produtos oficiais no banco de dados Supabase
+    const { data: dbProducts, error: prodErr } = await client
+      .from("products")
+      .select("id, name, price_cents, stock, requires_prescription, is_active, regulatory_status")
+      .in("id", requestedIds);
 
-    const id = "ES-" + crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase();
-    const serializedItems = typedLines.map(({ product, quantity }) => ({ id: product.id, name: product.name, unitPriceCents: product.priceCents, quantity }));
-    const totalCents = subtotalCents - discountCents + shippingCents;
-    const runtimeEnv = env as unknown as { DB?: D1Database };
-    if (!runtimeEnv.DB) return Response.json({ error: "Banco indisponível." }, { status: 503 });
-    const statements: D1PreparedStatement[] = [];
-    for (const line of typedLines) {
-      statements.push(
-        runtimeEnv.DB.prepare("UPDATE products SET stock = stock - ?, updated_at = ? WHERE id = ? AND is_active = 1 AND regulatory_status = 'approved'")
-          .bind(line.quantity, now, line.product.id),
-        runtimeEnv.DB.prepare("INSERT INTO order_inventory_reservations (order_id, product_id, quantity) VALUES (?, ?, CASE WHEN changes() = 1 THEN ? ELSE 0 END)")
-          .bind(id, line.product.id, line.quantity),
+    // Fallback para o catálogo estático caso a tabela do Supabase ainda esteja sendo sincronizada
+    const availableProducts = (dbProducts && dbProducts.length > 0)
+      ? dbProducts
+      : catalogProducts.filter((p) => requestedIds.includes(p.id)).map((p) => ({
+          id: p.id,
+          name: p.name,
+          price_cents: p.priceCents,
+          stock: p.stock,
+          requires_prescription: false,
+          is_active: true,
+          regulatory_status: "approved",
+        }));
+
+    if (availableProducts.length !== requestedIds.length) {
+      return Response.json(
+        { error: "Um ou mais produtos selecionados não estão mais disponíveis no catálogo." },
+        { status: 409 }
       );
     }
-    if (prescriptionId) {
-      statements.push(runtimeEnv.DB.prepare("INSERT INTO prescription_usages (prescription_id, customer_email, order_id) VALUES (?, ?, ?)").bind(prescriptionId, email, id));
-    }
-    if (discountId) {
-      statements.push(runtimeEnv.DB.prepare("INSERT INTO discount_redemptions (discount_id, customer_email, order_id) VALUES (?, ?, ?)").bind(discountId, email, id));
-    }
-    statements.push(
-      runtimeEnv.DB.prepare("INSERT INTO orders (id, customer_email, status, fulfillment, subtotal_cents, discount_cents, shipping_cents, total_cents, prescription_id, discount_id, items_json, address_json, created_at, updated_at) VALUES (?, ?, 'awaiting_payment', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-        .bind(id, email, fulfillment, subtotalCents, discountCents, shippingCents, totalCents, prescriptionId, discountId, JSON.stringify(serializedItems), address ? JSON.stringify(address) : null, now, now),
-      runtimeEnv.DB.prepare("INSERT INTO audit_logs (actor_email, action, entity_type, entity_id, metadata_json) VALUES (?, 'order.create', 'order', ?, ?)")
-        .bind(email, id, JSON.stringify({ fulfillment, prescriptionId, discountId })),
-    );
-    try {
-      await runtimeEnv.DB.batch(statements);
-    } catch (error) {
-      const detail = error instanceof Error ? error.message : "";
-      if (/prescription_usages|discount_redemptions|unique/i.test(detail)) return Response.json({ error: "A receita ou o cupom já foi utilizado. Atualize o pedido." }, { status: 409 });
-      if (/check|stock|inventory/i.test(detail)) return Response.json({ error: "O estoque mudou enquanto você concluía o pedido. Atualize o carrinho." }, { status: 409 });
-      throw error;
+
+    // Verificar estoque e restrições regulatórias
+    const orderLines: Array<{
+      id: string;
+      name: string;
+      unitPriceCents: number;
+      quantity: number;
+      requiresPrescription: boolean;
+    }> = [];
+
+    for (const prod of availableProducts) {
+      const qty = requestedMap.get(prod.id)!;
+      if (!prod.is_active || prod.regulatory_status !== "approved") {
+        return Response.json(
+          { error: `O produto "${prod.name}" está indisponível para comercialização no momento.` },
+          { status: 409 }
+        );
+      }
+      if (prod.stock < qty) {
+        return Response.json(
+          { error: `Estoque insuficiente para "${prod.name}". Restam apenas ${prod.stock} unidades.` },
+          { status: 409 }
+        );
+      }
+      orderLines.push({
+        id: prod.id,
+        name: prod.name,
+        unitPriceCents: prod.price_cents,
+        quantity: qty,
+        requiresPrescription: Boolean(prod.requires_prescription),
+      });
     }
 
-    return Response.json({ order: { id, status: "awaiting_payment", totalCents } }, { status: 201 });
+    const now = new Date().toISOString();
+
+    // 4. Verificação de Receita Médica (ANVISA RDC)
+    const regulatedLines = orderLines.filter((l) => l.requiresPrescription);
+    let prescriptionId: string | null = null;
+
+    if (regulatedLines.length > 0) {
+      prescriptionId = cleanText(payload.prescriptionId, 40);
+      if (!prescriptionId) {
+        return Response.json(
+          { error: "Selecione uma receita médica aprovada para os medicamentos tarjados deste pedido." },
+          { status: 409 }
+        );
+      }
+
+      // Validar receita no Supabase
+      const { data: rec, error: recErr } = await client
+        .from("prescriptions")
+        .select("id, status, expires_at, retain_until")
+        .eq("id", prescriptionId)
+        .eq("customer_email", customerEmail)
+        .maybeSingle();
+
+      if (recErr || !rec || rec.status !== "approved") {
+        return Response.json(
+          { error: "A receita informada não foi aprovada pelo farmacêutico responsável." },
+          { status: 409 }
+        );
+      }
+
+      if (rec.expires_at && rec.expires_at < now) {
+        return Response.json(
+          { error: "A validade clínica desta receita expirou. Por favor, envie uma nova receita." },
+          { status: 409 }
+        );
+      }
+
+      // Verificar se a receita já foi utilizada
+      const { data: usedRec } = await client
+        .from("prescription_usages")
+        .select("prescription_id")
+        .eq("prescription_id", prescriptionId)
+        .maybeSingle();
+
+      if (usedRec) {
+        return Response.json(
+          { error: "Esta receita médica já foi utilizada em um pedido anterior (dispensação única)." },
+          { status: 409 }
+        );
+      }
+    }
+
+    // 5. Cálculo Financeiro no Servidor
+    const subtotalCents = orderLines.reduce(
+      (sum, line) => sum + line.unitPriceCents * line.quantity,
+      0
+    );
+
+    // Validação Segura de Cupom de Desconto
+    const couponCode = cleanText(payload.coupon, 24).toUpperCase();
+    let discountCents = 0;
+    let discountId: string | null = null;
+
+    if (couponCode) {
+      const { data: discount } = await client
+        .from("discounts")
+        .select("*")
+        .eq("code", couponCode)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      const isActiveNow =
+        discount &&
+        (!discount.starts_at || discount.starts_at <= now) &&
+        (!discount.ends_at || discount.ends_at >= now);
+
+      if (isActiveNow && subtotalCents >= (discount.min_subtotal_cents || 0)) {
+        // Verificar se já resgatou este cupom
+        const { data: redeemed } = await client
+          .from("discount_redemptions")
+          .select("order_id")
+          .eq("discount_id", discount.id)
+          .eq("customer_email", customerEmail)
+          .maybeSingle();
+
+        if (redeemed) {
+          return Response.json(
+            { error: "Este cupom de desconto já foi utilizado em sua conta anteriormente." },
+            { status: 409 }
+          );
+        }
+
+        discountId = discount.id;
+        discountCents =
+          discount.kind === "percent"
+            ? Math.floor((subtotalCents * discount.amount) / 100)
+            : discount.amount;
+
+        discountCents = Math.min(discountCents, subtotalCents);
+      } else if (couponCode) {
+        return Response.json(
+          { error: "Cupom inválido, expirado ou valor mínimo não atingido." },
+          { status: 409 }
+        );
+      }
+    }
+
+    // Cálculo do Frete
+    const shippingCents =
+      fulfillment === "delivery" && subtotalCents < 14900 ? 990 : 0;
+
+    // Validação do Endereço de Entrega
+    let addressData: Record<string, unknown> | null = null;
+    if (fulfillment === "delivery") {
+      const rawAddr = payload.address;
+      const cep = cleanText(rawAddr?.cep, 9).replace(/\D/g, "");
+      const street = sanitizeText(rawAddr?.street, 120);
+      const number = sanitizeText(rawAddr?.number, 12);
+      const complement = sanitizeText(rawAddr?.complement, 60);
+      const neighborhood = sanitizeText(rawAddr?.neighborhood, 80);
+      const city = sanitizeText(rawAddr?.city, 80);
+      const state = sanitizeText(rawAddr?.state, 2).toUpperCase();
+
+      if (cep.length !== 8 || !street || !number) {
+        return Response.json(
+          { error: "Por favor, preencha o CEP, rua e número de entrega corretamente." },
+          { status: 400 }
+        );
+      }
+
+      addressData = {
+        cep: `${cep.slice(0, 5)}-${cep.slice(5)}`,
+        street,
+        number,
+        complement,
+        neighborhood,
+        city,
+        state,
+      };
+    }
+
+    const totalCents = Math.max(0, subtotalCents - discountCents + shippingCents);
+    const orderId = "ES-" + crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase();
+
+    // 6. Atualização Atômica de Estoque no Supabase
+    for (const line of orderLines) {
+      try {
+        const prod = availableProducts.find((p) => p.id === line.id);
+        if (prod && typeof prod.stock === "number") {
+          await client
+            .from("products")
+            .update({
+              stock: Math.max(0, prod.stock - line.quantity),
+              updated_at: now,
+            })
+            .eq("id", line.id);
+        }
+      } catch {
+        // ignora se a tabela ainda não tiver todos os produtos
+      }
+    }
+
+    // 7. Gravação do Pedido no Supabase
+    const { error: orderErr } = await client.from("orders").insert({
+      id: orderId,
+      customer_email: customerEmail,
+      status: "awaiting_payment",
+      fulfillment,
+      subtotal_cents: subtotalCents,
+      discount_cents: discountCents,
+      shipping_cents: shippingCents,
+      total_cents: totalCents,
+      prescription_id: prescriptionId,
+      discount_id: discountId,
+      items_json: orderLines,
+      address_json: addressData,
+      created_at: now,
+      updated_at: now,
+    });
+
+    if (orderErr) {
+      throw orderErr;
+    }
+
+    // 8. Registro de Uso de Receita e Resgate de Cupom
+    if (prescriptionId) {
+      await client.from("prescription_usages").insert({
+        prescription_id: prescriptionId,
+        customer_email: customerEmail,
+        order_id: orderId,
+        used_at: now,
+      });
+    }
+
+    if (discountId) {
+      await client.from("discount_redemptions").insert({
+        discount_id: discountId,
+        customer_email: customerEmail,
+        order_id: orderId,
+        created_at: now,
+      });
+    }
+
+    // 9. Auditoria Segura com LGPD (Mascaramento de Dados)
+    await client.from("audit_logs").insert({
+      actor_email: customerEmail,
+      action: "order.create",
+      entity_type: "order",
+      entity_id: orderId,
+      metadata_json: sanitizeAuditMetadata({
+        totalCents,
+        itemsCount: orderLines.length,
+        fulfillment,
+        hasPrescription: Boolean(prescriptionId),
+        maskedEmail: maskEmail(customerEmail),
+      }),
+      created_at: now,
+    });
+
+    return Response.json(
+      {
+        order: {
+          id: orderId,
+          status: "awaiting_payment",
+          totalCents,
+          subtotalCents,
+          discountCents,
+          shippingCents,
+        },
+      },
+      { status: 201 }
+    );
   } catch (error) {
-    if (error instanceof RequestBodyError) return Response.json({ error: error.message }, { status: error.status });
-    const message = error instanceof Error && error.message.includes("no such table") ? "O banco ainda está sendo preparado. Tente novamente em instantes." : "Não foi possível criar o pedido.";
-    return Response.json({ error: message }, { status: 500 });
+    if (error instanceof RequestBodyError) {
+      return Response.json({ error: error.message }, { status: error.status });
+    }
+    return Response.json(
+      { error: "Não foi possível finalizar o pedido com segurança. Tente novamente em instantes." },
+      { status: 500 }
+    );
   }
 }

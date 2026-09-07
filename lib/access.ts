@@ -58,13 +58,9 @@ export type AuthorizedActor = {
   role: Role;
 };
 
-export async function authorize(
-  permission: Permission,
+export async function getAuthenticatedUser(
   request?: Request
-): Promise<
-  | { ok: true; actor: AuthorizedActor }
-  | { ok: false; response: Response }
-> {
+): Promise<{ email: string; displayName: string } | null> {
   let email: string | null = null;
   let displayName: string | null = null;
 
@@ -89,6 +85,44 @@ export async function authorize(
         }
       }
     }
+
+    // 1.1 Try Supabase Auth via Cookies if Authorization header not provided
+    if (!email) {
+      const cookieHeader = request.headers.get("cookie");
+      if (cookieHeader) {
+        const cookies = Object.fromEntries(
+          cookieHeader.split(";").map((c) => {
+            const [k, ...v] = c.trim().split("=");
+            return [k, decodeURIComponent(v.join("="))];
+          })
+        );
+        const tokenKey = Object.keys(cookies).find(
+          (name) => (name.startsWith("sb-") && name.endsWith("-auth-token")) || name === "sb-access-token"
+        );
+        let rawToken = tokenKey ? cookies[tokenKey] : undefined;
+        if (rawToken) {
+          try {
+            if (rawToken.startsWith("[") || rawToken.startsWith("{")) {
+              const parsed = JSON.parse(rawToken);
+              rawToken = Array.isArray(parsed) ? parsed[0] : parsed.access_token || rawToken;
+            }
+            if (typeof rawToken === "string" && rawToken.length > 20) {
+              const client = getSupabaseServerClient(rawToken);
+              const { data, error } = await client.auth.getUser(rawToken);
+              if (data?.user && !error) {
+                email = data.user.email ?? null;
+                displayName =
+                  (data.user.user_metadata?.full_name as string) ||
+                  email?.split("@")[0] ||
+                  "Usuário";
+              }
+            }
+          } catch {
+            // ignore invalid token cookie
+          }
+        }
+      }
+    }
   }
 
   // 2. Fallback to ChatGPT Auth header if present
@@ -100,7 +134,19 @@ export async function authorize(
     }
   }
 
-  if (!email) {
+  if (!email) return null;
+  return { email: email.toLowerCase().trim(), displayName: displayName || email };
+}
+
+export async function authorize(
+  permission: Permission,
+  request?: Request
+): Promise<
+  | { ok: true; actor: AuthorizedActor }
+  | { ok: false; response: Response }
+> {
+  const user = await getAuthenticatedUser(request);
+  if (!user) {
     return {
       ok: false,
       response: Response.json(
@@ -110,7 +156,7 @@ export async function authorize(
     };
   }
 
-  const role = await resolveRole(email);
+  const role = await resolveRole(user.email);
   if (!can(role, permission)) {
     return {
       ok: false,
@@ -123,7 +169,7 @@ export async function authorize(
 
   return {
     ok: true,
-    actor: { email, displayName: displayName || email, role },
+    actor: { email: user.email, displayName: user.displayName, role },
   };
 }
 
