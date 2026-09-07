@@ -58,7 +58,7 @@ export function SiteHeader() {
 
           <nav className="header-actions" aria-label="Ações da conta">
             <Link href="/lojas" className="header-action location-action"><Icon name="store" /><span><small>Informe sua região</small>Entrega e retirada</span></Link>
-            <Link href="/painel" className="header-action"><Icon name="user" /><span><small>Olá! Entre ou</small>Cadastre-se</span></Link>
+            <Link href="/login" className="header-action"><Icon name="user" /><span><small>Olá! Entre ou</small>Cadastre-se</span></Link>
             <Link href="/carrinho" className="header-action cart-action" aria-label={`Carrinho com ${cartCount} itens`}>
               <Icon name="cart" />
               {cartCount > 0 && <b>{cartCount}</b>}

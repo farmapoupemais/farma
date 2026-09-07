@@ -16,6 +16,7 @@
     "db:generate": "bash scripts/sites-env.sh -- drizzle-kit generate"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.115.0",
     "drizzle-orm": "0.45.2",
     "next": "16.2.6",
     "react": "19.2.6",
@@ -40,5 +41,5 @@
     "wrangler": "4.92.0"
   },
   "type": "module",
-  "displayName": "Farm\u00e1cia Poupe Mais"
+  "displayName": "Farmácia Poupe Mais"
 }

@@ -4,6 +4,7 @@ import { getChatGPTUser } from "@/app/chatgpt-auth";
 import { getDb } from "@/db";
 import { userRoles } from "@/db/schema";
 import { can, isRole, type Permission, type Role } from "@/lib/permissions";
+import { supabase } from "@/lib/supabase";
 
 export { can, roles, type Permission, type Role } from "@/lib/permissions";
 
@@ -14,6 +15,23 @@ export async function resolveRole(email: string): Promise<Role> {
     runtimeEnv.PHARMACY_OWNER_EMAIL.toLowerCase() === email.toLowerCase()
   ) {
     return "owner";
+  }
+
+  if (supabase) {
+    try {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("email", email.toLowerCase())
+        .limit(1)
+        .maybeSingle();
+
+      if (data && isRole(data.role)) {
+        return data.role;
+      }
+    } catch {
+      // fallback to D1 or customer
+    }
   }
 
   try {
