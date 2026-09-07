@@ -69,3 +69,38 @@ export async function POST(request: Request) {
   }
 }
 
+export async function DELETE(request: Request) {
+  if (!mutationOriginAllowed(request)) return Response.json({ error: "Origem não permitida." }, { status: 403 });
+  const auth = await authorize("user:manage", request);
+  if (!auth.ok) return auth.response;
+
+  try {
+    const { searchParams } = new URL(request.url);
+    const email = cleanEmail(searchParams.get("email"));
+    if (!email) return Response.json({ error: "E-mail não informado." }, { status: 400 });
+
+    if (email === auth.actor.email.toLowerCase() || email === "raulgdc91@gmail.com") {
+      return Response.json({ error: "O acesso do Proprietário não pode ser revogado." }, { status: 403 });
+    }
+
+    const client = getSupabaseServerClient();
+    const { error } = await client.from("user_roles").delete().eq("email", email);
+    if (error) throw error;
+
+    // Audit log
+    await client.from("audit_logs").insert({
+      actor_email: auth.actor.email.toLowerCase(),
+      action: "user.role.revoke",
+      entity_type: "user",
+      entity_id: email,
+      metadata_json: { revokedRole: "customer" },
+      created_at: new Date().toISOString(),
+    });
+
+    return Response.json({ ok: true, email });
+  } catch {
+    return Response.json({ error: "Erro ao revogar acesso." }, { status: 500 });
+  }
+}
+
+

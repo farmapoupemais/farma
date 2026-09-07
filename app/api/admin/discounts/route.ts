@@ -71,3 +71,50 @@ export async function POST(request: Request) {
   }
 }
 
+export async function PATCH(request: Request) {
+  if (!mutationOriginAllowed(request)) return Response.json({ error: "Origem não permitida." }, { status: 403 });
+  const auth = await authorize("discount:write", request);
+  if (!auth.ok) return auth.response;
+
+  try {
+    const body = await readJsonBody<{ id?: unknown; isActive?: unknown }>(request, 4_000);
+    const id = cleanText(body.id, 80);
+    if (!id) return Response.json({ error: "ID do desconto é obrigatório." }, { status: 400 });
+
+    const client = getSupabaseServerClient();
+    const isActive = Boolean(body.isActive);
+
+    const { error } = await client
+      .from("discounts")
+      .update({ is_active: isActive })
+      .eq("id", id);
+
+    if (error) throw error;
+
+    return Response.json({ ok: true, id, isActive });
+  } catch {
+    return Response.json({ error: "Erro ao atualizar desconto." }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  if (!mutationOriginAllowed(request)) return Response.json({ error: "Origem não permitida." }, { status: 403 });
+  const auth = await authorize("discount:write", request);
+  if (!auth.ok) return auth.response;
+
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    if (!id) return Response.json({ error: "ID do desconto não informado." }, { status: 400 });
+
+    const client = getSupabaseServerClient();
+    const { error } = await client.from("discounts").delete().eq("id", id);
+    if (error) throw error;
+
+    return Response.json({ ok: true });
+  } catch {
+    return Response.json({ error: "Erro ao excluir desconto." }, { status: 500 });
+  }
+}
+
+
