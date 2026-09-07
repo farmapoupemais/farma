@@ -1,13 +1,111 @@
-import type { Metadata } from "next";
-import { requireChatGPTUser } from "@/app/chatgpt-auth";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { RoleDashboard } from "@/components/role-dashboard";
-import { resolveRole } from "@/lib/access";
+import { BrandMark } from "@/components/icons";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import type { Role } from "@/lib/access";
 
-export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Painel", description: "Área protegida da Farmácia Poupe Mais." };
+export default function DashboardPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<{ email: string; name: string } | null>(null);
+  const [role, setRole] = useState<Role>("customer");
 
-export default async function DashboardPage() {
-  const user = await requireChatGPTUser("/painel");
-  const role = await resolveRole(user.email);
-  return <RoleDashboard initialRole={role} userName={user.displayName} userEmail={user.email} />;
+  useEffect(() => {
+    async function checkAuth() {
+      if (!isSupabaseConfigured() || !supabase) {
+        // In unconfigured dev environment, fallback to demo owner
+        setUser({ email: "dono@farmaciapoupemais.com.br", name: "Proprietário" });
+        setRole("owner");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session || !session.user) {
+          router.replace("/login?return_to=/painel");
+          return;
+        }
+
+        const email = session.user.email ?? "";
+        const name = (session.user.user_metadata?.full_name as string) || email.split("@")[0] || "Administrador";
+
+        // Query user's role from Supabase
+        const { data: roleRecord } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("email", email.toLowerCase().trim())
+          .maybeSingle();
+
+        if (roleRecord?.role) {
+          setRole(roleRecord.role as Role);
+        } else {
+          // If no role record exists yet, check if table is empty (first user is Owner)
+          const { count } = await supabase
+            .from("user_roles")
+            .select("*", { count: "exact", head: true });
+
+          if (count === 0 || count === null) {
+            await supabase.from("user_roles").upsert({
+              email: email.toLowerCase().trim(),
+              role: "owner",
+              created_by: "system",
+            });
+            setRole("owner");
+          } else {
+            setRole("customer");
+          }
+        }
+
+        setUser({ email, name });
+      } catch (err) {
+        console.error("Erro ao verificar autenticação:", err);
+        router.replace("/login?return_to=/painel");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    checkAuth();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "var(--sand-50, #fcfbf9)",
+          fontFamily: "var(--font-sans, system-ui)",
+        }}
+      >
+        <BrandMark size={52} />
+        <h2 style={{ fontFamily: "Georgia, serif", margin: "20px 0 8px", fontSize: "1.4rem" }}>
+          Farmácia Poupe Mais
+        </h2>
+        <p style={{ color: "var(--muted, #666)", fontSize: "0.9rem" }}>
+          Verificando credenciais e permissões no Supabase…
+        </p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <RoleDashboard
+      initialRole={role}
+      userName={user.name}
+      userEmail={user.email}
+    />
+  );
 }
+

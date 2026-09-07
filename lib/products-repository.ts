@@ -1,6 +1,4 @@
-import { and, asc, eq, inArray } from "drizzle-orm";
-import { getDb } from "@/db";
-import { products } from "@/db/schema";
+import { getSupabaseServerClient } from "@/lib/supabase";
 import { catalogProducts, type CatalogProduct } from "./catalog";
 
 const categoryStyle: Record<string, Pick<CatalogProduct, "tone" | "icon">> = {
@@ -14,49 +12,79 @@ const categoryStyle: Record<string, Pick<CatalogProduct, "tone" | "icon">> = {
   "Higiene oral": { tone: "blue", icon: "spark" },
 };
 
-function toCatalogProduct(row: typeof products.$inferSelect): CatalogProduct {
+function toCatalogProductFromSupabase(row: any): CatalogProduct {
   const style = categoryStyle[row.category] ?? { tone: "teal" as const, icon: "care" as const };
   return {
     id: row.id,
     slug: row.slug,
     name: row.name,
-    shortDescription: row.shortDescription,
-    description: row.description,
+    shortDescription: row.short_description || row.shortDescription || "",
+    description: row.description || "",
     category: row.category,
     brand: row.brand,
-    priceCents: row.priceCents,
-    compareAtCents: row.compareAtCents,
-    stock: row.stock,
-    requiresPrescription: row.requiresPrescription,
-    badge: row.compareAtCents && row.compareAtCents > row.priceCents ? "Oferta" : undefined,
+    priceCents: row.price_cents ?? row.priceCents,
+    compareAtCents: row.compare_at_cents ?? row.compareAtCents ?? null,
+    stock: row.stock ?? 0,
+    requiresPrescription: Boolean(row.requires_prescription ?? row.requiresPrescription),
+    badge: (row.compare_at_cents && row.compare_at_cents > row.price_cents) ? "Oferta" : undefined,
     ...style,
   };
 }
 
 export async function getVisibleProducts(): Promise<CatalogProduct[]> {
   try {
-    const rows = await getDb().select().from(products).where(eq(products.isActive, true)).orderBy(asc(products.name));
-    return rows.length ? rows.map(toCatalogProduct) : catalogProducts;
+    const client = getSupabaseServerClient();
+    const { data: rows, error } = await client
+      .from("products")
+      .select("*")
+      .eq("is_active", true)
+      .order("name", { ascending: true });
+
+    if (!error && rows && rows.length > 0) {
+      return rows.map(toCatalogProductFromSupabase);
+    }
   } catch {
-    return catalogProducts;
+    // Fallback to static catalog below
   }
+  return catalogProducts;
 }
 
 export async function getVisibleProductBySlug(slug: string): Promise<CatalogProduct | undefined> {
   try {
-    const [row] = await getDb().select().from(products).where(eq(products.slug, slug)).limit(1);
-    if (row?.isActive) return toCatalogProduct(row);
+    const client = getSupabaseServerClient();
+    const { data: row, error } = await client
+      .from("products")
+      .select("*")
+      .eq("slug", slug)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (!error && row) {
+      return toCatalogProductFromSupabase(row);
+    }
   } catch {
-    // Build-time and migration-safe fallback below.
+    // Fallback below
   }
   return catalogProducts.find((product) => product.slug === slug);
 }
 
 export async function getOrderableProducts(ids: string[]): Promise<CatalogProduct[]> {
   if (!ids.length) return [];
-  const rows = await getDb()
-    .select()
-    .from(products)
-    .where(and(inArray(products.id, ids), eq(products.isActive, true), eq(products.regulatoryStatus, "approved")));
-  return rows.map(toCatalogProduct);
+  try {
+    const client = getSupabaseServerClient();
+    const { data: rows, error } = await client
+      .from("products")
+      .select("*")
+      .in("id", ids)
+      .eq("is_active", true)
+      .eq("regulatory_status", "approved");
+
+    if (!error && rows && rows.length > 0) {
+      return rows.map(toCatalogProductFromSupabase);
+    }
+  } catch {
+    // Fallback below
+  }
+  return catalogProducts.filter((p) => ids.includes(p.id));
 }
+
