@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1787544329489,
+      "tag": "0000_perfect_machine_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1787546696683,
+      "tag": "0001_good_polaris",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1787552000000,
+      "tag": "0002_thrifty_catalog",
+      "breakpoints": true
+    }
+  ]
+}
