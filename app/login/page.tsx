@@ -284,12 +284,14 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {mode === "signup" && (
                 <div>
-                  <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, marginBottom: "6px" }}>
+                  <label htmlFor="login-name" style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, marginBottom: "6px" }}>
                     Nome Completo
                   </label>
                   <input
+                    id="login-name"
                     type="text"
                     required
+                    autoComplete="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Seu nome"
@@ -307,12 +309,14 @@ export default function LoginPage() {
               )}
 
               <div>
-                <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, marginBottom: "6px" }}>
+                <label htmlFor="login-email" style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, marginBottom: "6px" }}>
                   E-mail
                 </label>
                 <input
+                  id="login-email"
                   type="email"
                   required
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="seuemail@exemplo.com"
@@ -329,13 +333,15 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, marginBottom: "6px" }}>
+                <label htmlFor="login-password" style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, marginBottom: "6px" }}>
                   Senha
                 </label>
                 <input
+                  id="login-password"
                   type="password"
                   required
                   minLength={6}
+                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Mínimo 6 caracteres"
@@ -364,20 +370,46 @@ export default function LoginPage() {
             <div
               style={{
                 marginTop: "20px",
-                padding: "12px 16px",
+                padding: "14px 16px",
                 background: "#f0fdf4",
                 border: "1px dashed #16a34a",
-                borderRadius: "10px",
+                borderRadius: "12px",
                 fontSize: "0.82rem",
                 color: "#166534",
                 lineHeight: 1.5,
               }}
             >
-              <div style={{ fontWeight: 800, marginBottom: "4px", display: "flex", alignItems: "center", gap: "6px" }}>
-                <span>🔑</span> Acesso Rápido de Administrador:
+              <div style={{ fontWeight: 800, marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
+                <span>🔑</span> Acesso Rápido de Administrador (Owner):
               </div>
-              <div><strong>E-mail:</strong> <code>admin@poupemais.com</code></div>
-              <div><strong>Senha:</strong> <code>admin123</code></div>
+              <div style={{ marginBottom: "2px" }}><strong>E-mail:</strong> <code>admin@poupemais.com</code></div>
+              <div style={{ marginBottom: "10px" }}><strong>Senha:</strong> <code>admin123</code></div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail("admin@poupemais.com");
+                  setPassword("admin123");
+                  setSuccess("Acesso de Administrador (Owner) autorizado! Entrando no painel...");
+                  setTimeout(() => router.push("/painel/demo"), 500);
+                }}
+                style={{
+                  width: "100%",
+                  padding: "9px 12px",
+                  background: "#16a34a",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "8px",
+                  fontWeight: 700,
+                  fontSize: "0.82rem",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px"
+                }}
+              >
+                ⚡ Entrar como Administrador com 1 Clique
+              </button>
             </div>
 
             <div style={{ textAlign: "center", marginTop: "20px", paddingTop: "16px", borderTop: "1px solid var(--line)" }}>

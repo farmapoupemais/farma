@@ -25,22 +25,50 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
     ? Math.round((1 - product.priceCents / product.compareAtCents) * 100)
     : 0;
 
+  function handleAddToCart() {
+    // INP (Core Web Vitals 2026): feedback visual imediato antes da sincronização
+    setAdded(true);
+    setTimeout(() => {
+      addProductToCart(product);
+    }, 0);
+    setTimeout(() => setAdded(false), 1600);
+  }
+
   return (
     <article className="product-card">
-      <Link href={`/produto/${product.slug}`} className="product-visual" aria-label={`Ver ${product.name}`}>
+      <Link
+        href={`/produto/${product.slug}`}
+        className="product-visual"
+        aria-label={`Ver detalhes do medicamento ou produto ${product.name} da marca ${product.brand}`}
+      >
         {product.badge && <span className="product-badge">{product.badge}</span>}
-        <ProductArtwork tone={product.tone} icon={product.icon} />
+        <ProductArtwork
+          tone={product.tone}
+          icon={product.icon}
+          productName={product.name}
+          brand={product.brand}
+          category={product.category}
+        />
       </Link>
       <div className="product-info">
         <span className="product-brand">{product.brand}</span>
-        <Link href={`/produto/${product.slug}`}><h3>{product.name}</h3></Link>
+        <Link href={`/produto/${product.slug}`}>
+          <h3>{product.name}</h3>
+        </Link>
         <p>{product.shortDescription}</p>
         <div className="product-pricing">
           {product.compareAtCents && <span className="old-price">{formatCurrency(product.compareAtCents)}</span>}
-          <div><strong>{formatCurrency(product.priceCents)}</strong>{discount > 0 && <em>-{discount}%</em>}</div>
+          <div>
+            <strong>{formatCurrency(product.priceCents)}</strong>
+            {discount > 0 && <em>-{discount}%</em>}
+          </div>
           <small>ou 2x de {formatCurrency(Math.ceil(product.priceCents / 2))} sem juros</small>
         </div>
-        <button className={`add-button ${added ? "is-added" : ""}`} onClick={() => { addProductToCart(product); setAdded(true); setTimeout(() => setAdded(false), 1500); }}>
+        <button
+          className={`add-button ${added ? "is-added" : ""}`}
+          onClick={handleAddToCart}
+          aria-label={`Adicionar ${product.name} à cesta de compras`}
+        >
           <Icon name={added ? "care" : "cart"} size={19} /> {added ? "Adicionado" : "Adicionar"}
         </button>
       </div>

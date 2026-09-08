@@ -29,10 +29,11 @@ export default async function HomePage() {
         <section className="page-shell hero">
           <Image
             src="/farmacia-hero.png"
-            alt="Farmácia Poupe Mais"
+            alt="Farmácia Poupe Mais - Medicamentos com desconto, dermocosméticos e saúde com entrega rápida"
             fill
             className="hero-image"
             priority
+            sizes="(max-width: 768px) 100vw, 1440px"
           />
           <div className="hero-overlay" />
           <div className="hero-copy">
@@ -65,14 +66,15 @@ export default async function HomePage() {
         </section>
 
         {/* Benefits Bar */}
-        <section className="page-shell">
+        <section className="page-shell" aria-labelledby="benefits-heading">
+          <h2 id="benefits-heading" className="sr-only">Diferenciais do Cuidado Poupe Mais</h2>
           <div className="benefits">
             <article>
               <span className="benefit-icon">
                 <Icon name="truck" size={22} />
               </span>
               <div>
-                <h2>Entrega rápida</h2>
+                <h3>Entrega rápida</h3>
                 <p>Receba em casa com segurança e agilidade.</p>
               </div>
             </article>
@@ -81,7 +83,7 @@ export default async function HomePage() {
                 <Icon name="store" size={22} />
               </span>
               <div>
-                <h2>Retirada grátis</h2>
+                <h3>Retirada grátis</h3>
                 <p>Pronto em até 30 minutos em nossas lojas.</p>
               </div>
             </article>
@@ -90,7 +92,7 @@ export default async function HomePage() {
                 <Icon name="care" size={22} />
               </span>
               <div>
-                <h2>Atenção farmacêutica</h2>
+                <h3>Atenção farmacêutica</h3>
                 <p>Equipe habilitada disponível todos os dias.</p>
               </div>
             </article>
@@ -99,39 +101,149 @@ export default async function HomePage() {
                 <Icon name="spark" size={22} />
               </span>
               <div>
-                <h2>Economia de verdade</h2>
+                <h3>Economia de verdade</h3>
                 <p>Ofertas exclusivas e descontos no carrinho.</p>
               </div>
             </article>
           </div>
         </section>
 
-        {/* Categories Section */}
-        <section className="page-shell home-section">
+        {/* Categories Section - Modern Bento Grid 2026 */}
+        <section className="page-shell home-section" aria-labelledby="categories-heading">
           <div className="section-heading">
             <div>
-              <span className="eyebrow">Categorias</span>
-              <h2>O que você procura hoje?</h2>
+              <span className="eyebrow">Categorias em Destaque</span>
+              <h2 id="categories-heading">O que você procura hoje?</h2>
             </div>
             <Link href="/catalogo">Ver todas as categorias →</Link>
           </div>
-          <div className="category-grid">
-            {categories.map((cat) => (
-              <Link
-                key={cat.name}
-                href={`/catalogo?categoria=${encodeURIComponent(cat.name)}`}
-                className="category-card"
-              >
-                <span>
-                  <Icon name={cat.icon as any} size={28} />
+
+          <div className="bento-grid">
+            {/* Bento Card 1: Medicamentos & Genéricos (Destaque Grande 2x2) */}
+            <Link
+              href="/catalogo?categoria=Medicamentos"
+              className="bento-card bento-card-large"
+            >
+              <div>
+                <span className="bento-badge bento-badge-accent">
+                  ★ Mais Buscado • Desconto Popular
                 </span>
-                <div>
-                  <h3>{cat.name}</h3>
-                  <p>{cat.description}</p>
+              </div>
+              <div className="bento-content">
+                <div className="bento-icon-wrapper">
+                  <Icon name="pill" size={32} />
                 </div>
-                <b>→</b>
-              </Link>
-            ))}
+                <h3 className="bento-title">Medicamentos & Genéricos</h3>
+                <p className="bento-description">
+                  Economize até 70% em genéricos e medicamentos de uso contínuo.
+                  Garantia de procedência com registro ativo na Anvisa e orientação de posologia.
+                </p>
+                <span className="bento-action">Explorar medicamentos com desconto →</span>
+              </div>
+            </Link>
+
+            {/* Bento Card 2: Dermocosméticos */}
+            <Link
+              href="/catalogo?categoria=Dermocosméticos"
+              className="bento-card"
+            >
+              <div>
+                <span className="bento-badge">Dermatologia</span>
+              </div>
+              <div className="bento-content">
+                <div className="bento-icon-wrapper">
+                  <Icon name="spark" size={26} />
+                </div>
+                <h3 className="bento-title">Dermocosméticos</h3>
+                <p className="bento-description">
+                  Protetores solares, hidratação facial e tratamento antienvelhecimento com marcas de renome.
+                </p>
+                <span className="bento-action">Ver dermocosméticos →</span>
+              </div>
+            </Link>
+
+            {/* Bento Card 3: Vitaminas & Suplementos */}
+            <Link
+              href="/catalogo?categoria=Vitaminas"
+              className="bento-card"
+            >
+              <div>
+                <span className="bento-badge">Longevidade</span>
+              </div>
+              <div className="bento-content">
+                <div className="bento-icon-wrapper">
+                  <Icon name="heart" size={26} />
+                </div>
+                <h3 className="bento-title">Vitaminas & Imunidade</h3>
+                <p className="bento-description">
+                  Suplementos de ômega 3, vitamina C, D3 e colágeno para energia, foco e vitalidade.
+                </p>
+                <span className="bento-action">Ver suplementos →</span>
+              </div>
+            </Link>
+
+            {/* Bento Card 4: Envio de Receita Digital (Largo 2x1) */}
+            <Link
+              href="/receita"
+              className="bento-card bento-card-wide"
+            >
+              <div>
+                <span className="bento-badge bento-badge-accent">
+                  ⏱ Retorno em 15 min • LGPD Criptografado
+                </span>
+              </div>
+              <div className="bento-content">
+                <div className="bento-icon-wrapper">
+                  <Icon name="document" size={28} />
+                </div>
+                <h3 className="bento-title">Envio de Receita Digital</h3>
+                <p className="bento-description">
+                  Envie a foto ou PDF do seu receituário. Nossa equipe farmacêutica calcula os melhores
+                  descontos e agenda a entrega rápida ou retirada sem fila.
+                </p>
+                <span className="bento-action">Enviar receita médica agora →</span>
+              </div>
+            </Link>
+
+            {/* Bento Card 5: Mamãe e Bebê */}
+            <Link
+              href={`/catalogo?categoria=${encodeURIComponent("Mamãe e bebê")}`}
+              className="bento-card"
+            >
+              <div>
+                <span className="bento-badge">Cuidados Suaves</span>
+              </div>
+              <div className="bento-content">
+                <div className="bento-icon-wrapper">
+                  <Icon name="care" size={26} />
+                </div>
+                <h3 className="bento-title">Mamãe & Bebê</h3>
+                <p className="bento-description">
+                  Fórmulas infantis, fraldas hipoalergênicas, lenços e dermocuidados para a primeira infância.
+                </p>
+                <span className="bento-action">Ver linha bebê →</span>
+              </div>
+            </Link>
+
+            {/* Bento Card 6: Serviços Clínicos */}
+            <Link
+              href="/servicos"
+              className="bento-card"
+            >
+              <div>
+                <span className="bento-badge">Clínica Farmacêutica</span>
+              </div>
+              <div className="bento-content">
+                <div className="bento-icon-wrapper">
+                  <Icon name="store" size={26} />
+                </div>
+                <h3 className="bento-title">Serviços de Saúde</h3>
+                <p className="bento-description">
+                  Aferição de pressão, teste rápido de glicemia e acompanhamento farmacoterapêutico presencial.
+                </p>
+                <span className="bento-action">Conhecer serviços →</span>
+              </div>
+            </Link>
           </div>
         </section>
 

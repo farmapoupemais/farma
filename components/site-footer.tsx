@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { BrandMark, Icon } from "./icons";
 
@@ -6,8 +8,20 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="newsletter">
         <div className="page-shell newsletter-inner">
-          <div><span className="eyebrow">Economia na sua caixa de entrada</span><h2>Receba cupons e ofertas da semana</h2></div>
-          <form><label className="sr-only" htmlFor="newsletter-email">Seu e-mail</label><input id="newsletter-email" type="email" placeholder="seuemail@exemplo.com" /><button type="submit">Quero receber</button></form>
+          <div>
+            <span className="eyebrow">Economia na sua caixa de entrada</span>
+            <h2>Receba cupons e ofertas da semana</h2>
+          </div>
+          <div className="newsletter-form-container">
+            <form onSubmit={(e) => { e.preventDefault(); alert("Obrigado por se inscrever! Você receberá nossos cupons em breve."); }}>
+              <label className="sr-only" htmlFor="newsletter-email">Seu e-mail para receber ofertas e cupons exclusivos</label>
+              <input id="newsletter-email" type="email" required placeholder="seuemail@exemplo.com" autoComplete="email" />
+              <button type="submit">Quero receber</button>
+            </form>
+            <p className="newsletter-privacy">
+              Enviamos apenas ofertas exclusivas e cupons semanais. Cancele sua inscrição quando quiser.
+            </p>
+          </div>
         </div>
       </div>
       <div className="page-shell footer-grid">
