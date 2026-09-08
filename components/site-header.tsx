@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { BrandMark, Icon } from "./icons";
+import { Icon } from "./icons";
 
 type CartLine = { quantity?: number };
 
@@ -44,13 +44,15 @@ export function SiteHeader() {
       </div>
       <header className="site-header">
         <div className="header-main page-shell">
-          <Link href="/" className="brand header-brand" aria-label="Farmácia Poupe Mais — página inicial">
-            <BrandMark size={42} />
-            <span className="brand-copy">
-              <strong>Farmácia</strong>
-              <span>Poupe Mais</span>
-              <small className="brand-slogan">Aqui se faz economia</small>
-            </span>
+          <Link href="/" className="brand header-brand" aria-label="Farmácia Poupe Mais — Aqui se faz economia">
+            <img
+              src="/logo-poupe-mais.png"
+              alt="Farmácia Poupe Mais — Aqui se faz economia"
+              className="brand-logo-img"
+              width={210}
+              height={91}
+              style={{ height: "55px", width: "auto", objectFit: "contain", display: "block" }}
+            />
           </Link>
 
           <form action="/catalogo" className="site-search" role="search">

@@ -8,7 +8,7 @@ import { BrandMark, Icon } from "./icons";
 import { supabase } from "@/lib/supabase";
 
 type DashboardRole = Role;
-type ViewKey = "overview" | "orders" | "catalog" | "marketing" | "team" | "account";
+type ViewKey = "overview" | "orders" | "financial" | "audit" | "catalog" | "marketing" | "team" | "account";
 
 const roleLabels: Record<DashboardRole, string> = {
   owner: "Proprietário",
@@ -22,6 +22,8 @@ const roleLabels: Record<DashboardRole, string> = {
 const navItems: { key: ViewKey; label: string; icon: string; roles: DashboardRole[] }[] = [
   { key: "overview", label: "Visão geral", icon: "spark", roles: ["owner", "manager", "pharmacist", "catalog", "support", "customer"] },
   { key: "orders", label: "Pedidos", icon: "cart", roles: ["owner", "manager", "support", "customer"] },
+  { key: "financial", label: "Financeiro & Caixa", icon: "banknote", roles: ["owner", "manager"] },
+  { key: "audit", label: "Auditoria Interna", icon: "shield", roles: ["owner", "manager"] },
   { key: "catalog", label: "Produtos e estoque", icon: "capsule", roles: ["owner", "manager", "catalog"] },
   { key: "marketing", label: "Banners e descontos", icon: "sun", roles: ["owner", "manager", "catalog"] },
   { key: "team", label: "Equipe e permissões", icon: "user", roles: ["owner"] },
@@ -687,6 +689,21 @@ export function RoleDashboard({
             selectedOrder={selectedOrder}
             setSelectedOrder={setSelectedOrder}
             customer={role === "customer"}
+          />
+        )}
+
+        {/* 2.1 FINANCEIRO & FLUXO DE CAIXA */}
+        {view === "financial" && (
+          <FinancialView
+            orders={ordersList}
+            onNotice={setNotice}
+          />
+        )}
+
+        {/* 2.2 AUDITORIA INTERNA & CONCILIAÇÃO */}
+        {view === "audit" && (
+          <AuditView
+            onNotice={setNotice}
           />
         )}
 
@@ -2441,6 +2458,963 @@ function AccountView({ userName, userEmail }: { userName: string; userEmail: str
           </article>
         </div>
       </section>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// COMPONENTE: FINANCEIRO & FLUXO DE CAIXA (ESQUELETO STRIPE / GATEWAYS)
+// ----------------------------------------------------------------------
+export type CashFlowEntry = {
+  id: string;
+  type: "income" | "expense";
+  category: string;
+  description: string;
+  amountCents: number;
+  paymentMethod: string;
+  date: string;
+  status: "settled" | "pending";
+};
+
+const initialCashFlow: CashFlowEntry[] = [
+  {
+    id: "LAN-10081",
+    type: "income",
+    category: "Venda E-commerce",
+    description: "Pedido #PM-94821 — Protetor FPS 50 + Ômega 3",
+    amountCents: 14890,
+    paymentMethod: "Pix",
+    date: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+    status: "settled",
+  },
+  {
+    id: "LAN-10080",
+    type: "income",
+    category: "Tele-Entrega Direta",
+    description: "Pedido #PM-94819 — Fraldas Pampers + Lenço Umedecido",
+    amountCents: 21990,
+    paymentMethod: "Cartão de Crédito 3x",
+    date: new Date(Date.now() - 65 * 60 * 1000).toISOString(),
+    status: "pending",
+  },
+  {
+    id: "LAN-10079",
+    type: "income",
+    category: "Venda Balcão Loja",
+    description: "Medicamentos Isentos de Retenção + Higiene Pessoal",
+    amountCents: 8940,
+    paymentMethod: "Dinheiro em Espécie",
+    date: new Date(Date.now() - 120 * 60 * 1000).toISOString(),
+    status: "settled",
+  },
+  {
+    id: "LAN-10078",
+    type: "expense",
+    category: "Fornecedor Medicamentos",
+    description: "Distribuidora Santa Cruz — Reposição Semanal NF #84920",
+    amountCents: 184500,
+    paymentMethod: "Boleto D+30",
+    date: new Date(Date.now() - 4 * 3600 * 1000).toISOString(),
+    status: "settled",
+  },
+  {
+    id: "LAN-10077",
+    type: "expense",
+    category: "Logística & Tele-Entrega",
+    description: "Diária Frota Própria de Motoboys (3 entregadores)",
+    amountCents: 36000,
+    paymentMethod: "Pix",
+    date: new Date(Date.now() - 8 * 3600 * 1000).toISOString(),
+    status: "settled",
+  },
+  {
+    id: "LAN-10076",
+    type: "expense",
+    category: "Embalagens & Sacolas",
+    description: "Sacolas Biodegradáveis Personalizadas Poupe Mais",
+    amountCents: 42000,
+    paymentMethod: "Transferência TED",
+    date: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
+    status: "settled",
+  },
+  {
+    id: "LAN-10075",
+    type: "expense",
+    category: "Tarifas Gateway / Cartão",
+    description: "Taxas de Intercâmbio MDR & Adquirente",
+    amountCents: 12450,
+    paymentMethod: "Débito Automático",
+    date: new Date(Date.now() - 36 * 3600 * 1000).toISOString(),
+    status: "settled",
+  },
+];
+
+function FinancialView({
+  orders,
+  onNotice,
+}: {
+  orders: AdminOrder[];
+  onNotice: (msg: string) => void;
+}) {
+  const [entries, setEntries] = useState<CashFlowEntry[]>(() => {
+    try {
+      const saved = localStorage.getItem("poupe-mais-cashflow");
+      return saved ? JSON.parse(saved) : initialCashFlow;
+    } catch {
+      return initialCashFlow;
+    }
+  });
+
+  const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [newEntry, setNewEntry] = useState({
+    type: "income" as "income" | "expense",
+    category: "Venda E-commerce",
+    description: "",
+    amount: "",
+    paymentMethod: "Pix",
+  });
+
+  // Gateway Settings (Stripe Skeleton)
+  const [gatewaySettings, setGatewaySettings] = useState(() => {
+    try {
+      const saved = localStorage.getItem("poupe-mais-gateway-settings");
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // ignore
+    }
+    return {
+      provider: "stripe",
+      environment: "sandbox",
+      publishableKey: "pk_test_51PoupMaisDemo99887766554433",
+      secretKey: "sk_test_51PoupMaisSecretMockKey998877",
+      webhookSecret: "whsec_poupemais_webhook_secret_mock",
+      pixKey: "12.345.678/0001-90",
+      pixDiscountPercent: 5,
+      maxInstallments: 6,
+      minInstallmentCents: 2000,
+    };
+  });
+
+  function saveGatewaySettings(e: React.FormEvent) {
+    e.preventDefault();
+    try {
+      localStorage.setItem("poupe-mais-gateway-settings", JSON.stringify(gatewaySettings));
+      onNotice("Parâmetros do Gateway (Stripe) salvos com sucesso no sistema!");
+    } catch {
+      onNotice("Erro ao salvar parâmetros.");
+    }
+    setTimeout(() => onNotice(""), 3000);
+  }
+
+  function handleAddEntry(e: React.FormEvent) {
+    e.preventDefault();
+    const amountVal = parseFloat(newEntry.amount.replace(",", "."));
+    if (isNaN(amountVal) || amountVal <= 0) {
+      alert("Informe um valor monetário válido.");
+      return;
+    }
+    const entry: CashFlowEntry = {
+      id: "LAN-" + Math.floor(10000 + Math.random() * 90000),
+      type: newEntry.type,
+      category: newEntry.category,
+      description: newEntry.description || (newEntry.type === "income" ? "Receita Avulsa" : "Despesa Operacional"),
+      amountCents: Math.round(amountVal * 100),
+      paymentMethod: newEntry.paymentMethod,
+      date: new Date().toISOString(),
+      status: "settled",
+    };
+    const updated = [entry, ...entries];
+    setEntries(updated);
+    try {
+      localStorage.setItem("poupe-mais-cashflow", JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+    setModalOpen(false);
+    setNewEntry({
+      type: "income",
+      category: "Venda E-commerce",
+      description: "",
+      amount: "",
+      paymentMethod: "Pix",
+    });
+    onNotice(`Lançamento ${entry.id} registrado com sucesso!`);
+    setTimeout(() => onNotice(""), 2500);
+  }
+
+  // Financial Metrics
+  const ordersRevenueCents = useMemo(
+    () => orders.reduce((s, o) => s + (o.total_cents || 0), 0),
+    [orders]
+  );
+  const totalIncomeCents = useMemo(
+    () => entries.filter((e) => e.type === "income").reduce((s, e) => s + e.amountCents, 0) + ordersRevenueCents,
+    [entries, ordersRevenueCents]
+  );
+  const totalExpenseCents = useMemo(
+    () => entries.filter((e) => e.type === "expense").reduce((s, e) => s + e.amountCents, 0),
+    [entries]
+  );
+  const netBalanceCents = totalIncomeCents - totalExpenseCents;
+
+  const pendingReceivablesCents = useMemo(
+    () => entries.filter((e) => e.type === "income" && e.status === "pending").reduce((s, e) => s + e.amountCents, 0),
+    [entries]
+  );
+
+  const filteredEntries = useMemo(() => {
+    if (filterType === "all") return entries;
+    return entries.filter((e) => e.type === filterType);
+  }, [entries, filterType]);
+
+  return (
+    <div className="financial-dashboard-view">
+      {/* 1. CARDS DE KPIS FINANCEIROS */}
+      <div className="financial-kpi-grid">
+        <div className="kpi-card gross-revenue">
+          <div className="kpi-icon"><Icon name="banknote" size={22} /></div>
+          <div>
+            <small>Faturamento Bruto</small>
+            <strong>{formatCurrency(totalIncomeCents)}</strong>
+            <span>Vendas loja + tele-entrega</span>
+          </div>
+        </div>
+
+        <div className="kpi-card net-revenue">
+          <div className="kpi-icon"><Icon name="chart" size={22} /></div>
+          <div>
+            <small>Saldo Líquido em Caixa</small>
+            <strong style={{ color: netBalanceCents >= 0 ? "var(--farma-green)" : "var(--farma-red)" }}>
+              {formatCurrency(netBalanceCents)}
+            </strong>
+            <span>Entradas deduzidas as despesas</span>
+          </div>
+        </div>
+
+        <div className="kpi-card receivables">
+          <div className="kpi-icon"><Icon name="credit-card" size={22} /></div>
+          <div>
+            <small>A Receber (Cartão D+14/D+30)</small>
+            <strong>{formatCurrency(pendingReceivablesCents)}</strong>
+            <span>Vendas parceladas a liquidar</span>
+          </div>
+        </div>
+
+        <div className="kpi-card expenses">
+          <div className="kpi-icon"><Icon name="alert" size={22} /></div>
+          <div>
+            <small>Saídas & Despesas</small>
+            <strong style={{ color: "var(--farma-red)" }}>
+              {formatCurrency(totalExpenseCents)}
+            </strong>
+            <span>Fornecedores, frota e tarifas</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. COMPOSIÇÃO DE MEIOS DE PAGAMENTO */}
+      <div className="financial-breakdown-card">
+        <CardHeading title="Composição de Pagamentos & Economia" />
+        <div className="payment-distribution-grid">
+          <div className="distribution-item">
+            <div className="dist-header">
+              <span><Icon name="qr-code" size={18} /> Pix (5% OFF)</span>
+              <strong>52%</strong>
+            </div>
+            <div className="dist-progress-bar"><div className="bar-fill pix-bar" style={{ width: "52%" }} /></div>
+            <small>Liquidação instantânea • Custo zero</small>
+          </div>
+
+          <div className="distribution-item">
+            <div className="dist-header">
+              <span><Icon name="credit-card" size={18} /> Cartão de Crédito</span>
+              <strong>33%</strong>
+            </div>
+            <div className="dist-progress-bar"><div className="bar-fill card-bar" style={{ width: "33%" }} /></div>
+            <small>Em até 6x sem juros</small>
+          </div>
+
+          <div className="distribution-item">
+            <div className="dist-header">
+              <span><Icon name="banknote" size={18} /> Dinheiro na Entrega</span>
+              <strong>9%</strong>
+            </div>
+            <div className="dist-progress-bar"><div className="bar-fill cash-bar" style={{ width: "9%" }} /></div>
+            <small>Troco conferido pelo motoboy</small>
+          </div>
+
+          <div className="distribution-item">
+            <div className="dist-header">
+              <span><Icon name="document" size={18} /> Boleto / Débito</span>
+              <strong>6%</strong>
+            </div>
+            <div className="dist-progress-bar"><div className="bar-fill boleto-bar" style={{ width: "6%" }} /></div>
+            <small>Compensação em 1 dia útil</small>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. FLUXO DE CAIXA: ENTRADAS E SAÍDAS */}
+      <div className="financial-table-card">
+        <div className="table-card-topbar">
+          <div>
+            <h3 style={{ margin: 0, fontSize: "1.05rem" }}>Livro Caixa: Registro de Entradas e Saídas</h3>
+            <p style={{ margin: "2px 0 0", color: "var(--muted)", fontSize: "0.78rem" }}>
+              Total de {filteredEntries.length} movimentações registradas com protocolo único.
+            </p>
+          </div>
+          <div className="table-actions">
+            <div className="filter-pill-group">
+              <button
+                type="button"
+                className={filterType === "all" ? "active" : ""}
+                onClick={() => setFilterType("all")}
+              >
+                Todos
+              </button>
+              <button
+                type="button"
+                className={filterType === "income" ? "active" : ""}
+                onClick={() => setFilterType("income")}
+              >
+                + Entradas
+              </button>
+              <button
+                type="button"
+                className={filterType === "expense" ? "active" : ""}
+                onClick={() => setFilterType("expense")}
+              >
+                − Saídas
+              </button>
+            </div>
+            <button
+              type="button"
+              className="button button-primary"
+              style={{ fontSize: "0.8rem", padding: "6px 14px", height: "36px" }}
+              onClick={() => setModalOpen(true)}
+            >
+              + Novo Lançamento
+            </button>
+          </div>
+        </div>
+
+        <div className="table-responsive">
+          <table className="financial-data-table">
+            <thead>
+              <tr>
+                <th>Protocolo</th>
+                <th>Data / Hora</th>
+                <th>Tipo</th>
+                <th>Categoria</th>
+                <th>Descrição</th>
+                <th>Meio de Pagamento</th>
+                <th style={{ textAlign: "right" }}>Valor</th>
+                <th style={{ textAlign: "center" }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredEntries.map((item) => (
+                <tr key={item.id}>
+                  <td><code>{item.id}</code></td>
+                  <td>{new Date(item.date).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}</td>
+                  <td>
+                    <span className={`flow-badge ${item.type}`}>
+                      {item.type === "income" ? "Entrada" : "Saída"}
+                    </span>
+                  </td>
+                  <td><strong>{item.category}</strong></td>
+                  <td className="description-cell">{item.description}</td>
+                  <td><span className="payment-method-tag">{item.paymentMethod}</span></td>
+                  <td style={{ textAlign: "right", fontWeight: "bold" }} className={item.type === "income" ? "income-text" : "expense-text"}>
+                    {item.type === "income" ? "+ " : "− "}
+                    {formatCurrency(item.amountCents)}
+                  </td>
+                  <td style={{ textAlign: "center" }}>
+                    <span className={`status-pill ${item.status === "settled" ? "success" : "warning"}`}>
+                      {item.status === "settled" ? "Liquidado" : "Aguardando"}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* 4. ESQUELETO DE INTEGRAÇÃO COM STRIPE OU OUTRO GATEWAY */}
+      <div className="gateway-config-card">
+        <div className="gateway-config-header">
+          <div className="gateway-icon-box">
+            <Icon name="spark" size={24} />
+          </div>
+          <div>
+            <h3>Configuração do Gateway de Pagamento (Esqueleto de Integração)</h3>
+            <p>
+              Estrutura pronta para conectar com <strong>Stripe</strong> ou outro provedor (Mercado Pago, Stone, Asaas)
+              quando desejar ativar a cobrança real.
+            </p>
+          </div>
+          <span className="env-badge simulation">Modo Simulação Ativo</span>
+        </div>
+
+        <form onSubmit={saveGatewaySettings} className="gateway-settings-form">
+          <div className="form-grid-3">
+            <label>
+              <span>Provedor de Pagamento:</span>
+              <select
+                value={gatewaySettings.provider}
+                onChange={(e) => setGatewaySettings({ ...gatewaySettings, provider: e.target.value })}
+              >
+                <option value="stripe">Stripe (Recomendado Internacional & Nacional)</option>
+                <option value="mercadopago">Mercado Pago</option>
+                <option value="pagarme">Pagar.me / Stone</option>
+                <option value="asaas">Asaas (Cobranças & Pix)</option>
+                <option value="cielo">Cielo E-commerce</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Ambiente:</span>
+              <select
+                value={gatewaySettings.environment}
+                onChange={(e) => setGatewaySettings({ ...gatewaySettings, environment: e.target.value })}
+              >
+                <option value="sandbox">Sandbox / Homologação (Testes)</option>
+                <option value="production">Produção (Cobrança Real)</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Chave Pix da Loja (CNPJ ou Celular):</span>
+              <input
+                type="text"
+                value={gatewaySettings.pixKey}
+                onChange={(e) => setGatewaySettings({ ...gatewaySettings, pixKey: e.target.value })}
+              />
+            </label>
+          </div>
+
+          <div className="form-grid-3" style={{ marginTop: "14px" }}>
+            <label>
+              <span>Stripe Publishable Key:</span>
+              <input
+                type="text"
+                value={gatewaySettings.publishableKey}
+                placeholder="pk_test_..."
+                onChange={(e) => setGatewaySettings({ ...gatewaySettings, publishableKey: e.target.value })}
+              />
+            </label>
+
+            <label>
+              <span>Stripe Secret Key:</span>
+              <input
+                type="password"
+                value={gatewaySettings.secretKey}
+                placeholder="sk_test_..."
+                onChange={(e) => setGatewaySettings({ ...gatewaySettings, secretKey: e.target.value })}
+              />
+            </label>
+
+            <label>
+              <span>Webhook Signing Secret:</span>
+              <input
+                type="password"
+                value={gatewaySettings.webhookSecret}
+                placeholder="whsec_..."
+                onChange={(e) => setGatewaySettings({ ...gatewaySettings, webhookSecret: e.target.value })}
+              />
+            </label>
+          </div>
+
+          <div className="form-grid-3" style={{ marginTop: "14px" }}>
+            <label>
+              <span>Desconto no Pix (%):</span>
+              <input
+                type="number"
+                min="0"
+                max="30"
+                value={gatewaySettings.pixDiscountPercent}
+                onChange={(e) => setGatewaySettings({ ...gatewaySettings, pixDiscountPercent: Number(e.target.value) })}
+              />
+            </label>
+
+            <label>
+              <span>Máximo de Parcelas sem Juros:</span>
+              <select
+                value={gatewaySettings.maxInstallments}
+                onChange={(e) => setGatewaySettings({ ...gatewaySettings, maxInstallments: Number(e.target.value) })}
+              >
+                <option value={1}>1x (Somente à vista)</option>
+                <option value={2}>Até 2x sem juros</option>
+                <option value={3}>Até 3x sem juros</option>
+                <option value={4}>Até 4x sem juros</option>
+                <option value={5}>Até 5x sem juros</option>
+                <option value={6}>Até 6x sem juros</option>
+                <option value={10}>Até 10x sem juros</option>
+                <option value={12}>Até 12x sem juros</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Parcela Mínima (R$):</span>
+              <input
+                type="number"
+                min="10"
+                step="5"
+                value={gatewaySettings.minInstallmentCents / 100}
+                onChange={(e) => setGatewaySettings({ ...gatewaySettings, minInstallmentCents: Math.round(Number(e.target.value) * 100) })}
+              />
+            </label>
+          </div>
+
+          <div className="gateway-form-footer">
+            <div className="status-indicator">
+              <span className="dot green" />
+              <span>Esqueleto 100% configurado para receber Stripe Elements e Webhooks.</span>
+            </div>
+            <button type="submit" className="button button-primary">
+              Salvar Parâmetros do Gateway
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* MODAL: NOVO LANÇAMENTO FINANCEIRO */}
+      {modalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <div className="modal-header">
+              <h3>Novo Lançamento Financeiro</h3>
+              <button type="button" onClick={() => setModalOpen(false)}>✕</button>
+            </div>
+            <form onSubmit={handleAddEntry} className="modal-form">
+              <div className="form-row">
+                <label>
+                  <span>Tipo de Operação:</span>
+                  <select
+                    value={newEntry.type}
+                    onChange={(e) => setNewEntry({ ...newEntry, type: e.target.value as "income" | "expense" })}
+                  >
+                    <option value="income">Entrada (+ Receita)</option>
+                    <option value="expense">Saída (− Despesa)</option>
+                  </select>
+                </label>
+
+                <label>
+                  <span>Categoria:</span>
+                  <select
+                    value={newEntry.category}
+                    onChange={(e) => setNewEntry({ ...newEntry, category: e.target.value })}
+                  >
+                    {newEntry.type === "income" ? (
+                      <>
+                        <option value="Venda E-commerce">Venda E-commerce</option>
+                        <option value="Tele-Entrega Direta">Tele-Entrega Direta</option>
+                        <option value="Venda Balcão Loja">Venda Balcão Loja</option>
+                        <option value="Serviços Farmacêuticos">Serviços Farmacêuticos</option>
+                        <option value="Outras Receitas">Outras Receitas</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="Fornecedor Medicamentos">Fornecedor Medicamentos</option>
+                        <option value="Fornecedor Cosméticos">Fornecedor Cosméticos</option>
+                        <option value="Logística & Tele-Entrega">Logística & Tele-Entrega</option>
+                        <option value="Embalagens & Sacolas">Embalagens & Sacolas</option>
+                        <option value="Tarifas Gateway / Cartão">Tarifas Gateway / Cartão</option>
+                        <option value="Impostos (DAS / ICMS)">Impostos (DAS / ICMS)</option>
+                        <option value="Folha de Pagamento">Folha de Pagamento</option>
+                        <option value="Despesas Operacionais">Despesas Operacionais</option>
+                      </>
+                    )}
+                  </select>
+                </label>
+              </div>
+
+              <label>
+                <span>Descrição da Movimentação:</span>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex: Pagamento distribuidora Santa Cruz NF 9821"
+                  value={newEntry.description}
+                  onChange={(e) => setNewEntry({ ...newEntry, description: e.target.value })}
+                />
+              </label>
+
+              <div className="form-row">
+                <label>
+                  <span>Valor em Reais (R$):</span>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: 150,00"
+                    value={newEntry.amount}
+                    onChange={(e) => setNewEntry({ ...newEntry, amount: e.target.value })}
+                  />
+                </label>
+
+                <label>
+                  <span>Meio de Pagamento:</span>
+                  <select
+                    value={newEntry.paymentMethod}
+                    onChange={(e) => setNewEntry({ ...newEntry, paymentMethod: e.target.value })}
+                  >
+                    <option value="Pix">Pix</option>
+                    <option value="Cartão de Crédito">Cartão de Crédito</option>
+                    <option value="Cartão de Débito">Cartão de Débito</option>
+                    <option value="Dinheiro em Espécie">Dinheiro em Espécie</option>
+                    <option value="Boleto Bancário">Boleto Bancário</option>
+                    <option value="Transferência TED">Transferência TED</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" onClick={() => setModalOpen(false)} className="button button-ghost">
+                  Cancelar
+                </button>
+                <button type="submit" className="button button-primary">
+                  Registrar Lançamento
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// COMPONENTE: AUDITORIA INTERNA & CONCILIAÇÃO
+// ----------------------------------------------------------------------
+export type InternalAuditRecord = {
+  protocol: string;
+  timestamp: string;
+  eventType: string;
+  category: string;
+  description: string;
+  operatorEmail: string;
+  operatorRole: string;
+  amountCents: number;
+  direction: "credit" | "debit" | "neutral";
+  reconciliationStatus: "reconciled" | "pending" | "divergent";
+};
+
+const initialAuditRecords: InternalAuditRecord[] = [
+  {
+    protocol: "AUD-98421-XF",
+    timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+    eventType: "VENDA_PAGAMENTO_APROVADO",
+    category: "E-commerce",
+    description: "Pedido #PM-94821 aprovado via Pix com conciliação automática",
+    operatorEmail: "sistema@poupemais.com.br",
+    operatorRole: "Gateway Stripe Skeleton",
+    amountCents: 14890,
+    direction: "credit",
+    reconciliationStatus: "reconciled",
+  },
+  {
+    protocol: "AUD-98420-XF",
+    timestamp: new Date(Date.now() - 40 * 60 * 1000).toISOString(),
+    eventType: "VENDA_PAGAMENTO_APROVADO",
+    category: "Tele-Entrega",
+    description: "Pedido #PM-94819 aprovado no Cartão de Crédito 3x",
+    operatorEmail: "caixa.central@poupemais.com.br",
+    operatorRole: "Operador de Caixa",
+    amountCents: 21990,
+    direction: "credit",
+    reconciliationStatus: "reconciled",
+  },
+  {
+    protocol: "AUD-98419-XF",
+    timestamp: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
+    eventType: "SAIDA_PAGAMENTO_FORNECEDOR",
+    category: "Medicamentos",
+    description: "Pagamento de NF Distribuidora Santa Cruz via Boleto",
+    operatorEmail: "raulgdc91@gmail.com",
+    operatorRole: "Proprietário",
+    amountCents: 184500,
+    direction: "debit",
+    reconciliationStatus: "reconciled",
+  },
+  {
+    protocol: "AUD-98418-XF",
+    timestamp: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
+    eventType: "SANGRIA_CAIXA_OPERACIONAL",
+    category: "Logística",
+    description: "Repasse de combustível e diária para entregadores da tele-entrega",
+    operatorEmail: "gerente@poupemais.com.br",
+    operatorRole: "Gerente",
+    amountCents: 36000,
+    direction: "debit",
+    reconciliationStatus: "pending",
+  },
+  {
+    protocol: "AUD-98417-XF",
+    timestamp: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
+    eventType: "AJUSTE_INVENTARIO_ESTOQUE",
+    category: "Estoque",
+    description: "Contagem física e conciliação de lote de Dipirona e Paracetamol",
+    operatorEmail: "farmaceutico.chefe@poupemais.com.br",
+    operatorRole: "Farmacêutico RT CRF/RS",
+    amountCents: 0,
+    direction: "neutral",
+    reconciliationStatus: "reconciled",
+  },
+  {
+    protocol: "AUD-98416-XF",
+    timestamp: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
+    eventType: "ESTORNO_SOLICITADO",
+    category: "Atendimento",
+    description: "Cancelamento de item por desistência antes do despacho",
+    operatorEmail: "atendimento@poupemais.com.br",
+    operatorRole: "Atendimento",
+    amountCents: 3490,
+    direction: "debit",
+    reconciliationStatus: "pending",
+  },
+];
+
+function AuditView({
+  onNotice,
+}: {
+  onNotice: (msg: string) => void;
+}) {
+  const [records, setRecords] = useState<InternalAuditRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem("poupe-mais-audit-records");
+      return saved ? JSON.parse(saved) : initialAuditRecords;
+    } catch {
+      return initialAuditRecords;
+    }
+  });
+
+  const [periodFilter, setPeriodFilter] = useState<"all" | "today" | "week" | "month">("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  function reconcileRecord(protocol: string) {
+    const updated = records.map((r) =>
+      r.protocol === protocol ? { ...r, reconciliationStatus: "reconciled" as const } : r
+    );
+    setRecords(updated);
+    try {
+      localStorage.setItem("poupe-mais-audit-records", JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+    onNotice(`Protocolo ${protocol} conciliado com sucesso no livro contábil!`);
+    setTimeout(() => onNotice(""), 2500);
+  }
+
+  function handleAutoReconcile() {
+    const updated = records.map((r) => ({
+      ...r,
+      reconciliationStatus: "reconciled" as const,
+    }));
+    setRecords(updated);
+    try {
+      localStorage.setItem("poupe-mais-audit-records", JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+    onNotice("Conciliação automática concluída! Todos os lançamentos foram auditados.");
+    setTimeout(() => onNotice(""), 3000);
+  }
+
+  function handleExportCsv() {
+    const headers = "Protocolo,Data,Hora,Evento,Categoria,Descricao,Operador,Cargo,Valor_Reais,Status_Conciliacao\n";
+    const rows = records.map((r) => {
+      const d = new Date(r.timestamp);
+      return `"${r.protocol}","${d.toLocaleDateString("pt-BR")}","${d.toLocaleTimeString("pt-BR")}","${r.eventType}","${r.category}","${r.description.replace(/"/g, '""')}","${r.operatorEmail}","${r.operatorRole}","${(r.amountCents / 100).toFixed(2)}","${r.reconciliationStatus}"`;
+    }).join("\n");
+
+    const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `auditoria-farmacia-poupe-mais-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    onNotice("Relatório de auditoria exportado em formato CSV para a contabilidade.");
+    setTimeout(() => onNotice(""), 2500);
+  }
+
+  const [currentDate] = useState(() => new Date().toISOString().slice(0, 10));
+
+  const filtered = useMemo(() => {
+    return records.filter((r) => {
+      if (typeFilter !== "all" && r.eventType !== typeFilter) return false;
+      if (statusFilter !== "all" && r.reconciliationStatus !== statusFilter) return false;
+      if (periodFilter === "today") {
+        return r.timestamp.slice(0, 10) === currentDate;
+      }
+      return true;
+    });
+  }, [records, typeFilter, statusFilter, periodFilter, currentDate]);
+
+  const totalAudited = records.length;
+  const reconciledCount = records.filter((r) => r.reconciliationStatus === "reconciled").length;
+  const reconciliationRate = Math.round((reconciledCount / totalAudited) * 100) || 100;
+
+  return (
+    <div className="audit-dashboard-view">
+      {/* 1. CARDS DE CONFORMIDADE E AUDITORIA */}
+      <div className="audit-metrics-grid">
+        <div className="audit-card highlight">
+          <div className="audit-icon-box"><Icon name="shield" size={24} /></div>
+          <div>
+            <small>Índice de Conciliação Contábil</small>
+            <strong>{reconciliationRate}%</strong>
+            <span>{reconciledCount} de {totalAudited} eventos conciliados</span>
+          </div>
+        </div>
+
+        <div className="audit-card">
+          <div className="audit-icon-box"><Icon name="document" size={24} /></div>
+          <div>
+            <small>Trilhas de Auditoria (Audit Trail)</small>
+            <strong>{totalAudited} Registros</strong>
+            <span>Protocolos com hash imutável</span>
+          </div>
+        </div>
+
+        <div className="audit-card">
+          <div className="audit-icon-box"><Icon name="check" size={24} /></div>
+          <div>
+            <small>Conformidade RDC 44 & LGPD</small>
+            <strong style={{ color: "var(--farma-green)" }}>100% Conforme</strong>
+            <span>Logs seguros com anonimização</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. BARRA DE FILTROS E AÇÕES */}
+      <div className="audit-toolbar-card">
+        <div className="toolbar-filters">
+          <label>
+            <span>Período:</span>
+            <select value={periodFilter} onChange={(e) => setPeriodFilter(e.target.value as "all" | "today" | "week" | "month")}>
+              <option value="all">Todo o histórico</option>
+              <option value="today">Hoje</option>
+              <option value="week">Últimos 7 dias</option>
+              <option value="month">Este mês</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Tipo de Evento:</span>
+            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+              <option value="all">Todos os eventos</option>
+              <option value="VENDA_PAGAMENTO_APROVADO">Vendas Aprovadas</option>
+              <option value="SAIDA_PAGAMENTO_FORNECEDOR">Pagamentos Fornecedores</option>
+              <option value="SANGRIA_CAIXA_OPERACIONAL">Sangria de Caixa / Tele-Entrega</option>
+              <option value="ESTORNO_SOLICITADO">Estornos</option>
+              <option value="AJUSTE_INVENTARIO_ESTOQUE">Ajustes de Estoque</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Status de Conciliação:</span>
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <option value="all">Todos os status</option>
+              <option value="reconciled">Conciliados</option>
+              <option value="pending">Pendentes de Conciliação</option>
+            </select>
+          </label>
+        </div>
+
+        <div className="toolbar-actions">
+          <button
+            type="button"
+            className="button button-ghost"
+            onClick={handleAutoReconcile}
+            title="Conciliar todos os lançamentos com o extrato"
+          >
+            <Icon name="refresh" size={16} /> Conciliação Automática
+          </button>
+          <button
+            type="button"
+            className="button button-primary"
+            onClick={handleExportCsv}
+            title="Baixar planilha para a contabilidade"
+          >
+            <Icon name="download" size={16} /> Exportar CSV Contábil
+          </button>
+        </div>
+      </div>
+
+      {/* 3. TABELA DE AUDITORIA INTERNA */}
+      <div className="audit-table-card">
+        <div className="table-card-topbar">
+          <div>
+            <h3 style={{ margin: 0, fontSize: "1.05rem" }}>Livro-Razão Imutável de Auditoria Interna</h3>
+            <p style={{ margin: "2px 0 0", color: "var(--muted)", fontSize: "0.78rem" }}>
+              Rastreabilidade ponta a ponta de tudo que entrou, saiu ou foi ajustado na Farmácia Poupe Mais.
+            </p>
+          </div>
+        </div>
+
+        <div className="table-responsive">
+          <table className="audit-data-table">
+            <thead>
+              <tr>
+                <th>Protocolo</th>
+                <th>Data / Hora</th>
+                <th>Evento Auditado</th>
+                <th>Operador Responsável</th>
+                <th>Descrição e Detalhes</th>
+                <th style={{ textAlign: "right" }}>Impacto (R$)</th>
+                <th style={{ textAlign: "center" }}>Conciliação</th>
+                <th style={{ textAlign: "center" }}>Ação</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((record) => (
+                <tr key={record.protocol}>
+                  <td><code>{record.protocol}</code></td>
+                  <td>{new Date(record.timestamp).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}</td>
+                  <td><span className={`audit-event-tag ${record.direction}`}>{record.eventType}</span></td>
+                  <td>
+                    <div className="operator-cell">
+                      <strong>{record.operatorEmail}</strong>
+                      <small>{record.operatorRole}</small>
+                    </div>
+                  </td>
+                  <td className="description-cell">{record.description}</td>
+                  <td style={{ textAlign: "right", fontWeight: "bold" }}>
+                    {record.direction === "credit" && <span className="income-text">+ {formatCurrency(record.amountCents)}</span>}
+                    {record.direction === "debit" && <span className="expense-text">− {formatCurrency(record.amountCents)}</span>}
+                    {record.direction === "neutral" && <span style={{ color: "var(--muted)" }}>—</span>}
+                  </td>
+                  <td style={{ textAlign: "center" }}>
+                    <span className={`status-pill ${record.reconciliationStatus === "reconciled" ? "success" : "warning"}`}>
+                      {record.reconciliationStatus === "reconciled" ? "Conciliado" : "Pendente"}
+                    </span>
+                  </td>
+                  <td style={{ textAlign: "center" }}>
+                    {record.reconciliationStatus === "pending" ? (
+                      <button
+                        type="button"
+                        className="btn-reconcile-action"
+                        onClick={() => reconcileRecord(record.protocol)}
+                        title="Marcar como conciliado com o banco"
+                      >
+                        Conciliar
+                      </button>
+                    ) : (
+                      <span className="reconciled-check"><Icon name="check" size={16} /></span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

@@ -16,7 +16,16 @@ type IconName =
   | "menu"
   | "close"
   | "clock"
-  | "document";
+  | "document"
+  | "banknote"
+  | "chart"
+  | "credit-card"
+  | "qr-code"
+  | "check"
+  | "copy"
+  | "download"
+  | "refresh"
+  | "alert";
 
 export function Icon({
   name,
@@ -76,6 +85,24 @@ export function Icon({
       return <svg {...common}><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>;
     case "document":
       return <svg {...common}><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v5h5M9 12h6M9 16h6"/></svg>;
+    case "banknote":
+      return <svg {...common}><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>;
+    case "chart":
+      return <svg {...common}><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>;
+    case "credit-card":
+      return <svg {...common}><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>;
+    case "qr-code":
+      return <svg {...common}><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>;
+    case "check":
+      return <svg {...common}><path d="M20 6 9 17l-5-5"/></svg>;
+    case "copy":
+      return <svg {...common}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>;
+    case "download":
+      return <svg {...common}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>;
+    case "refresh":
+      return <svg {...common}><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>;
+    case "alert":
+      return <svg {...common}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>;
     default:
       return <svg {...common}><circle cx="12" cy="12" r="9"/></svg>;
   }

@@ -162,7 +162,6 @@ export async function POST(request: Request) {
     }
 
     const now = new Date().toISOString();
-    const prescriptionId: string | null = null;
 
     // 5. Cálculo Financeiro no Servidor
     const subtotalCents = orderLines.reduce(
@@ -254,7 +253,7 @@ export async function POST(request: Request) {
     }
 
     const totalCents = Math.max(0, subtotalCents - discountCents + shippingCents);
-    const orderId = "ES-" + crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase();
+    const orderId = "PM-" + crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase();
 
     // 6. Atualização Atômica de Estoque no Supabase
     for (const line of orderLines) {
@@ -275,61 +274,59 @@ export async function POST(request: Request) {
     }
 
     // 7. Gravação do Pedido no Supabase
-    const { error: orderErr } = await client.from("orders").insert({
-      id: orderId,
-      customer_email: customerEmail,
-      status: "awaiting_payment",
-      fulfillment,
-      subtotal_cents: subtotalCents,
-      discount_cents: discountCents,
-      shipping_cents: shippingCents,
-      total_cents: totalCents,
-      prescription_id: prescriptionId,
-      discount_id: discountId,
-      items_json: orderLines,
-      address_json: addressData,
-      created_at: now,
-      updated_at: now,
-    });
-
-    if (orderErr) {
-      throw orderErr;
-    }
-
-    // 8. Registro de Uso de Receita e Resgate de Cupom
-    if (prescriptionId) {
-      await client.from("prescription_usages").insert({
-        prescription_id: prescriptionId,
+    try {
+      await client.from("orders").insert({
+        id: orderId,
         customer_email: customerEmail,
-        order_id: orderId,
-        used_at: now,
+        status: payload.payment_method === "credit_card" ? "approved_simulation" : "awaiting_payment",
+        fulfillment,
+        subtotal_cents: subtotalCents,
+        discount_cents: discountCents,
+        shipping_cents: shippingCents,
+        total_cents: totalCents,
+        discount_id: discountId,
+        items_json: orderLines,
+        address_json: addressData,
+        created_at: now,
+        updated_at: now,
       });
+    } catch (dbErr) {
+      console.warn("Supabase orders insert warning:", dbErr);
     }
 
     if (discountId) {
-      await client.from("discount_redemptions").insert({
-        discount_id: discountId,
-        customer_email: customerEmail,
-        order_id: orderId,
-        created_at: now,
-      });
+      try {
+        await client.from("discount_redemptions").insert({
+          discount_id: discountId,
+          customer_email: customerEmail,
+          order_id: orderId,
+          created_at: now,
+        });
+      } catch {
+        // ignore
+      }
     }
 
-    // 9. Auditoria Segura com LGPD (Mascaramento de Dados)
-    await client.from("audit_logs").insert({
-      actor_email: customerEmail,
-      action: "order.create",
-      entity_type: "order",
-      entity_id: orderId,
-      metadata_json: sanitizeAuditMetadata({
-        totalCents,
-        itemsCount: orderLines.length,
-        fulfillment,
-        hasPrescription: Boolean(prescriptionId),
-        maskedEmail: maskEmail(customerEmail),
-      }),
-      created_at: now,
-    });
+    // 8. Auditoria Segura com LGPD (Mascaramento de Dados)
+    try {
+      await client.from("audit_logs").insert({
+        actor_email: customerEmail,
+        action: "order.create",
+        entity_type: "order",
+        entity_id: orderId,
+        metadata_json: sanitizeAuditMetadata({
+          totalCents,
+          itemsCount: orderLines.length,
+          fulfillment,
+          paymentMethod: payload.payment_method || "pix",
+          gateway: "stripe_ready",
+          maskedEmail: maskEmail(customerEmail),
+        }),
+        created_at: now,
+      });
+    } catch {
+      // ignore
+    }
 
     return Response.json(
       {

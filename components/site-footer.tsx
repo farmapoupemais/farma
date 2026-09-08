@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BrandMark, Icon } from "./icons";
+import { Icon } from "./icons";
 
 export function SiteFooter() {
   return (
@@ -26,13 +26,17 @@ export function SiteFooter() {
       </div>
       <div className="page-shell footer-grid">
         <div className="footer-brand">
-          <Link href="/" className="brand brand-light">
-            <BrandMark />
-            <span className="brand-copy">
-              <strong>Farmácia</strong>
-              <span>Poupe Mais</span>
-              <small className="brand-slogan" style={{ color: "#38bdf8", fontStyle: "italic", fontWeight: 700 }}>Aqui se faz economia</small>
-            </span>
+          <Link href="/" className="brand footer-brand-link" aria-label="Farmácia Poupe Mais — Aqui se faz economia">
+            <div className="footer-logo-wrap">
+              <img
+                src="/logo-poupe-mais.png"
+                alt="Farmácia Poupe Mais — Aqui se faz economia"
+                className="footer-logo-img"
+                width={190}
+                height={83}
+                style={{ height: "46px", width: "auto", objectFit: "contain", display: "block" }}
+              />
+            </div>
           </Link>
           <p>Saúde, economia e conveniência para cuidar de você todos os dias.</p>
           <div className="tele-line" style={{ display: "flex", alignItems: "center", gap: "10px", margin: "14px 0", color: "#ffcb05" }}>
