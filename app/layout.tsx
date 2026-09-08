@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { CookieConsentBanner } from "@/components/cookie-consent-banner";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://farmapoupemais.netlify.app"),
@@ -78,7 +79,10 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(pharmacySchema) }}
         />
       </head>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        {children}
+        <CookieConsentBanner />
+      </body>
     </html>
   );
 }

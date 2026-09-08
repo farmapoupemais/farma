@@ -3104,5 +3104,592 @@ body { background: var(--paper); color: var(--ink); font-family: Inter, ui-sans-
   align-items: center;
 }
 
+/* ==========================================================================
+   PÁGINAS LEGAIS, REGULATÓRIO ANVISA & LGPD
+   ========================================================================== */
+.prose-content {
+  max-width: 1040px;
+  margin: 32px auto 80px;
+  padding: 0 16px;
+}
 
+.legal-notice-box {
+  background: #ffffff;
+  border: 1.5px solid #c9d7d1;
+  box-shadow: 0 6px 24px rgba(0, 56, 32, 0.06);
+  border-radius: 18px;
+  padding: 28px 32px;
+  margin: 20px 0 40px;
+  position: relative;
+}
 
+.legal-badge-pill {
+  display: inline-block;
+  background: #e6f4ed;
+  color: #005a34;
+  border: 1px solid #bce1ce;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 5px 14px;
+  border-radius: 24px;
+}
+
+.legal-grid-data {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.legal-data-card {
+  background: #f8faf9;
+  border: 1px solid #e1ece6;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.legal-data-card small {
+  color: #64748b;
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.legal-data-card.highlight-contact {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+.legal-data-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.legal-clauses-wrapper {
+  margin-top: 10px;
+}
+
+.legal-clause {
+  margin-bottom: 32px;
+  padding-bottom: 26px;
+  border-bottom: 1px solid #e2ece7;
+}
+
+.legal-clause:last-of-type {
+  border-bottom: none;
+}
+
+.legal-clause h3 {
+  font-size: 1.22rem;
+  font-weight: 750;
+  color: #0f172a;
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.legal-clause p {
+  color: #334155;
+  font-size: 0.9rem;
+  line-height: 1.75;
+  margin: 0 0 14px;
+}
+
+.legal-clause ul {
+  padding-left: 22px;
+  margin: 0 0 16px;
+  color: #334155;
+  font-size: 0.89rem;
+  line-height: 1.75;
+}
+
+.legal-clause li {
+  margin-bottom: 10px;
+}
+
+.legal-callout {
+  padding: 18px 20px;
+  border-radius: 14px;
+  margin: 18px 0;
+  font-size: 0.86rem;
+  line-height: 1.65;
+}
+
+.legal-callout.warning {
+  background: #fefce8;
+  border-left: 4px solid #eab308;
+  color: #713f12;
+}
+
+.legal-callout.danger {
+  background: #fef2f2;
+  border-left: 4px solid #ef4444;
+  color: #7f1d1d;
+}
+
+.legal-callout strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.92rem;
+}
+
+.legal-clause-footer {
+  margin-top: 40px;
+  padding: 24px;
+  background: #f8fafc;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   BANNER DE COOKIES FLUTUANTE & LGPD
+   ========================================================================== */
+@keyframes slideUpCookie {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 25px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.cookie-consent-banner {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1160px, calc(100% - 32px));
+  z-index: 9990;
+  background: #ffffff;
+  border: 1.5px solid #bbf7d0;
+  border-radius: 20px;
+  box-shadow: 0 20px 45px -10px rgba(0, 40, 20, 0.28), 0 0 0 1px rgba(0, 135, 78, 0.15);
+  padding: 20px 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  animation: slideUpCookie 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cookie-banner-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cookie-banner-icon {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: #e6f7ef;
+  color: #00874e;
+  display: grid;
+  place-items: center;
+}
+
+.cookie-banner-text h4 {
+  margin: 0 0 5px;
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: #003820;
+}
+
+.cookie-banner-text p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.cookie-banner-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.74rem;
+}
+
+.cookie-banner-links a {
+  color: #00874e;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cookie-banner-links a:hover {
+  color: #005a34;
+}
+
+.cookie-banner-links span {
+  color: #94a3b8;
+}
+
+.cookie-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.cookie-btn {
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.cookie-btn-primary {
+  background: #00874e;
+  color: #ffffff;
+  border: 1px solid #00874e;
+  box-shadow: 0 4px 14px rgba(0, 135, 78, 0.28);
+}
+
+.cookie-btn-primary:hover {
+  background: #005a34;
+  border-color: #005a34;
+  transform: translateY(-1px);
+}
+
+.cookie-btn-outline {
+  background: #ffffff;
+  color: #005a34;
+  border: 1.5px solid #00874e;
+}
+
+.cookie-btn-outline:hover {
+  background: #f0fdf4;
+  border-color: #005a34;
+}
+
+.cookie-btn-link {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 0.78rem;
+  padding: 0 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cookie-btn-link:hover {
+  color: #0f172a;
+}
+
+.cookie-btn-save {
+  background: #ffcb05;
+  color: #0f172a;
+  border: 1px solid #eab308;
+}
+
+.cookie-btn-save:hover {
+  background: #eab308;
+}
+
+/* ==========================================================================
+   MODAL DE GERENCIAMENTO DE COOKIES & LGPD
+   ========================================================================== */
+.cookie-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(5px);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+.cookie-modal-card {
+  width: min(720px, 100%);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 22px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.cookie-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 28px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8faf9;
+}
+
+.cookie-modal-header h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #003820;
+  font-weight: 800;
+}
+
+.cookie-modal-shield-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #e6f7ef;
+  color: #00874e;
+  display: grid;
+  place-items: center;
+}
+
+.cookie-modal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #64748b;
+  font-size: 1.1rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cookie-modal-close:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.cookie-modal-body {
+  padding: 24px 28px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.cookie-modal-intro {
+  margin: 0 0 20px;
+  font-size: 0.85rem;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.cookie-category-box {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  margin-bottom: 14px;
+  background: #ffffff;
+  transition: border-color 0.15s;
+}
+
+.cookie-category-box:hover {
+  border-color: #cbd5e1;
+}
+
+.cookie-category-info {
+  flex: 1;
+}
+
+.cookie-category-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.cookie-category-title-row strong {
+  font-size: 0.92rem;
+  color: #0f172a;
+}
+
+.cookie-badge-always-active {
+  background: #e6f7ef;
+  color: #00874e;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.cookie-badge-optional {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.cookie-category-info p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+/* Custom Toggle Switch */
+.cookie-toggle {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 26px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.cookie-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.cookie-toggle .slider {
+  position: absolute;
+  inset: 0;
+  background-color: #cbd5e1;
+  border-radius: 26px;
+  transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cookie-toggle .slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cookie-toggle input:checked + .slider {
+  background-color: #00874e;
+}
+
+.cookie-toggle input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+.cookie-toggle.disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+.cookie-modal-footer-note {
+  margin-top: 16px;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.cookie-modal-footer-note a {
+  color: #00874e;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.cookie-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 18px 28px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   BOTÃO FLUTUANTE PERMANENTE DE PRIVACIDADE (REVOGABILIDADE LGPD)
+   ========================================================================== */
+.floating-cookie-trigger-btn {
+  position: fixed;
+  bottom: 22px;
+  right: 24px;
+  left: auto;
+  z-index: 9980;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  border-radius: 30px;
+  background: #ffffff;
+  border: 1.5px solid #00874e;
+  color: #005a34;
+  font-size: 0.76rem;
+  font-weight: 800;
+  box-shadow: 0 4px 18px rgba(0, 56, 32, 0.16);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.floating-cookie-trigger-btn:hover {
+  background: #00874e;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 90, 52, 0.28);
+}
+
+.floating-cookie-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 860px) {
+  .cookie-consent-banner {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 18px 20px;
+    gap: 18px;
+    bottom: 80px; /* Acima do menu móvel inferior */
+  }
+
+  .cookie-banner-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cookie-btn {
+    width: 100%;
+  }
+
+  .floating-cookie-trigger-btn {
+    bottom: 84px; /* Fica acima da barra inferior de navegação */
+    right: 16px;
+    left: auto;
+    padding: 7px 12px;
+    font-size: 0.72rem;
+  }
+}
