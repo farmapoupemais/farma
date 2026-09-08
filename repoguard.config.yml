@@ -1,0 +1,19 @@
+ignore:
+  - "node_modules/**"
+  - "dist/**"
+  - ".git/**"
+  - ".next/**"
+  - "package-lock.json"
+  - ".wrangler/**"
+  - ".sites-runtime/**"
+
+rules:
+  secrets: true
+  promptInjection: true
+  githubActions: true
+  dangerousCode: true
+  aiGenerated: true
+  aiPoisoning: true
+
+severity:
+  failOn: HIGH
