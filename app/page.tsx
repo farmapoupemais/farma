@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@/components/icons";
 import { ProductCard } from "@/components/product-card";
@@ -24,45 +23,67 @@ export default async function HomePage() {
     <>
       <SiteHeader />
       <main>
-        {/* Hero Section */}
-        <section className="page-shell hero">
-          <div className="hero-media">
-            <Image
-              src="/farmacia-hero.gif"
-              alt="Farmácia Poupe Mais - Atendimento farmacêutico e cuidados diários com entrega rápida"
-              fill
-              className="hero-image"
-              priority
-              unoptimized
-              sizes="(max-width: 768px) 100vw, 1440px"
-            />
-          </div>
-          <div className="hero-overlay" />
-          <div className="hero-copy">
-            <span className="eyebrow">Cuidado de verdade e economia</span>
-            <h1>Sua saúde, no seu ritmo.</h1>
+        {/* Hero Section — Showcase de Alta Conversão Farmacêutica (Padrão Panvel / Raia) */}
+        <section className="page-shell hero-showcase-grid" aria-label="Destaques e Ofertas da Semana">
+          {/* Card 1: Destaque Principal — Festival de Genéricos */}
+          <div className="hero-card-main">
+            <div className="hero-card-badge">
+              <Icon name="spark" size={15} /> Festival de Genéricos • Leve 3 Pague 2
+            </div>
+            <h1>Sua saúde, no seu ritmo: economia de verdade em medicamentos essenciais.</h1>
             <p>
-              Medicamentos, dermocosméticos, vitaminas e cuidados diários com
-              entrega rápida ou retirada grátis em nossas lojas.
+              Medicamentos para dor, febre, pressão alta e uso contínuo com até 70% de desconto e tele-entrega expressa em Porto Alegre e Região.
             </p>
-            <div className="hero-actions">
-              <Link href="/catalogo" className="button button-primary">
-                Explorar catálogo
+            <div className="hero-card-actions">
+              <Link href="/catalogo?categoria=Medicamentos&ofertas=1" className="hero-btn-accent">
+                Ver Genéricos com Desconto →
               </Link>
-              <Link href="/catalogo?ofertas=1" className="button button-ghost">
-                Ver ofertas
+              <Link href="/catalogo?ofertas=1" className="hero-btn-light">
+                Todas as Super Ofertas
               </Link>
             </div>
-            <div className="hero-proof">
-              <span>
-                <Icon name="truck" size={17} /> Entrega rápida
-              </span>
-              <span>
-                <Icon name="store" size={17} /> Retirada em 30 min
-              </span>
-              <span>
-                <Icon name="shield" size={17} /> Procedência garantida
-              </span>
+            <div className="hero-card-proof">
+              <span><Icon name="truck" size={16} /> Tele-Entrega 90 min</span>
+              <span><Icon name="store" size={16} /> Retirada em 30 min</span>
+              <span><Icon name="shield" size={16} /> Registro ANVISA</span>
+            </div>
+          </div>
+
+          {/* Cards Laterais: Urgência Médica & Tele-Entrega WhatsApp */}
+          <div className="hero-side-cards">
+            {/* Card Lateral 1: Envio de Receita Médica */}
+            <div className="hero-side-card prescription-highlight">
+              <div className="side-card-top">
+                <span className="side-badge-red">Urgência Farmacêutica</span>
+                <span className="side-icon-box red"><Icon name="document" size={20} /></span>
+              </div>
+              <h3>Possui Receita Médica?</h3>
+              <p>
+                Envie foto pelo celular ou arquivo digital ICP-Brasil. Farmacêutico de plantão confere e aprova em 15 min.
+              </p>
+              <Link href="/receita" className="side-card-link red">
+                Enviar Receita Agora →
+              </Link>
+            </div>
+
+            {/* Card Lateral 2: Tele-Entrega WhatsApp */}
+            <div className="hero-side-card delivery-highlight">
+              <div className="side-card-top">
+                <span className="side-badge-yellow">Tele-Entrega (51)</span>
+                <span className="side-icon-box green"><Icon name="truck" size={20} /></span>
+              </div>
+              <h3>Peça Direto no WhatsApp</h3>
+              <p>
+                Precisa de remédio com rapidez? Mande sua lista para nosso atendente e receba em até 90 min.
+              </p>
+              <a
+                href="https://wa.me/5551981834039?text=Ol%C3%A1!%20Gostaria%20de%20fazer%20um%20pedido%20para%20tele-entrega%20na%20Farm%C3%A1cia%20Poupe%20Mais."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="side-card-link green"
+              >
+                Pedir pelo WhatsApp (51) 98183-4039 →
+              </a>
             </div>
           </div>
         </section>

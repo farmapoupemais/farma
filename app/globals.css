@@ -3631,14 +3631,14 @@ body { background: var(--paper); color: var(--ink); font-family: Inter, ui-sans-
 }
 
 /* ==========================================================================
-   BOTÃO FLUTUANTE PERMANENTE DE PRIVACIDADE (REVOGABILIDADE LGPD)
+   BOTÃO FLUTUANTE PERMANENTE DE PRIVACIDADE (REVOGABILIDADE LGPD - CANTO ESQUERDO)
    ========================================================================== */
 .floating-cookie-trigger-btn {
   position: fixed;
   bottom: 22px;
-  right: 24px;
-  left: auto;
-  z-index: 9980;
+  left: 24px;
+  right: auto;
+  z-index: 9975;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -3667,13 +3667,346 @@ body { background: var(--paper); color: var(--ink); font-family: Inter, ui-sans-
   justify-content: center;
 }
 
-@media (max-width: 860px) {
+/* ==========================================================================
+   BOTÃO FLUTUANTE DE WHATSAPP TELE-ENTREGA EXPRESSA (CANTO DIREITO)
+   ========================================================================== */
+.whatsapp-floating-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  left: auto;
+  z-index: 9975;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 18px 8px 10px;
+  border-radius: 40px;
+  background: #25D366;
+  color: #ffffff;
+  box-shadow: 0 8px 28px rgba(37, 211, 102, 0.42), 0 2px 6px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: pulseWhatsApp 3s infinite;
+}
+
+@keyframes pulseWhatsApp {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgba(37, 211, 102, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+  }
+}
+
+.whatsapp-floating-btn:hover {
+  background: #1ebc57;
+  color: #ffffff;
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(37, 211, 102, 0.55);
+}
+
+.whatsapp-icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.whatsapp-floating-label {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.whatsapp-floating-label small {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #e6fffa;
+  letter-spacing: 0.05em;
+}
+
+.whatsapp-floating-label strong {
+  font-size: 0.88rem;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   HERO SHOWCASE DE ALTA CONVERSÃO FARMACÊUTICA (PADRÃO PANVEL / RAIA)
+   ========================================================================== */
+.hero-showcase-grid {
+  display: grid;
+  grid-template-columns: 1.65fr 1fr;
+  gap: 20px;
+  margin-top: 20px;
+  margin-bottom: 24px;
+}
+
+.hero-card-main {
+  background: linear-gradient(135deg, #005a34 0%, #00874e 100%);
+  border-radius: 24px;
+  padding: 40px 44px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 10px 30px rgba(0, 90, 52, 0.18);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-card-main::after {
+  content: "";
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 70%);
+  pointer-events: none;
+}
+
+.hero-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffcb05;
+  color: #0f172a;
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 6px 14px;
+  border-radius: 30px;
+  width: fit-content;
+  box-shadow: 0 4px 12px rgba(255, 203, 5, 0.3);
+}
+
+.hero-card-main h1 {
+  font-family: Georgia, serif;
+  font-size: clamp(1.85rem, 3.5vw, 2.6rem);
+  font-weight: 600;
+  line-height: 1.15;
+  margin: 18px 0 12px;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.hero-card-main p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #e2f1e9;
+  max-width: 540px;
+  margin: 0 0 24px;
+}
+
+.hero-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.hero-btn-accent {
+  background: #ffcb05;
+  color: #0f172a;
+  font-weight: 850;
+  font-size: 0.86rem;
+  padding: 13px 24px;
+  border-radius: 14px;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  transition: all 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.hero-btn-accent:hover {
+  background: #eab308;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+}
+
+.hero-btn-light {
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  font-weight: 750;
+  font-size: 0.86rem;
+  padding: 13px 22px;
+  border-radius: 14px;
+  text-decoration: none;
+  transition: all 0.18s ease;
+}
+
+.hero-btn-light:hover {
+  background: rgba(255, 255, 255, 0.28);
+  transform: translateY(-2px);
+}
+
+.hero-card-proof {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  color: #d1fae5;
+  font-size: 0.76rem;
+  font-weight: 700;
+  flex-wrap: wrap;
+}
+
+.hero-card-proof span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* CARDS LATERAIS */
+.hero-side-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hero-side-card {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 22px 24px;
+  border: 1.5px solid #e2ece7;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 16px rgba(0, 56, 32, 0.05);
+  transition: all 0.2s ease;
+}
+
+.hero-side-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 56, 32, 0.1);
+}
+
+.hero-side-card.prescription-highlight {
+  border-color: #fecaca;
+  background: #fffafa;
+}
+
+.hero-side-card.delivery-highlight {
+  border-color: #fef08a;
+  background: #fffbeb;
+}
+
+.side-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.side-badge-red {
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 0.68rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+
+.side-badge-yellow {
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 0.68rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+
+.side-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+}
+
+.side-icon-box.red {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.side-icon-box.green {
+  background: #00874e;
+  color: #ffffff;
+}
+
+.hero-side-card h3 {
+  font-size: 1.12rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 6px;
+}
+
+.hero-side-card p {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+
+.side-card-link {
+  font-size: 0.82rem;
+  font-weight: 850;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: gap 0.15s ease;
+}
+
+.side-card-link:hover {
+  gap: 8px;
+}
+
+.side-card-link.red {
+  color: #dc2626;
+}
+
+.side-card-link.green {
+  color: #00874e;
+}
+
+@media (max-width: 960px) {
+  .hero-showcase-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-card-main {
+    padding: 30px 24px;
+  }
+
   .cookie-consent-banner {
     flex-direction: column;
     align-items: stretch;
     padding: 18px 20px;
     gap: 18px;
-    bottom: 80px; /* Acima do menu móvel inferior */
+    bottom: 80px;
   }
 
   .cookie-banner-actions {
@@ -3686,10 +4019,31 @@ body { background: var(--paper); color: var(--ink); font-family: Inter, ui-sans-
   }
 
   .floating-cookie-trigger-btn {
-    bottom: 84px; /* Fica acima da barra inferior de navegação */
-    right: 16px;
-    left: auto;
+    bottom: 84px;
+    left: 14px;
+    right: auto;
     padding: 7px 12px;
     font-size: 0.72rem;
   }
+
+  .whatsapp-floating-btn {
+    bottom: 84px;
+    right: 14px;
+    left: auto;
+    padding: 6px 14px 6px 8px;
+  }
+
+  .whatsapp-icon-wrap {
+    width: 36px;
+    height: 36px;
+  }
+
+  .whatsapp-floating-label small {
+    font-size: 0.6rem;
+  }
+
+  .whatsapp-floating-label strong {
+    font-size: 0.78rem;
+  }
 }
+
