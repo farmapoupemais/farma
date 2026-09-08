@@ -26,15 +26,17 @@ export default async function HomePage() {
       <main>
         {/* Hero Section */}
         <section className="page-shell hero">
-          <Image
-            src="/farmacia-hero.gif"
-            alt="Farmácia Poupe Mais - Atendimento farmacêutico e cuidados diários com entrega rápida"
-            fill
-            className="hero-image"
-            priority
-            unoptimized
-            sizes="(max-width: 768px) 100vw, 1440px"
-          />
+          <div className="hero-media">
+            <Image
+              src="/farmacia-hero.gif"
+              alt="Farmácia Poupe Mais - Atendimento farmacêutico e cuidados diários com entrega rápida"
+              fill
+              className="hero-image"
+              priority
+              unoptimized
+              sizes="(max-width: 768px) 100vw, 1440px"
+            />
+          </div>
           <div className="hero-overlay" />
           <div className="hero-copy">
             <span className="eyebrow">Cuidado de verdade e economia</span>
