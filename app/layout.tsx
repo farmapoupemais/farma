@@ -70,8 +70,8 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <head>
-        {/* Core Web Vitals 2026: Preload de alta prioridade da imagem LCP Hero */}
-        <link rel="preload" as="image" href="/farmacia-hero.png" fetchPriority="high" />
+        {/* Core Web Vitals 2026: Preload de alta prioridade da animação LCP Hero */}
+        <link rel="preload" as="image" href="/farmacia-hero.gif" fetchPriority="high" />
         {/* Machine Experience (MX): Schema.org Pharmacy para assistentes de IA (ChatGPT, Claude, Perplexity) */}
         <script
           type="application/ld+json"

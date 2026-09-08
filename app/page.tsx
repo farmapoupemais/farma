@@ -27,11 +27,12 @@ export default async function HomePage() {
         {/* Hero Section */}
         <section className="page-shell hero">
           <Image
-            src="/farmacia-hero.png"
-            alt="Farmácia Poupe Mais - Medicamentos com desconto, dermocosméticos e saúde com entrega rápida"
+            src="/farmacia-hero.gif"
+            alt="Farmácia Poupe Mais - Atendimento farmacêutico e cuidados diários com entrega rápida"
             fill
             className="hero-image"
             priority
+            unoptimized
             sizes="(max-width: 768px) 100vw, 1440px"
           />
           <div className="hero-overlay" />
