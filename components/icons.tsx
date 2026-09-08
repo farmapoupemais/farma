@@ -83,9 +83,22 @@ export function Icon({
 
 export function BrandMark({ size = 38 }: { size?: number }) {
   return (
-    <span className="brand-mark" style={{ width: size, height: size }} aria-hidden="true">
-      <span />
-      <span />
+    <span className="brand-mark" style={{ width: size, height: size, display: "inline-block", flexShrink: 0 }} aria-hidden="true">
+      <svg width={size} height={size} viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="44" height="44" rx="12" fill="#00874E" />
+        {/* Blue heart contour from physical sign */}
+        <path
+          d="M22 35C22 35 34 27 34 18C34 13 30 9.5 25.5 9.5C23.2 9.5 22.3 10.6 22 11.2C21.7 10.6 20.8 9.5 18.5 9.5C14 9.5 10 13 10 18C10 27 22 35 22 35Z"
+          stroke="#38BDF8"
+          strokeWidth="2.5"
+          fill="none"
+        />
+        {/* Pharmacy Cross in Clean White */}
+        <rect x="19.5" y="14" width="5" height="16" rx="2.5" fill="#FFFFFF" />
+        <rect x="14" y="19.5" width="16" height="5" rx="2.5" fill="#FFFFFF" />
+        {/* Yellow center dot from wall */}
+        <circle cx="22" cy="22" r="2.5" fill="#FFCB05" />
+      </svg>
     </span>
   );
 }

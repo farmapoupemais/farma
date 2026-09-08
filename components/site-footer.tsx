@@ -26,8 +26,19 @@ export function SiteFooter() {
       </div>
       <div className="page-shell footer-grid">
         <div className="footer-brand">
-          <Link href="/" className="brand brand-light"><BrandMark /><span className="brand-copy"><strong>Farmácia</strong><span>Poupe Mais</span></span></Link>
+          <Link href="/" className="brand brand-light">
+            <BrandMark />
+            <span className="brand-copy">
+              <strong>Farmácia</strong>
+              <span>Poupe Mais</span>
+              <small className="brand-slogan" style={{ color: "#38bdf8", fontStyle: "italic", fontWeight: 700 }}>Aqui se faz economia</small>
+            </span>
+          </Link>
           <p>Saúde, economia e conveniência para cuidar de você todos os dias.</p>
+          <div className="tele-line" style={{ display: "flex", alignItems: "center", gap: "10px", margin: "14px 0", color: "#ffcb05" }}>
+            <Icon name="truck" size={20} />
+            <span style={{ fontSize: "0.82rem" }}><strong>Tele-Entrega:</strong> (51) 98183-4039 • (51) 99794-8494</span>
+          </div>
           <div className="pharmacist-line"><Icon name="shield" /><span><strong>Atendimento farmacêutico</strong>Todos os dias, das 8h às 22h</span></div>
         </div>
         <div><h3>Compre</h3><Link href="/catalogo">Todos os produtos</Link><Link href="/catalogo?categoria=Medicamentos">Medicamentos</Link><Link href="/catalogo?categoria=Dermocosméticos">Dermocosméticos</Link><Link href="/carrinho">Meu carrinho</Link></div>

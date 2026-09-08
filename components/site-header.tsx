@@ -34,7 +34,7 @@ export function SiteHeader() {
     <>
       <div className="announcement">
         <div className="page-shell announcement-inner">
-          <span><Icon name="truck" size={15} /> Entrega rápida e retirada grátis*</span>
+          <span><Icon name="truck" size={15} /> <strong>TELE-ENTREGA:</strong> (51) 98183-4039 • (51) 99794-8494</span>
           <div>
             <Link href="/lojas">Nossas lojas</Link>
             <Link href="/servicos">Serviços de saúde</Link>
@@ -46,7 +46,11 @@ export function SiteHeader() {
         <div className="header-main page-shell">
           <Link href="/" className="brand header-brand" aria-label="Farmácia Poupe Mais — página inicial">
             <BrandMark size={42} />
-            <span className="brand-copy"><strong>Farmácia</strong><span>Poupe Mais</span></span>
+            <span className="brand-copy">
+              <strong>Farmácia</strong>
+              <span>Poupe Mais</span>
+              <small className="brand-slogan">Aqui se faz economia</small>
+            </span>
           </Link>
 
           <form action="/catalogo" className="site-search" role="search">
