@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     template: "%s | Farmácia Poupe Mais",
   },
   description:
-    "Medicamentos com desconto popular, dermocosméticos, serviços clínicos farmacêuticos e envio protegido de receitas com entrega rápida em 30 minutos.",
+    "Medicamentos com desconto popular, dermocosméticos, cuidados diários e produtos isentos de receita médica com entrega rápida em 30 minutos.",
   openGraph: {
     title: "Farmácia Poupe Mais",
     description: "Cuidado de verdade. Economia todos os dias.",

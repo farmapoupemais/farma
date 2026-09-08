@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { Role } from "@/lib/access";
-import { catalogProducts, formatCurrency } from "@/lib/catalog";
+import { catalogProducts, formatCurrency, type ProductColor } from "@/lib/catalog";
 import { BrandMark, Icon } from "./icons";
 import { supabase } from "@/lib/supabase";
 
 type DashboardRole = Role;
-type ViewKey = "overview" | "orders" | "catalog" | "marketing" | "prescriptions" | "team" | "account";
+type ViewKey = "overview" | "orders" | "catalog" | "marketing" | "team" | "account";
 
 const roleLabels: Record<DashboardRole, string> = {
   owner: "Proprietário",
@@ -24,7 +24,6 @@ const navItems: { key: ViewKey; label: string; icon: string; roles: DashboardRol
   { key: "orders", label: "Pedidos", icon: "cart", roles: ["owner", "manager", "support", "customer"] },
   { key: "catalog", label: "Produtos e estoque", icon: "capsule", roles: ["owner", "manager", "catalog"] },
   { key: "marketing", label: "Banners e descontos", icon: "sun", roles: ["owner", "manager", "catalog"] },
-  { key: "prescriptions", label: "Receitas", icon: "document", roles: ["pharmacist", "customer"] },
   { key: "team", label: "Equipe e permissões", icon: "user", roles: ["owner"] },
   { key: "account", label: "Minha conta", icon: "user", roles: ["customer"] },
 ];
@@ -35,6 +34,9 @@ export type AdminProduct = {
   name: string;
   brand: string;
   category: string;
+  barcode?: string;
+  images?: string[];
+  colors?: ProductColor[];
   shortDescription?: string;
   description?: string;
   priceCents: number;
@@ -291,7 +293,7 @@ export function RoleDashboard({
   }
 
   // Edit product
-  async function handleUpdateProduct(e: React.FormEvent<HTMLFormElement>) {
+  async function handleUpdateProduct(e: React.FormEvent<HTMLFormElement>, images: string[], colors: ProductColor[]) {
     e.preventDefault();
     if (!editingProduct) return;
     const form = e.currentTarget;
@@ -304,6 +306,9 @@ export function RoleDashboard({
       slug: String(data.get("slug") ?? "").trim(),
       brand: String(data.get("brand") ?? "").trim(),
       category: String(data.get("category") ?? "").trim(),
+      barcode: String(data.get("barcode") ?? "").trim(),
+      images,
+      colors,
       priceCents: Number(data.get("priceCents")),
       compareAtCents: data.get("compareAtCents") ? Number(data.get("compareAtCents")) : null,
       stock: Number(data.get("stock")),
@@ -325,6 +330,69 @@ export function RoleDashboard({
       setNotice("Produto atualizado com sucesso!");
     } catch (err: unknown) {
       setNotice(err instanceof Error ? err.message : "Erro ao atualizar.");
+    }
+    setTimeout(() => setNotice(""), 2500);
+  }
+
+  // Create product
+  async function handleCreateProduct(e: React.FormEvent<HTMLFormElement>, images: string[], colors: ProductColor[]) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const data = new FormData(form);
+    setNotice("Cadastrando produto…");
+
+    const customId = String(data.get("id") ?? "").trim();
+    const payload = {
+      id: customId || undefined,
+      name: String(data.get("name") ?? "").trim(),
+      slug: String(data.get("slug") ?? "").trim(),
+      brand: String(data.get("brand") ?? "").trim(),
+      category: String(data.get("category") ?? "").trim(),
+      barcode: String(data.get("barcode") ?? "").trim(),
+      images,
+      colors,
+      priceCents: Number(data.get("priceCents")),
+      compareAtCents: data.get("compareAtCents") ? Number(data.get("compareAtCents")) : null,
+      stock: Number(data.get("stock")),
+      shortDescription: String(data.get("shortDescription") ?? "").trim(),
+      description: String(data.get("description") ?? "").trim(),
+    };
+
+    try {
+      const authHeaders = await getAuthHeaders();
+      const res = await fetch("/api/admin/products", {
+        method: "POST",
+        headers: { ...authHeaders, "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const resData = await res.json();
+      if (!res.ok) throw new Error(resData.error || "Não foi possível cadastrar o produto.");
+      setNotice("Produto cadastrado com sucesso!");
+      setFormOpen(null);
+      setRefreshTrigger((c) => c + 1);
+    } catch (err: unknown) {
+      setNotice(err instanceof Error ? err.message : "Erro ao cadastrar.");
+    }
+    setTimeout(() => setNotice(""), 2500);
+  }
+
+  // Update product colors directly
+  async function handleSaveProductColors(productId: string, nextColors: ProductColor[]) {
+    setNotice("Salvando tabela de cores…");
+    try {
+      const authHeaders = await getAuthHeaders();
+      const res = await fetch("/api/admin/products", {
+        method: "PATCH",
+        headers: { ...authHeaders, "content-type": "application/json" },
+        body: JSON.stringify({ id: productId, colors: nextColors }),
+      });
+      if (!res.ok) throw new Error("Não foi possível salvar as cores.");
+      setAdminProducts((prev) =>
+        prev.map((p) => (p.id === productId ? { ...p, colors: nextColors } : p))
+      );
+      setNotice("Tabela de cores atualizada com sucesso!");
+    } catch (err: unknown) {
+      setNotice(err instanceof Error ? err.message : "Erro ao salvar cores.");
     }
     setTimeout(() => setNotice(""), 2500);
   }
@@ -639,7 +707,8 @@ export function RoleDashboard({
             onQuickStock={handleQuickStock}
             onDeleteProduct={handleDeleteProduct}
             onUpdateProduct={handleUpdateProduct}
-            onSubmit={submitApi}
+            onCreateProduct={handleCreateProduct}
+            onSaveColors={handleSaveProductColors}
             loading={catalogLoading}
             error={catalogError}
           />
@@ -660,8 +729,6 @@ export function RoleDashboard({
           />
         )}
 
-        {/* 5. RECEITAS */}
-        {view === "prescriptions" && <PrescriptionsView customer={role === "customer"} />}
 
         {/* 6. EQUIPE E PERMISSÕES */}
         {view === "team" && (
@@ -715,7 +782,7 @@ function Overview({
           <div>
             <span className="eyebrow">Sua saúde em um só lugar</span>
             <h2>O que você precisa hoje?</h2>
-            <p>Acompanhe pedidos, receitas e benefícios com privacidade.</p>
+            <p>Acompanhe pedidos, benefícios e cupons de economia com comodidade.</p>
             <div>
               <Link href="/catalogo" className="button button-primary">
                 Ver catálogo de produtos
@@ -730,7 +797,7 @@ function Overview({
         <div className="metric-grid customer-metrics">
           <Metric label="Pedidos registrados" value={String(orders.length)} detail="atualizado agora" icon="cart" />
           <Metric label="Ofertas ativas" value={String(activeCouponsCount)} detail="cupons disponíveis" icon="spark" />
-          <Metric label="Receitas seguras" value="1" detail="acesso protegido" icon="document" />
+          <Metric label="Atendimento seguro" value="100% MIPs" detail="produtos sem retenção" icon="care" />
         </div>
       </div>
     );
@@ -1058,7 +1125,8 @@ function CatalogView({
   onQuickStock,
   onDeleteProduct,
   onUpdateProduct,
-  onSubmit,
+  onCreateProduct,
+  onSaveColors,
   loading,
   error,
 }: {
@@ -1075,17 +1143,48 @@ function CatalogView({
   setEditingProduct: (p: AdminProduct | null) => void;
   onQuickStock: (id: string, delta: number) => void;
   onDeleteProduct: (id: string) => void;
-  onUpdateProduct: (e: React.FormEvent<HTMLFormElement>) => void;
-  onSubmit: (e: React.FormEvent<HTMLFormElement>, ep: string) => void;
+  onUpdateProduct: (e: React.FormEvent<HTMLFormElement>, images: string[], colors: ProductColor[]) => void;
+  onCreateProduct: (e: React.FormEvent<HTMLFormElement>, images: string[], colors: ProductColor[]) => void;
+  onSaveColors: (productId: string, colors: ProductColor[]) => void;
   loading: boolean;
   error: string;
 }) {
+  const [selectedProductForColors, setSelectedProductForColors] = useState<AdminProduct | null>(null);
+  const [activeColors, setActiveColors] = useState<ProductColor[]>([]);
+  const [viewMode, setViewMode] = useState<"table" | "grid">("table");
+
+  // Multi-image state for new product
+  const [newImages, setNewImages] = useState<string[]>([]);
+  const [newImageUrl, setNewImageUrl] = useState("");
+
+  // Multi-image state for edit product
+  const [editImages, setEditImages] = useState<string[]>([]);
+  const [editImageUrl, setEditImageUrl] = useState("");
+  const [prevEditId, setPrevEditId] = useState<string | null>(null);
+
+  if (editingProduct && editingProduct.id !== prevEditId) {
+    setPrevEditId(editingProduct.id);
+    setEditImages(editingProduct.images || []);
+    setEditImageUrl("");
+  } else if (!editingProduct && prevEditId !== null) {
+    setPrevEditId(null);
+    setEditImages([]);
+    setEditImageUrl("");
+  }
+
+  function openColorsModal(product: AdminProduct) {
+    setSelectedProductForColors(product);
+    setActiveColors(product.colors || []);
+  }
+
   const filtered = products.filter((p) => {
     const q = query.toLowerCase();
     const matchesText =
       p.name.toLowerCase().includes(q) ||
       p.brand.toLowerCase().includes(q) ||
-      p.slug.toLowerCase().includes(q);
+      p.slug.toLowerCase().includes(q) ||
+      p.id.toLowerCase().includes(q) ||
+      (p.barcode ? p.barcode.toLowerCase().includes(q) : false);
     const matchesCat = categoryFilter === "all" || p.category === categoryFilter;
     const matchesStat =
       statusFilter === "all" ||
@@ -1098,15 +1197,72 @@ function CatalogView({
   return (
     <div className="dashboard-stack">
       <section className="dashboard-card full-card">
-        <CardHeading title="Catálogo de Medicamentos e Produtos" />
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
+          <div>
+            <h2 style={{ fontFamily: "Georgia, serif", fontSize: "1.3rem", margin: 0, color: "var(--teal-deep)" }}>
+              Catálogo Geral de Produtos e Estoque
+            </h2>
+            <small style={{ color: "var(--muted)" }}>Produtos 100% isentos de prescrição (MIPs, cosméticos e higiene) com gestão de ID, código de barras, fotos e cores.</small>
+          </div>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <div style={{ display: "flex", background: "var(--sage-2)", borderRadius: "8px", padding: "2px" }}>
+              <button
+                type="button"
+                onClick={() => setViewMode("table")}
+                style={{
+                  padding: "4px 10px",
+                  borderRadius: "6px",
+                  border: "none",
+                  fontSize: "0.75rem",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  background: viewMode === "table" ? "#fff" : "transparent",
+                  color: viewMode === "table" ? "var(--teal-deep)" : "var(--muted)",
+                  boxShadow: viewMode === "table" ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+                }}
+              >
+                📋 Tabela Detalhada
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                style={{
+                  padding: "4px 10px",
+                  borderRadius: "6px",
+                  border: "none",
+                  fontSize: "0.75rem",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  background: viewMode === "grid" ? "#fff" : "transparent",
+                  color: viewMode === "grid" ? "var(--teal-deep)" : "var(--muted)",
+                  boxShadow: viewMode === "grid" ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+                }}
+              >
+                🗂️ Grade de Cards
+              </button>
+            </div>
+            <button
+              className="primary-small"
+              onClick={() => {
+                setFormOpen(formOpen === "product" ? null : "product");
+                setEditingProduct(null);
+                setNewImages([]);
+                setNewImageUrl("");
+              }}
+              style={{ whiteSpace: "nowrap" }}
+            >
+              + Novo Produto
+            </button>
+          </div>
+        </div>
 
         {/* Barra de Filtros */}
-        <div className="table-toolbar" style={{ flexWrap: "wrap", gap: "10px" }}>
+        <div className="table-toolbar" style={{ flexWrap: "wrap", gap: "10px", marginBottom: "16px" }}>
           <input
-            placeholder="Buscar nome, marca, código…"
+            placeholder="Buscar por nome, marca, ID ou código de barras…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            style={{ minWidth: "220px" }}
+            style={{ minWidth: "260px", flex: 1 }}
           />
 
           <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
@@ -1127,32 +1283,36 @@ function CatalogView({
             <option value="inactive">Apenas Inativos</option>
             <option value="low_stock">⚠️ Estoque Baixo (≤ 5)</option>
           </select>
-
-          <button
-            className="primary-small"
-            onClick={() => {
-              setFormOpen(formOpen === "product" ? null : "product");
-              setEditingProduct(null);
-            }}
-          >
-            + Novo Produto
-          </button>
         </div>
 
         {/* Formulário de Cadastro de Novo Produto */}
         {formOpen === "product" && !editingProduct && (
-          <form className="admin-form" onSubmit={(e) => onSubmit(e, "/api/admin/products")}>
+          <form className="admin-form" onSubmit={(e) => onCreateProduct(e, newImages, [])}>
+            <div style={{ gridColumn: "1 / -1", borderBottom: "1px solid var(--line)", paddingBottom: "8px", marginBottom: "8px" }}>
+              <h3 style={{ margin: 0, fontSize: "1rem", color: "var(--teal-deep)" }}>Cadastro de Novo Produto</h3>
+              <small style={{ color: "var(--muted)" }}>Preencha os dados cadastrais, identificadores e fotos ilimitadas.</small>
+            </div>
+
+            <label>
+              ID do Produto (Identificador Único)
+              <input name="id" maxLength={80} placeholder="Ex: prod_novo (ou deixe vazio para gerar automático)" />
+            </label>
+            <label>
+              Código de Barras (EAN-13)
+              <input name="barcode" maxLength={40} placeholder="Ex: 7891234567890" />
+            </label>
+
             <label>
               Nome do Produto*
-              <input name="name" required maxLength={120} placeholder="Ex: Dipirona 500mg" />
+              <input name="name" required maxLength={120} placeholder="Ex: Paracetamol 750mg" />
             </label>
             <label>
-              Slug Único*
-              <input name="slug" required placeholder="dipirona-500mg" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" />
+              Slug Único na URL*
+              <input name="slug" required placeholder="paracetamol-750mg" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" />
             </label>
             <label>
-              Marca/Laboratório*
-              <input name="brand" required maxLength={80} placeholder="Ex: EMS" />
+              Marca / Laboratório*
+              <input name="brand" required maxLength={80} placeholder="Ex: Genérico / EMS" />
             </label>
             <label>
               Categoria*
@@ -1169,25 +1329,83 @@ function CatalogView({
             </label>
             <label>
               Descrição Curta*
-              <input name="shortDescription" required maxLength={180} placeholder="20 comprimidos • Alívio de dor" />
+              <input name="shortDescription" required maxLength={180} placeholder="20 comprimidos • Alívio de dor e febre" />
             </label>
             <label>
               Preço em centavos*
               <input name="priceCents" type="number" min="1" required placeholder="Ex: 1590 (R$ 15,90)" />
             </label>
             <label>
-              Preço anterior (De / Por)
+              Preço anterior De/Por (centavos)
               <input name="compareAtCents" type="number" min="1" placeholder="Ex: 1990 (R$ 19,90)" />
             </label>
             <label>
-              Estoque inicial*
+              Estoque inicial (unidades)*
               <input name="stock" type="number" min="0" required defaultValue="50" />
             </label>
+
             <label className="wide">
               Descrição Detalhada*
-              <textarea name="description" required maxLength={2000} placeholder="Instruções de uso, posologia e precauções..." />
+              <textarea name="description" required maxLength={4000} rows={3} placeholder="Instruções de uso, posologia e precauções..." />
             </label>
-            <div className="form-actions wide">
+
+            {/* Gerenciador de Fotos Ilimitadas */}
+            <div className="wide" style={{ background: "var(--sage-2)", borderRadius: "10px", padding: "14px", marginTop: "6px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                <div>
+                  <strong style={{ fontSize: "0.85rem", color: "var(--teal-deep)" }}>📷 Fotos do Produto (quantas fotos quiser)</strong>
+                  <p style={{ margin: "2px 0 0", fontSize: "0.75rem", color: "var(--muted)" }}>Adicione URLs de fotos em alta resolução. A primeira será a foto principal.</p>
+                </div>
+                <span style={{ fontSize: "0.75rem", fontWeight: "bold", background: "#fff", padding: "3px 8px", borderRadius: "6px" }}>
+                  {newImages.length} foto(s) adicionada(s)
+                </span>
+              </div>
+              <div style={{ display: "flex", gap: "8px", marginBottom: "10px" }}>
+                <input
+                  type="url"
+                  placeholder="Cole a URL da foto (https://...)"
+                  value={newImageUrl}
+                  onChange={(e) => setNewImageUrl(e.target.value)}
+                  style={{ flex: 1, padding: "6px 10px", fontSize: "0.8rem", borderRadius: "6px", border: "1px solid var(--line)" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (newImageUrl.trim().startsWith("http") || newImageUrl.trim().startsWith("/")) {
+                      setNewImages((prev) => [...prev, newImageUrl.trim()]);
+                      setNewImageUrl("");
+                    } else {
+                      alert("Informe uma URL válida começando com http:// ou https://");
+                    }
+                  }}
+                  className="button button-primary"
+                  style={{ padding: "6px 14px", fontSize: "0.75rem", whiteSpace: "nowrap" }}
+                >
+                  + Adicionar Foto
+                </button>
+              </div>
+
+              {newImages.length > 0 && (
+                <div style={{ display: "flex", gap: "10px", overflowX: "auto", padding: "6px 2px" }}>
+                  {newImages.map((img, idx) => (
+                    <div key={idx} style={{ position: "relative", width: "70px", height: "70px", borderRadius: "8px", overflow: "hidden", border: idx === 0 ? "2px solid var(--teal)" : "1px solid var(--line)", flexShrink: 0, background: "#fff" }}>
+                      <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      {idx === 0 && <span style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "var(--teal)", color: "#fff", fontSize: "0.55rem", textAlign: "center", fontWeight: "bold" }}>Capa</span>}
+                      <button
+                        type="button"
+                        onClick={() => setNewImages((prev) => prev.filter((_, i) => i !== idx))}
+                        style={{ position: "absolute", top: "2px", right: "2px", width: "18px", height: "18px", borderRadius: "50%", background: "rgba(0,0,0,0.65)", color: "#fff", border: "none", cursor: "pointer", fontSize: "0.6rem", display: "grid", placeItems: "center" }}
+                        title="Remover foto"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="form-actions wide" style={{ marginTop: "12px" }}>
               <button type="button" onClick={() => setFormOpen(null)}>
                 Cancelar
               </button>
@@ -1202,51 +1420,73 @@ function CatalogView({
             style={{
               position: "fixed",
               inset: 0,
-              background: "rgba(0,0,0,0.5)",
+              background: "rgba(0,0,0,0.55)",
               zIndex: 100,
               display: "grid",
               placeItems: "center",
-              padding: "20px",
+              padding: "16px",
             }}
           >
             <div
               style={{
                 background: "#fff",
-                borderRadius: "16px",
+                borderRadius: "18px",
                 padding: "24px",
-                maxWidth: "600px",
+                maxWidth: "680px",
                 width: "100%",
-                maxHeight: "90vh",
+                maxHeight: "92vh",
                 overflowY: "auto",
+                boxShadow: "0 24px 48px rgba(0,0,0,0.2)",
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                <h3 style={{ margin: 0, fontSize: "1.2rem" }}>Editar Produto: {editingProduct.name}</h3>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid var(--line)", paddingBottom: "10px" }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: "1.2rem", fontFamily: "Georgia, serif" }}>Editar Produto: {editingProduct.name}</h3>
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "4px" }}>
+                    <span style={{ fontSize: "0.72rem", background: "var(--sage-2)", padding: "2px 8px", borderRadius: "4px", fontWeight: "bold", color: "var(--teal-deep)" }}>
+                      ID: {editingProduct.id}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(editingProduct.id);
+                        alert("ID copiado para a área de transferência!");
+                      }}
+                      style={{ background: "transparent", border: "none", color: "var(--teal)", cursor: "pointer", fontSize: "0.72rem" }}
+                    >
+                      Copiar ID
+                    </button>
+                  </div>
+                </div>
                 <button
                   type="button"
                   onClick={() => setEditingProduct(null)}
-                  style={{ background: "transparent", border: "none", fontSize: "1.2rem", cursor: "pointer" }}
+                  style={{ background: "transparent", border: "none", fontSize: "1.4rem", cursor: "pointer", color: "var(--muted)" }}
                 >
                   ✕
                 </button>
               </div>
 
-              <form onSubmit={onUpdateProduct} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <form onSubmit={(e) => onUpdateProduct(e, editImages, editingProduct.colors || [])} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 <label style={{ gridColumn: "1 / -1", fontSize: "0.7rem", fontWeight: "bold" }}>
-                  Nome
-                  <input name="name" defaultValue={editingProduct.name} required style={{ width: "100%", padding: "6px" }} />
+                  Nome do Produto
+                  <input name="name" defaultValue={editingProduct.name} required style={{ width: "100%", padding: "6px 8px" }} />
                 </label>
                 <label style={{ fontSize: "0.7rem", fontWeight: "bold" }}>
-                  Slug
-                  <input name="slug" defaultValue={editingProduct.slug} required style={{ width: "100%", padding: "6px" }} />
+                  Código de Barras (EAN-13)
+                  <input name="barcode" defaultValue={editingProduct.barcode || ""} placeholder="789..." style={{ width: "100%", padding: "6px 8px" }} />
                 </label>
                 <label style={{ fontSize: "0.7rem", fontWeight: "bold" }}>
-                  Marca
-                  <input name="brand" defaultValue={editingProduct.brand} required style={{ width: "100%", padding: "6px" }} />
+                  Slug na URL
+                  <input name="slug" defaultValue={editingProduct.slug} required style={{ width: "100%", padding: "6px 8px" }} />
+                </label>
+                <label style={{ fontSize: "0.7rem", fontWeight: "bold" }}>
+                  Marca / Laboratório
+                  <input name="brand" defaultValue={editingProduct.brand} required style={{ width: "100%", padding: "6px 8px" }} />
                 </label>
                 <label style={{ fontSize: "0.7rem", fontWeight: "bold" }}>
                   Categoria
-                  <select name="category" defaultValue={editingProduct.category} style={{ width: "100%", padding: "6px" }}>
+                  <select name="category" defaultValue={editingProduct.category} style={{ width: "100%", padding: "6px 8px" }}>
                     <option>Medicamentos</option>
                     <option>Dermocosméticos</option>
                     <option>Vitaminas</option>
@@ -1259,30 +1499,99 @@ function CatalogView({
                 </label>
                 <label style={{ fontSize: "0.7rem", fontWeight: "bold" }}>
                   Estoque (unidades)
-                  <input name="stock" type="number" defaultValue={editingProduct.stock} required style={{ width: "100%", padding: "6px" }} />
+                  <input name="stock" type="number" defaultValue={editingProduct.stock} required style={{ width: "100%", padding: "6px 8px" }} />
                 </label>
                 <label style={{ fontSize: "0.7rem", fontWeight: "bold" }}>
                   Preço em centavos
-                  <input name="priceCents" type="number" defaultValue={editingProduct.priceCents} required style={{ width: "100%", padding: "6px" }} />
+                  <input name="priceCents" type="number" defaultValue={editingProduct.priceCents} required style={{ width: "100%", padding: "6px 8px" }} />
                 </label>
                 <label style={{ fontSize: "0.7rem", fontWeight: "bold" }}>
-                  Preço anterior em centavos
-                  <input name="compareAtCents" type="number" defaultValue={editingProduct.compareAtCents ?? ""} style={{ width: "100%", padding: "6px" }} />
+                  Preço anterior em centavos (De/Por)
+                  <input name="compareAtCents" type="number" defaultValue={editingProduct.compareAtCents ?? ""} style={{ width: "100%", padding: "6px 8px" }} />
                 </label>
                 <label style={{ gridColumn: "1 / -1", fontSize: "0.7rem", fontWeight: "bold" }}>
                   Descrição Curta
-                  <input name="shortDescription" defaultValue={editingProduct.shortDescription ?? ""} required style={{ width: "100%", padding: "6px" }} />
+                  <input name="shortDescription" defaultValue={editingProduct.shortDescription ?? ""} required style={{ width: "100%", padding: "6px 8px" }} />
                 </label>
                 <label style={{ gridColumn: "1 / -1", fontSize: "0.7rem", fontWeight: "bold" }}>
                   Descrição Completa
-                  <textarea name="description" defaultValue={editingProduct.description ?? ""} rows={3} style={{ width: "100%", padding: "6px" }} />
+                  <textarea name="description" defaultValue={editingProduct.description ?? ""} rows={3} style={{ width: "100%", padding: "6px 8px" }} />
                 </label>
-                <label style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8rem" }}>
+
+                {/* Gerenciador de Fotos Ilimitadas na Edição */}
+                <div style={{ gridColumn: "1 / -1", background: "var(--sage-2)", borderRadius: "10px", padding: "12px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                    <strong style={{ fontSize: "0.8rem", color: "var(--teal-deep)" }}>📷 Fotos do Produto ({editImages.length} fotos)</strong>
+                    <small style={{ color: "var(--muted)" }}>Você pode adicionar quantas fotos quiser.</small>
+                  </div>
+                  <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
+                    <input
+                      type="url"
+                      placeholder="Adicionar nova URL de foto…"
+                      value={editImageUrl}
+                      onChange={(e) => setEditImageUrl(e.target.value)}
+                      style={{ flex: 1, padding: "5px 8px", fontSize: "0.78rem" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (editImageUrl.trim().startsWith("http") || editImageUrl.trim().startsWith("/")) {
+                          setEditImages((prev) => [...prev, editImageUrl.trim()]);
+                          setEditImageUrl("");
+                        } else {
+                          alert("URL de imagem inválida.");
+                        }
+                      }}
+                      className="button button-primary"
+                      style={{ padding: "5px 12px", fontSize: "0.72rem" }}
+                    >
+                      + Foto
+                    </button>
+                  </div>
+                  {editImages.length > 0 && (
+                    <div style={{ display: "flex", gap: "8px", overflowX: "auto", padding: "4px 0" }}>
+                      {editImages.map((img, idx) => (
+                        <div key={idx} style={{ position: "relative", width: "60px", height: "60px", borderRadius: "6px", overflow: "hidden", border: idx === 0 ? "2px solid var(--teal)" : "1px solid var(--line)", flexShrink: 0, background: "#fff" }}>
+                          <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          {idx === 0 && <span style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "var(--teal)", color: "#fff", fontSize: "0.5rem", textAlign: "center", fontWeight: "bold" }}>Capa</span>}
+                          <button
+                            type="button"
+                            onClick={() => setEditImages((prev) => prev.filter((_, i) => i !== idx))}
+                            style={{ position: "absolute", top: "2px", right: "2px", width: "16px", height: "16px", borderRadius: "50%", background: "rgba(0,0,0,0.65)", color: "#fff", border: "none", cursor: "pointer", fontSize: "0.6rem", display: "grid", placeItems: "center" }}
+                            title="Remover foto"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Atalho para Gerenciar Cores do Produto */}
+                <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f8fafc", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--line)" }}>
+                  <div>
+                    <strong style={{ fontSize: "0.8rem" }}>🎨 Cores Disponíveis: {editingProduct.colors?.length || 0} cadastrada(s)</strong>
+                    <p style={{ margin: "2px 0 0", fontSize: "0.72rem", color: "var(--muted)" }}>Abra a tabela de cores para editar estoque ou adicionar novas opções.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openColorsModal(editingProduct);
+                    }}
+                    className="button button-ghost"
+                    style={{ fontSize: "0.75rem", padding: "6px 12px", color: "var(--teal)" }}
+                  >
+                    Gerenciar Tabela de Cores ↗
+                  </button>
+                </div>
+
+                <label style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: "8px", fontSize: "0.8rem", marginTop: "4px" }}>
                   <input name="isActive" type="checkbox" defaultChecked={editingProduct.isActive} />
                   Produto Ativo (visível no catálogo público)
                 </label>
 
-                <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "12px" }}>
+                <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "12px", borderTop: "1px solid var(--line)", paddingTop: "12px" }}>
                   <button type="button" onClick={() => setEditingProduct(null)} className="button button-ghost">
                     Cancelar
                   </button>
@@ -1295,20 +1604,385 @@ function CatalogView({
           </div>
         )}
 
-        <div className="admin-catalog-summary">
-          <strong>{filtered.length}</strong>
-          <span>produtos exibidos {filtered.length !== products.length && `(filtrados de ${products.length})`}</span>
+        {/* Modal de Tabela de Cores Disponíveis */}
+        {selectedProductForColors && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.6)",
+              zIndex: 110,
+              display: "grid",
+              placeItems: "center",
+              padding: "16px",
+            }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: "18px",
+                padding: "26px",
+                maxWidth: "740px",
+                width: "100%",
+                maxHeight: "92vh",
+                overflowY: "auto",
+                boxShadow: "0 24px 48px rgba(0,0,0,0.25)",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px", borderBottom: "1px solid var(--line)", paddingBottom: "12px" }}>
+                <div>
+                  <span style={{ fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--teal)", fontWeight: "bold" }}>
+                    Tabela de Variantes
+                  </span>
+                  <h3 style={{ margin: "4px 0 0", fontSize: "1.25rem", fontFamily: "Georgia, serif" }}>
+                    Cores Disponíveis: {selectedProductForColors.name}
+                  </h3>
+                  <small style={{ color: "var(--muted)" }}>
+                    ID: <code>{selectedProductForColors.id}</code> • Código de barras: <code>{selectedProductForColors.barcode || "—"}</code>
+                  </small>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedProductForColors(null)}
+                  style={{ background: "transparent", border: "none", fontSize: "1.4rem", cursor: "pointer", color: "var(--muted)" }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Tabela de Cores Disponíveis */}
+              <div style={{ overflowX: "auto", marginBottom: "20px" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem" }}>
+                  <thead>
+                    <tr style={{ background: "var(--sage-2)", textAlign: "left", borderBottom: "2px solid var(--line)" }}>
+                      <th style={{ padding: "10px 12px" }}>Amostra</th>
+                      <th style={{ padding: "10px 12px" }}>Nome da Cor</th>
+                      <th style={{ padding: "10px 12px" }}>SKU</th>
+                      <th style={{ padding: "10px 12px" }}>Estoque</th>
+                      <th style={{ padding: "10px 12px" }}>Status</th>
+                      <th style={{ padding: "10px 12px", textAlign: "right" }}>Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activeColors.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} style={{ padding: "26px", textAlign: "center", color: "var(--muted)" }}>
+                          Nenhuma cor cadastrada para este produto ainda. Adicione uma cor abaixo!
+                        </td>
+                      </tr>
+                    ) : (
+                      activeColors.map((color, idx) => (
+                        <tr key={color.id || idx} style={{ borderBottom: "1px solid var(--line)" }}>
+                          <td style={{ padding: "10px 12px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <span style={{ width: "22px", height: "22px", borderRadius: "50%", background: color.hex, border: "2px solid #fff", boxShadow: "0 0 0 1px #cbd5e1" }} />
+                              <code style={{ fontSize: "0.75rem" }}>{color.hex}</code>
+                            </div>
+                          </td>
+                          <td style={{ padding: "10px 12px", fontWeight: "600" }}>{color.name}</td>
+                          <td style={{ padding: "10px 12px", color: "var(--muted)" }}>{color.sku || "—"}</td>
+                          <td style={{ padding: "10px 12px" }}>
+                            <input
+                              type="number"
+                              min="0"
+                              value={color.stock}
+                              onChange={(e) => {
+                                const newQty = Math.max(0, parseInt(e.target.value, 10) || 0);
+                                setActiveColors((prev) =>
+                                  prev.map((c, i) => (i === idx ? { ...c, stock: newQty, available: newQty > 0 } : c))
+                                );
+                              }}
+                              style={{ width: "65px", padding: "4px 8px", borderRadius: "6px", border: "1px solid var(--line)" }}
+                            />
+                          </td>
+                          <td style={{ padding: "10px 12px" }}>
+                            <span style={{
+                              display: "inline-block",
+                              padding: "2px 8px",
+                              borderRadius: "12px",
+                              fontSize: "0.7rem",
+                              fontWeight: "bold",
+                              background: color.stock > 0 ? "#ecfdf5" : "#fef2f2",
+                              color: color.stock > 0 ? "#059669" : "#dc2626"
+                            }}>
+                              {color.stock > 0 ? "Disponível" : "Esgotado"}
+                            </span>
+                          </td>
+                          <td style={{ padding: "10px 12px", textAlign: "right" }}>
+                            <button
+                              type="button"
+                              onClick={() => setActiveColors((prev) => prev.filter((_, i) => i !== idx))}
+                              style={{ background: "transparent", border: "none", color: "var(--coral)", cursor: "pointer", fontSize: "0.8rem", fontWeight: "bold" }}
+                              title="Excluir cor"
+                            >
+                              Excluir
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Formulário para Adicionar Nova Cor à Tabela */}
+              <div style={{ background: "var(--sage-2)", borderRadius: "12px", padding: "16px", marginBottom: "20px" }}>
+                <h4 style={{ margin: "0 0 12px", fontSize: "0.85rem", color: "var(--teal-deep)" }}>
+                  + Adicionar Nova Cor à Tabela
+                </h4>
+                <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1.2fr 1fr 1fr auto", gap: "10px", alignItems: "end" }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.7rem", fontWeight: "bold", marginBottom: "4px" }}>Nome da Cor*</label>
+                    <input
+                      id="new-color-name"
+                      placeholder="Ex: Azul Petróleo"
+                      style={{ width: "100%", padding: "6px 8px", fontSize: "0.78rem" }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.7rem", fontWeight: "bold", marginBottom: "4px" }}>Amostra / Hex*</label>
+                    <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                      <input
+                        id="new-color-picker"
+                        type="color"
+                        defaultValue="#005a60"
+                        style={{ width: "36px", height: "32px", padding: "0", border: "none", cursor: "pointer", borderRadius: "6px" }}
+                        onChange={(e) => {
+                          const hexInput = document.getElementById("new-color-hex") as HTMLInputElement;
+                          if (hexInput) hexInput.value = e.target.value;
+                        }}
+                      />
+                      <input
+                        id="new-color-hex"
+                        defaultValue="#005a60"
+                        placeholder="#005a60"
+                        style={{ width: "100%", padding: "6px 8px", fontSize: "0.78rem" }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.7rem", fontWeight: "bold", marginBottom: "4px" }}>Estoque*</label>
+                    <input
+                      id="new-color-stock"
+                      type="number"
+                      min="0"
+                      defaultValue="20"
+                      style={{ width: "100%", padding: "6px 8px", fontSize: "0.78rem" }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.7rem", fontWeight: "bold", marginBottom: "4px" }}>Código SKU</label>
+                    <input
+                      id="new-color-sku"
+                      placeholder="Ex: COR-AZUL"
+                      style={{ width: "100%", padding: "6px 8px", fontSize: "0.78rem" }}
+                    />
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      className="button button-primary"
+                      onClick={() => {
+                        const nameEl = document.getElementById("new-color-name") as HTMLInputElement;
+                        const hexEl = document.getElementById("new-color-hex") as HTMLInputElement;
+                        const stockEl = document.getElementById("new-color-stock") as HTMLInputElement;
+                        const skuEl = document.getElementById("new-color-sku") as HTMLInputElement;
+                        if (!nameEl?.value.trim() || !hexEl?.value.trim()) {
+                          alert("Informe o nome e o código hex da cor.");
+                          return;
+                        }
+                        const stock = parseInt(stockEl.value, 10) || 0;
+                        const newColor: ProductColor = {
+                          id: `cor_${Date.now()}`,
+                          name: nameEl.value.trim(),
+                          hex: hexEl.value.trim(),
+                          stock,
+                          sku: skuEl?.value.trim() || undefined,
+                          available: stock > 0,
+                        };
+                        setActiveColors((prev) => [...prev, newColor]);
+                        nameEl.value = "";
+                        skuEl.value = "";
+                      }}
+                      style={{ padding: "8px 14px", fontSize: "0.75rem", whiteSpace: "nowrap" }}
+                    >
+                      + Adicionar
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Botões do Rodapé da Modal */}
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", borderTop: "1px solid var(--line)", paddingTop: "16px" }}>
+                <button
+                  type="button"
+                  onClick={() => setSelectedProductForColors(null)}
+                  className="button button-ghost"
+                  style={{ padding: "8px 16px", fontSize: "0.8rem" }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSaveColors(selectedProductForColors.id, activeColors);
+                    setSelectedProductForColors(null);
+                  }}
+                  className="button button-primary"
+                  style={{ padding: "8px 18px", fontSize: "0.8rem" }}
+                >
+                  💾 Salvar Tabela de Cores
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="admin-catalog-summary" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <strong>{filtered.length}</strong>
+            <span>produtos exibidos {filtered.length !== products.length && `(filtrados de ${products.length})`}</span>
+          </div>
         </div>
 
         {loading && <div className="admin-catalog-state">Carregando catálogo do Supabase…</div>}
         {error && <div className="admin-catalog-state error">{error}</div>}
 
-        {!loading && !error && (
-          <div className="admin-product-grid">
+        {!loading && !error && viewMode === "table" && (
+          <div style={{ overflowX: "auto", border: "1px solid var(--line)", borderRadius: "12px", background: "#fff", marginTop: "12px" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.78rem" }}>
+              <thead>
+                <tr style={{ background: "var(--sage-2)", textAlign: "left", borderBottom: "2px solid var(--line)" }}>
+                  <th style={{ padding: "10px 12px" }}>ID do Produto</th>
+                  <th style={{ padding: "10px 12px" }}>Código de Barras</th>
+                  <th style={{ padding: "10px 12px" }}>Produto & Marca</th>
+                  <th style={{ padding: "10px 12px" }}>Categoria</th>
+                  <th style={{ padding: "10px 12px" }}>Preço</th>
+                  <th style={{ padding: "10px 12px" }}>Estoque</th>
+                  <th style={{ padding: "10px 12px" }}>Fotos</th>
+                  <th style={{ padding: "10px 12px" }}>Cores Disponíveis</th>
+                  <th style={{ padding: "10px 12px" }}>Status</th>
+                  <th style={{ padding: "10px 12px", textAlign: "right" }}>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} style={{ padding: "30px", textAlign: "center", color: "var(--muted)" }}>
+                      Nenhum produto encontrado com os filtros atuais.
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((product) => (
+                    <tr key={product.id} style={{ borderBottom: "1px solid var(--line)" }}>
+                      <td style={{ padding: "10px 12px" }}>
+                        <code style={{ fontSize: "0.72rem", background: "var(--sage-2)", padding: "2px 6px", borderRadius: "4px", color: "var(--teal-deep)" }}>
+                          {product.id}
+                        </code>
+                      </td>
+                      <td style={{ padding: "10px 12px" }}>
+                        <span style={{ fontSize: "0.72rem", fontFamily: "monospace", color: "#334155" }}>
+                          🏷️ {product.barcode || "—"}
+                        </span>
+                      </td>
+                      <td style={{ padding: "10px 12px" }}>
+                        <strong style={{ display: "block", fontSize: "0.82rem" }}>{product.name}</strong>
+                        <small style={{ color: "var(--muted)" }}>{product.brand} • {product.slug}</small>
+                      </td>
+                      <td style={{ padding: "10px 12px" }}>{product.category}</td>
+                      <td style={{ padding: "10px 12px" }}>
+                        <strong>{formatCurrency(product.priceCents)}</strong>
+                        {product.compareAtCents && (
+                          <small style={{ display: "block", color: "var(--muted)", textDecoration: "line-through" }}>
+                            {formatCurrency(product.compareAtCents)}
+                          </small>
+                        )}
+                      </td>
+                      <td style={{ padding: "10px 12px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                          <span>{product.stock} un.</span>
+                          <span style={{ display: "inline-flex", gap: "2px" }}>
+                            <button
+                              type="button"
+                              onClick={() => onQuickStock(product.id, -1)}
+                              title="-1"
+                              style={{ border: "1px solid var(--line)", background: "#fff", cursor: "pointer", borderRadius: "3px", padding: "0 4px", fontSize: "0.65rem" }}
+                            >
+                              -
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onQuickStock(product.id, 1)}
+                              title="+1"
+                              style={{ border: "1px solid var(--line)", background: "#fff", cursor: "pointer", borderRadius: "3px", padding: "0 4px", fontSize: "0.65rem" }}
+                            >
+                              +
+                            </button>
+                          </span>
+                        </div>
+                      </td>
+                      <td style={{ padding: "10px 12px" }}>
+                        <span style={{ fontSize: "0.72rem", background: "#f1f5f9", padding: "2px 6px", borderRadius: "4px" }}>
+                          📷 {product.images?.length ? `${product.images.length} fotos` : "1 foto"}
+                        </span>
+                      </td>
+                      <td style={{ padding: "10px 12px" }}>
+                        <button
+                          type="button"
+                          onClick={() => openColorsModal(product)}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            padding: "4px 8px",
+                            borderRadius: "6px",
+                            border: "1px solid var(--teal)",
+                            background: (product.colors && product.colors.length > 0) ? "#ecfdf5" : "#fff",
+                            color: "var(--teal-deep)",
+                            cursor: "pointer",
+                            fontSize: "0.72rem",
+                            fontWeight: "bold",
+                          }}
+                          title="Clique para abrir tabela de cores disponíveis"
+                        >
+                          🎨 Cores ({product.colors?.length || 0})
+                        </button>
+                      </td>
+                      <td style={{ padding: "10px 12px" }}>
+                        <StatusPill>{!product.isActive ? "Inativo" : product.stock <= 5 ? "Estoque baixo" : "Ativo"}</StatusPill>
+                      </td>
+                      <td style={{ padding: "10px 12px", textAlign: "right" }}>
+                        <div style={{ display: "flex", justifyContent: "flex-end", gap: "6px" }}>
+                          <button
+                            className="button-ghost"
+                            onClick={() => setEditingProduct(product)}
+                            style={{ fontSize: "0.68rem", padding: "3px 8px", color: "var(--teal)" }}
+                          >
+                            ✎ Editar
+                          </button>
+                          <button
+                            onClick={() => onDeleteProduct(product.id)}
+                            style={{ background: "transparent", border: "none", color: "var(--coral)", cursor: "pointer", fontSize: "0.75rem", padding: "3px 4px" }}
+                            title="Excluir produto"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {!loading && !error && viewMode === "grid" && (
+          <div className="admin-product-grid" style={{ marginTop: "12px" }}>
             {filtered.map((product) => (
               <article className="admin-product-card" key={product.id}>
                 <header>
-                  <span>{product.brand}</span>
+                  <span style={{ fontSize: "0.75rem", fontWeight: "bold" }}>{product.brand}</span>
                   <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                     <StatusPill>{!product.isActive ? "Inativo" : product.stock <= 5 ? "Estoque baixo" : "Ativo"}</StatusPill>
                     <button
@@ -1322,8 +1996,16 @@ function CatalogView({
                   </div>
                 </header>
 
-                <h3>{product.name}</h3>
-                <p>{product.category}</p>
+                <h3 style={{ margin: "6px 0 2px" }}>{product.name}</h3>
+                <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", margin: "4px 0 8px" }}>
+                  <code style={{ fontSize: "0.65rem", background: "var(--sage-2)", padding: "1px 5px", borderRadius: "4px", color: "var(--teal-deep)" }}>
+                    ID: {product.id}
+                  </code>
+                  <span style={{ fontSize: "0.65rem", fontFamily: "monospace", background: "#f8fafc", padding: "1px 5px", borderRadius: "4px", border: "1px solid var(--line)" }}>
+                    🏷️ {product.barcode || "S/ código"}
+                  </span>
+                </div>
+                <p style={{ margin: "2px 0 8px", fontSize: "0.75rem", color: "var(--muted)" }}>{product.category}</p>
 
                 <dl>
                   <div>
@@ -1338,7 +2020,7 @@ function CatalogView({
                         <button
                           type="button"
                           onClick={() => onQuickStock(product.id, -1)}
-                          title="Diminuir estoque em 1"
+                          title="Diminuir estoque"
                           style={{ border: "1px solid var(--line)", background: "#fff", cursor: "pointer", borderRadius: "3px", padding: "0 4px" }}
                         >
                           -
@@ -1346,7 +2028,7 @@ function CatalogView({
                         <button
                           type="button"
                           onClick={() => onQuickStock(product.id, 1)}
-                          title="Aumentar estoque em 1"
+                          title="Aumentar estoque"
                           style={{ border: "1px solid var(--line)", background: "#fff", cursor: "pointer", borderRadius: "3px", padding: "0 4px" }}
                         >
                           +
@@ -1356,12 +2038,31 @@ function CatalogView({
                   </div>
                 </dl>
 
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px" }}>
-                  <small>{product.slug}</small>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", borderTop: "1px solid var(--line)", paddingTop: "8px" }}>
+                  <button
+                    type="button"
+                    onClick={() => openColorsModal(product)}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      padding: "3px 6px",
+                      borderRadius: "5px",
+                      border: "1px solid var(--teal)",
+                      background: (product.colors && product.colors.length > 0) ? "#ecfdf5" : "#fff",
+                      color: "var(--teal-deep)",
+                      cursor: "pointer",
+                      fontSize: "0.68rem",
+                      fontWeight: "bold",
+                    }}
+                    title="Clique para abrir tabela de cores disponíveis"
+                  >
+                    🎨 Cores ({product.colors?.length || 0})
+                  </button>
                   <button
                     className="button-ghost"
                     onClick={() => setEditingProduct(product)}
-                    style={{ fontSize: "0.65rem", padding: "3px 8px", color: "var(--teal)", cursor: "pointer" }}
+                    style={{ fontSize: "0.68rem", padding: "3px 8px", color: "var(--teal)", cursor: "pointer" }}
                   >
                     ✎ Editar
                   </button>
@@ -1552,57 +2253,7 @@ function MarketingView({
   );
 }
 
-// ----------------------------------------------------------------------
-// COMPONENTE: RECEITAS MÉDICAS
-// ----------------------------------------------------------------------
-function PrescriptionsView({ customer }: { customer: boolean }) {
-  const rows = customer
-    ? [{ id: "REC-0291", name: "Receita digital", time: "Enviada em 22 ago.", status: "Aprovada" }]
-    : [
-        { id: "REC-0314", name: "Marina Costa", time: "há 4 min", status: "Prioritária" },
-        { id: "REC-0313", name: "João Martins", time: "há 12 min", status: "Pendente" },
-        { id: "REC-0312", name: "Clara Souza", time: "há 19 min", status: "Em análise" },
-      ];
 
-  return (
-    <div className="dashboard-stack">
-      <section className="dashboard-card full-card">
-        <CardHeading title={customer ? "Minhas Receitas Médicas" : "Fila de Revisão de Receitas"} />
-        <div className="prescription-privacy">
-          <Icon name="shield" />
-          <p>
-            <strong>Conformidade Regulatória ANVISA e Privacidade</strong>
-            {customer
-              ? "Somente você e farmacêuticos autorizados têm acesso às suas prescrições."
-              : "Todas as aprovações e visualizações de receitas são auditadas e registradas com data e CRF do profissional."}
-          </p>
-        </div>
-
-        <div className="prescription-rows">
-          {rows.map((row) => (
-            <article key={row.id}>
-              <span><Icon name="document" /></span>
-              <p>
-                <strong>{row.name}</strong>
-                <small>{row.id} • {row.time}</small>
-              </p>
-              <StatusPill>{row.status}</StatusPill>
-              {!customer && (
-                <button
-                  className="button-ghost"
-                  onClick={() => alert(`Receita ${row.id} aprovada pelo Farmacêutico.`)}
-                  style={{ fontSize: "0.7rem", padding: "4px 8px" }}
-                >
-                  Liberar Receita
-                </button>
-              )}
-            </article>
-          ))}
-        </div>
-      </section>
-    </div>
-  );
-}
 
 // ----------------------------------------------------------------------
 // COMPONENTE: EQUIPE E PERMISSÕES

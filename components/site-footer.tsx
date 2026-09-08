@@ -31,7 +31,7 @@ export function SiteFooter() {
           <div className="pharmacist-line"><Icon name="shield" /><span><strong>Atendimento farmacêutico</strong>Todos os dias, das 8h às 22h</span></div>
         </div>
         <div><h3>Compre</h3><Link href="/catalogo">Todos os produtos</Link><Link href="/catalogo?categoria=Medicamentos">Medicamentos</Link><Link href="/catalogo?categoria=Dermocosméticos">Dermocosméticos</Link><Link href="/carrinho">Meu carrinho</Link></div>
-        <div><h3>Serviços</h3><Link href="/receita">Enviar receita</Link><Link href="/servicos">Serviços farmacêuticos</Link><Link href="/lojas">Encontrar loja</Link><Link href="/painel">Meus pedidos</Link></div>
+        <div><h3>Serviços</h3><Link href="/catalogo?ofertas=1">Ofertas da semana</Link><Link href="/servicos">Serviços farmacêuticos</Link><Link href="/lojas">Encontrar loja</Link><Link href="/painel">Meus pedidos</Link></div>
         <div><h3>Institucional</h3><Link href="/sobre">Sobre nós</Link><Link href="/privacidade">Privacidade e LGPD</Link><Link href="/termos">Termos de uso</Link><Link href="/painel/demo">Painel demonstrativo</Link></div>
       </div>
       <div className="footer-legal page-shell">

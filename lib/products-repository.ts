@@ -1,5 +1,5 @@
 import { getSupabaseServerClient } from "@/lib/supabase";
-import { catalogProducts, type CatalogProduct } from "./catalog";
+import { catalogProducts, generateEan, type CatalogProduct, type ProductColor } from "./catalog";
 
 const categoryStyle: Record<string, Pick<CatalogProduct, "tone" | "icon">> = {
   Medicamentos: { tone: "teal", icon: "capsule" },
@@ -12,6 +12,47 @@ const categoryStyle: Record<string, Pick<CatalogProduct, "tone" | "icon">> = {
   "Higiene oral": { tone: "blue", icon: "spark" },
 };
 
+export function extractProductMetadata(description: string = ""): {
+  cleanDescription: string;
+  barcode?: string;
+  images: string[];
+  colors: ProductColor[];
+} {
+  const metaRegex = /<!--FPM_META:([\s\S]*?)-->/;
+  const match = description.match(metaRegex);
+  let barcode: string | undefined;
+  let images: string[] = [];
+  let colors: ProductColor[] = [];
+  let cleanDescription = description;
+
+  if (match) {
+    cleanDescription = description.replace(metaRegex, "").trim();
+    try {
+      const parsed = JSON.parse(match[1]);
+      if (parsed.barcode) barcode = String(parsed.barcode);
+      if (Array.isArray(parsed.images)) images = parsed.images;
+      if (Array.isArray(parsed.colors)) colors = parsed.colors;
+    } catch {
+      // ignore JSON parse error
+    }
+  }
+
+  return { cleanDescription, barcode, images, colors };
+}
+
+export function injectProductMetadata(
+  cleanDescription: string,
+  meta: { barcode?: string; images?: string[]; colors?: ProductColor[] }
+): string {
+  const clean = cleanDescription.replace(/<!--FPM_META:[\s\S]*?-->/g, "").trim();
+  const metaPayload = JSON.stringify({
+    barcode: meta.barcode || "",
+    images: meta.images || [],
+    colors: meta.colors || [],
+  });
+  return `${clean}\n\n<!--FPM_META:${metaPayload}-->`;
+}
+
 interface ProductRow {
   id: string;
   slug: string;
@@ -21,6 +62,9 @@ interface ProductRow {
   description?: string | null;
   category: string;
   brand: string;
+  barcode?: string | null;
+  images?: string[] | null;
+  colors?: ProductColor[] | null;
   price_cents?: number;
   priceCents?: number;
   compare_at_cents?: number | null;
@@ -32,19 +76,34 @@ interface ProductRow {
 
 function toCatalogProductFromSupabase(row: ProductRow): CatalogProduct {
   const style = categoryStyle[row.category] ?? { tone: "teal" as const, icon: "care" as const };
+  const rawDesc = row.description || "";
+  const meta = extractProductMetadata(rawDesc);
+  const staticFallback = catalogProducts.find((p) => p.id === row.id || p.slug === row.slug);
+
+  const barcode = row.barcode || meta.barcode || staticFallback?.barcode || generateEan(row.id);
+  const images = (Array.isArray(row.images) && row.images.length > 0)
+    ? row.images
+    : (meta.images.length > 0 ? meta.images : (staticFallback?.images || []));
+  const colors = (Array.isArray(row.colors) && row.colors.length > 0)
+    ? row.colors
+    : (meta.colors.length > 0 ? meta.colors : (staticFallback?.colors || []));
+
   return {
     id: row.id,
     slug: row.slug,
     name: row.name,
-    shortDescription: row.short_description || row.shortDescription || "",
-    description: row.description || "",
+    shortDescription: row.short_description || row.shortDescription || staticFallback?.shortDescription || "",
+    description: meta.cleanDescription || staticFallback?.description || "",
     category: row.category,
     brand: row.brand,
-    priceCents: row.price_cents ?? row.priceCents,
+    barcode,
+    images,
+    colors,
+    priceCents: row.price_cents ?? row.priceCents ?? staticFallback?.priceCents ?? 1000,
     compareAtCents: row.compare_at_cents ?? row.compareAtCents ?? null,
-    stock: row.stock ?? 0,
-    requiresPrescription: Boolean(row.requires_prescription ?? row.requiresPrescription),
-    badge: (row.compare_at_cents && row.compare_at_cents > row.price_cents) ? "Oferta" : undefined,
+    stock: row.stock ?? staticFallback?.stock ?? 0,
+    requiresPrescription: false,
+    badge: (row.compare_at_cents && row.compare_at_cents > (row.price_cents ?? 0)) ? "Oferta" : staticFallback?.badge,
     ...style,
   };
 }

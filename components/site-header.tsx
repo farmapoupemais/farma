@@ -79,14 +79,14 @@ export function SiteHeader() {
             <Link href="/catalogo?categoria=Mamãe%20e%20bebê">Mamãe e bebê</Link>
             <Link href="/catalogo?categoria=Cuidados%20pessoais">Higiene e beleza</Link>
             <Link href="/servicos">Serviços de saúde</Link>
-            <Link href="/receita" className="nav-prescription"><Icon name="document" size={17} /> Enviar receita</Link>
+            <Link href="/catalogo?ofertas=1" className="nav-offers-highlight"><Icon name="spark" size={17} /> Super Ofertas</Link>
           </div>
         </nav>
       </header>
       <nav className="mobile-bottom-nav" aria-label="Acesso rápido">
         <Link href="/"><Icon name="store" size={21} /><span>Início</span></Link>
         <Link href="/catalogo"><Icon name="search" size={21} /><span>Buscar</span></Link>
-        <Link href="/receita"><Icon name="document" size={21} /><span>Receita</span></Link>
+        <Link href="/catalogo?ofertas=1"><Icon name="spark" size={21} /><span>Ofertas</span></Link>
         <Link href="/painel"><Icon name="user" size={21} /><span>Conta</span></Link>
         <Link href="/carrinho" className="mobile-cart"><Icon name="cart" size={21} />{cartCount > 0 && <b>{cartCount}</b>}<span>Cesta</span></Link>
       </nav>

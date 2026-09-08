@@ -1,3 +1,12 @@
+export type ProductColor = {
+  id: string;
+  name: string;
+  hex: string;
+  stock: number;
+  sku?: string;
+  available: boolean;
+};
+
 export type CatalogProduct = {
   id: string;
   slug: string;
@@ -6,6 +15,9 @@ export type CatalogProduct = {
   description: string;
   category: string;
   brand: string;
+  barcode?: string;
+  images?: string[];
+  colors?: ProductColor[];
   priceCents: number;
   compareAtCents: number | null;
   stock: number;
@@ -14,6 +26,22 @@ export type CatalogProduct = {
   tone: "teal" | "coral" | "blue" | "sand" | "plum" | "mint";
   icon: "capsule" | "drop" | "sun" | "heart" | "baby" | "care" | "thermo" | "spark";
 };
+
+export function generateEan(id: string): string {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = ((hash << 5) - hash) + id.charCodeAt(i);
+    hash |= 0;
+  }
+  const digits = Math.abs(hash).toString().padStart(9, "0").slice(0, 9);
+  const base = `789${digits}`;
+  let sum = 0;
+  for (let i = 0; i < 12; i++) {
+    sum += parseInt(base[i], 10) * (i % 2 === 0 ? 1 : 3);
+  }
+  const checkDigit = (10 - (sum % 10)) % 10;
+  return `${base}${checkDigit}`;
+}
 
 const categoryPresentation = {
   Medicamentos: { tone: "teal", icon: "capsule" },
@@ -40,6 +68,9 @@ function item(
   compareAtCents: number | null,
   stock: number,
   badge?: string,
+  customColors?: ProductColor[],
+  customBarcode?: string,
+  customImages?: string[],
 ): CatalogProduct {
   return {
     id,
@@ -49,6 +80,9 @@ function item(
     description,
     category,
     brand,
+    barcode: customBarcode || generateEan(id),
+    images: customImages || [],
+    colors: customColors || [],
     priceCents,
     compareAtCents,
     stock,
@@ -101,18 +135,85 @@ export const catalogProducts: CatalogProduct[] = [
   item("prod_fralda_g", "fralda-infantil-conforto-g-28", "Fralda Conforto G", "Pacote com 28 unidades", "Fralda infantil com ajuste confortável, canais de absorção e cobertura respirável.", "Mamãe e bebê", "Nuvem", 4690, 5490, 35, "Economize"),
   item("prod_mamadeiras", "kit-mamadeiras-150-250ml", "Kit de Mamadeiras", "2 unidades • 150 ml e 250 ml", "Kit demonstrativo de mamadeiras com tampa protetora. Esterilize conforme as instruções do fabricante.", "Mamãe e bebê", "BebêLeve", 3990, null, 21),
 
-  item("prod_termometro", "termometro-digital-flexivel", "Termômetro Digital", "Ponta flexível • Alerta sonoro", "Termômetro digital de uso doméstico com leitura rápida, memória da última medição e desligamento automático.", "Saúde e bem-estar", "MediCasa", 2990, 3490, 15, "Oferta"),
+  item(
+    "prod_termometro",
+    "termometro-digital-flexivel",
+    "Termômetro Digital",
+    "Ponta flexível • Alerta sonoro",
+    "Termômetro digital de uso doméstico com leitura rápida, memória da última medição e desligamento automático.",
+    "Saúde e bem-estar",
+    "MediCasa",
+    2990,
+    3490,
+    15,
+    "Oferta",
+    [
+      { id: "term-azul", name: "Azul Bebê", hex: "#38bdf8", stock: 6, sku: "TERM-AZUL", available: true },
+      { id: "term-branco", name: "Branco Neve", hex: "#f8fafc", stock: 5, sku: "TERM-BRANCO", available: true },
+      { id: "term-rosa", name: "Rosa Pastel", hex: "#f472b6", stock: 4, sku: "TERM-ROSA", available: true },
+    ]
+  ),
   item("prod_pressao", "aparelho-pressao-digital-braco", "Aparelho de Pressão Digital", "Braçadeira ajustável • Memória", "Monitor digital de pressão para uso doméstico. A medição não substitui avaliação profissional.", "Saúde e bem-estar", "MediCasa", 14990, 17990, 12, "Mais vendido"),
   item("prod_oximetro", "oximetro-digital-de-dedo", "Oxímetro Digital de Dedo", "Visor colorido • Estojo", "Aparelho doméstico para leitura indicativa. Siga o manual e procure orientação diante de resultados incomuns.", "Saúde e bem-estar", "PulsoBem", 8990, 10990, 17, "18% OFF"),
-  item("prod_bolsa_gel", "bolsa-gel-quente-fria-media", "Bolsa de Gel Quente e Fria", "Tamanho médio • Reutilizável", "Bolsa reutilizável para aplicação térmica conforme instruções de segurança.", "Saúde e bem-estar", "MoviBem", 2490, null, 30),
-  item("prod_organizador", "organizador-semanal-medicamentos", "Organizador Semanal", "7 dias • Quatro períodos", "Estojo organizador para auxiliar na rotina. Não altera nem substitui a orientação de uso dos medicamentos.", "Saúde e bem-estar", "CasaSaúde", 2790, 3290, 46, "Oferta"),
+  item(
+    "prod_bolsa_gel",
+    "bolsa-gel-quente-fria-media",
+    "Bolsa de Gel Quente e Fria",
+    "Tamanho médio • Reutilizável",
+    "Bolsa reutilizável para aplicação térmica conforme instruções de segurança.",
+    "Saúde e bem-estar",
+    "MoviBem",
+    2490,
+    null,
+    30,
+    undefined,
+    [
+      { id: "bolsa-azul", name: "Azul Cobalto", hex: "#1d4ed8", stock: 16, sku: "BGEL-AZUL", available: true },
+      { id: "bolsa-verde", name: "Verde Menta", hex: "#059669", stock: 14, sku: "BGEL-VERDE", available: true },
+    ]
+  ),
+  item(
+    "prod_organizador",
+    "organizador-semanal-medicamentos",
+    "Organizador Semanal",
+    "7 dias • Quatro períodos",
+    "Estojo organizador para auxiliar na rotina. Não altera nem substitui a orientação de uso dos medicamentos.",
+    "Saúde e bem-estar",
+    "CasaSaúde",
+    2790,
+    3290,
+    46,
+    "Oferta",
+    [
+      { id: "org-colorido", name: "Arco-íris Translúcido", hex: "#38bdf8", stock: 20, sku: "ORG-COLOR", available: true },
+      { id: "org-fume", name: "Cinza Fumê", hex: "#475569", stock: 16, sku: "ORG-FUME", available: true },
+      { id: "org-cristal", name: "Cristal Transparente", hex: "#e2e8f0", stock: 10, sku: "ORG-CRISTAL", available: true },
+    ]
+  ),
 
   item("prod_curativos", "kit-primeiros-cuidados-30-itens", "Kit Primeiros Cuidados", "Curativos, gaze e fita • 30 itens", "Conjunto compacto para pequenos cuidados do dia a dia. Mantenha fora do alcance de crianças.", "Primeiros socorros", "Poupe+ Care", 2390, null, 36),
   item("prod_gaze", "gaze-esteril-10-pacotes", "Gaze Estéril", "10 pacotes • 7,5 × 7,5 cm", "Compressas de gaze estéril embaladas individualmente para pequenos cuidados.", "Primeiros socorros", "Poupe+ Care", 1290, 1590, 59, "Oferta"),
   item("prod_fita_microporosa", "fita-microporosa-25mm-10m", "Fita Microporosa", "Rolo 25 mm × 10 m", "Fita hipoalergênica para fixação de curativos, conforme as instruções da embalagem.", "Primeiros socorros", "CuraLeve", 890, null, 67),
   item("prod_hidrocoloide", "curativo-hidrocoloide-6-unidades", "Curativo Hidrocoloide", "Caixa com 6 unidades", "Curativos hidrocoloides para proteção de pequenas áreas, seguindo o modo de uso do fabricante.", "Primeiros socorros", "CuraLeve", 2490, 2990, 25, "Oferta"),
 
-  item("prod_escova_dental", "escova-dental-macia-3-unidades", "Escova Dental Macia", "Leve 3 • Cerdas arredondadas", "Conjunto de escovas com cerdas macias para a higiene oral diária.", "Higiene oral", "Sorriso+", 1690, 2090, 73, "Leve 3"),
+  item(
+    "prod_escova_dental",
+    "escova-dental-macia-3-unidades",
+    "Escova Dental Macia",
+    "Leve 3 • Cerdas arredondadas",
+    "Conjunto de escovas com cerdas macias para a higiene oral diária.",
+    "Higiene oral",
+    "Sorriso+",
+    1690,
+    2090,
+    73,
+    "Leve 3",
+    [
+      { id: "escova-turquesa", name: "Verde Turquesa", hex: "#0d9488", stock: 28, sku: "ESC-TURQ", available: true },
+      { id: "escova-coral", name: "Coral Suave", hex: "#f87171", stock: 25, sku: "ESC-CORAL", available: true },
+      { id: "escova-lilas", name: "Lilás Pastel", hex: "#c084fc", stock: 20, sku: "ESC-LILAS", available: true },
+    ]
+  ),
   item("prod_creme_dental", "creme-dental-dentes-sensiveis-90g", "Creme Dental para Dentes Sensíveis", "Proteção diária • 90 g", "Creme dental para higiene diária. Escove conforme a orientação do profissional de saúde bucal.", "Higiene oral", "Sorriso+", 1890, null, 54),
   item("prod_enxaguante", "enxaguante-bucal-sem-alcool-500ml", "Enxaguante Bucal sem Álcool", "Sabor menta suave • 500 ml", "Enxaguante para complementar a higiene oral. Não ingerir e manter fora do alcance de crianças.", "Higiene oral", "Sorriso+", 2390, 2890, 40, "Oferta"),
 ];

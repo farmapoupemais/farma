@@ -49,8 +49,8 @@ export default async function HomePage() {
               <Link href="/catalogo" className="button button-primary">
                 Explorar catálogo
               </Link>
-              <Link href="/receita" className="button button-ghost">
-                Enviar receita
+              <Link href="/catalogo?ofertas=1" className="button button-ghost">
+                Ver ofertas
               </Link>
             </div>
             <div className="hero-proof">
@@ -184,26 +184,25 @@ export default async function HomePage() {
               </div>
             </Link>
 
-            {/* Bento Card 4: Envio de Receita Digital (Largo 2x1) */}
+            {/* Bento Card 4: Farmácia Ágil e Sem Burocracia */}
             <Link
-              href="/receita"
+              href="/catalogo?ofertas=1"
               className="bento-card bento-card-wide"
             >
               <div>
                 <span className="bento-badge bento-badge-accent">
-                  ⏱ Retorno em 15 min • LGPD Criptografado
+                  ⚡ Descontos Exclusivos • Pronta Entrega
                 </span>
               </div>
               <div className="bento-content">
                 <div className="bento-icon-wrapper">
-                  <Icon name="document" size={28} />
+                  <Icon name="spark" size={28} />
                 </div>
-                <h3 className="bento-title">Envio de Receita Digital</h3>
+                <h3 className="bento-title">Produtos Isentos de Receita (MIPs)</h3>
                 <p className="bento-description">
-                  Envie a foto ou PDF do seu receituário. Nossa equipe farmacêutica calcula os melhores
-                  descontos e agenda a entrega rápida ou retirada sem fila.
+                  Compre com rapidez analgésicos, antialérgicos, dermocosméticos e vitaminas sem necessidade de retenção de receita médica. Entrega expressa ou retirada em até 30 min.
                 </p>
-                <span className="bento-action">Enviar receita médica agora →</span>
+                <span className="bento-action">Aproveitar ofertas imediatas →</span>
               </div>
             </Link>
 
@@ -271,18 +270,17 @@ export default async function HomePage() {
         <section className="page-shell split-promos">
           <article className="promo-card promo-prescription">
             <div>
-              <span className="eyebrow">Canal protegido</span>
-              <h2>Precisa de medicamento com receita?</h2>
+              <span className="eyebrow">Compra 100% simplificada</span>
+              <h2>Produtos sem burocracia</h2>
               <p>
-                Envie sua receita médica com total privacidade para conferência e
-                orientação da nossa equipe farmacêutica.
+                Compre medicamentos isentos de prescrição, vitaminas e itens de cuidado diário com entrega rápida e sem retenção de receita.
               </p>
-              <Link href="/receita" className="button button-light">
-                Enviar receita agora
+              <Link href="/catalogo" className="button button-light">
+                Ver catálogo completo
               </Link>
             </div>
             <span className="promo-icon">
-              <Icon name="document" size={140} />
+              <Icon name="capsule" size={140} />
             </span>
           </article>
           <article className="promo-card promo-services">

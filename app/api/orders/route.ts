@@ -162,56 +162,7 @@ export async function POST(request: Request) {
     }
 
     const now = new Date().toISOString();
-
-    // 4. Verificação de Receita Médica (ANVISA RDC)
-    const regulatedLines = orderLines.filter((l) => l.requiresPrescription);
-    let prescriptionId: string | null = null;
-
-    if (regulatedLines.length > 0) {
-      prescriptionId = cleanText(payload.prescriptionId, 40);
-      if (!prescriptionId) {
-        return Response.json(
-          { error: "Selecione uma receita médica aprovada para os medicamentos tarjados deste pedido." },
-          { status: 409 }
-        );
-      }
-
-      // Validar receita no Supabase
-      const { data: rec, error: recErr } = await client
-        .from("prescriptions")
-        .select("id, status, expires_at, retain_until")
-        .eq("id", prescriptionId)
-        .eq("customer_email", customerEmail)
-        .maybeSingle();
-
-      if (recErr || !rec || rec.status !== "approved") {
-        return Response.json(
-          { error: "A receita informada não foi aprovada pelo farmacêutico responsável." },
-          { status: 409 }
-        );
-      }
-
-      if (rec.expires_at && rec.expires_at < now) {
-        return Response.json(
-          { error: "A validade clínica desta receita expirou. Por favor, envie uma nova receita." },
-          { status: 409 }
-        );
-      }
-
-      // Verificar se a receita já foi utilizada
-      const { data: usedRec } = await client
-        .from("prescription_usages")
-        .select("prescription_id")
-        .eq("prescription_id", prescriptionId)
-        .maybeSingle();
-
-      if (usedRec) {
-        return Response.json(
-          { error: "Esta receita médica já foi utilizada em um pedido anterior (dispensação única)." },
-          { status: 409 }
-        );
-      }
-    }
+    const prescriptionId: string | null = null;
 
     // 5. Cálculo Financeiro no Servidor
     const subtotalCents = orderLines.reduce(

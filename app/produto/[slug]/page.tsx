@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/icons";
-import { ProductArtwork } from "@/components/product-artwork";
-import { ProductDetailActions } from "@/components/product-detail-actions";
+import { ProductGalleryVisual, ProductVariantsAndActions } from "@/components/product-gallery-variants";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { formatCurrency } from "@/lib/catalog";
+import { formatCurrency, generateEan } from "@/lib/catalog";
 import { getVisibleProductBySlug } from "@/lib/products-repository";
 
 export const dynamic = "force-dynamic";
@@ -66,16 +65,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <span>{product.name}</span>
           </div>
           <div className="detail-grid">
-            <div className="detail-visual">
-              <ProductArtwork
-                tone={product.tone}
-                icon={product.icon}
-                productName={product.name}
-                brand={product.brand}
-                category={product.category}
-              />
-              <span className="detail-zoom">Procedência verificada</span>
-            </div>
+            <ProductGalleryVisual product={product} />
             <div className="detail-copy">
               <span className="product-brand">{product.brand} • {product.category}</span>
               <h1>{product.name}</h1>
@@ -97,7 +87,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <div className="stock-line">
                 <span /> Em estoque para entrega expressa e retirada em loja
               </div>
-              <ProductDetailActions product={product} />
+              <ProductVariantsAndActions product={product} />
               <div className="delivery-box">
                 <Icon name="truck" />
                 <div>
@@ -118,17 +108,19 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             </div>
             <div>
               <p>{product.description}</p>
-              <p>
-                <strong>Atenção:</strong> a descrição não substitui a bula, a prescrição ou a orientação de um profissional de saúde. Se os sintomas persistirem, procure atendimento.
+              <div className="technical-specs-box" style={{ marginTop: "1.5rem", padding: "1.25rem", background: "#f8fafc", borderRadius: 12, border: "1px solid #e2e8f0" }}>
+                <h4 style={{ margin: "0 0 0.75rem", fontSize: "0.95rem", color: "#1e293b", fontWeight: 700 }}>Especificações Técnicas</h4>
+                <ul style={{ margin: 0, paddingLeft: "1.25rem", color: "#475569", fontSize: "0.9rem", lineHeight: 1.8 }}>
+                  <li><strong>ID do Item:</strong> <code>#{product.id}</code></li>
+                  <li><strong>Código de Barras (EAN-13):</strong> <code>{product.barcode || generateEan(product.id)}</code></li>
+                  <li><strong>Categoria:</strong> {product.category}</li>
+                  <li><strong>Marca / Fabricante:</strong> {product.brand}</li>
+                  <li><strong>Dispensação:</strong> Isento de Prescrição / Não exige retenção de receita</li>
+                </ul>
+              </div>
+              <p style={{ marginTop: "1rem" }}>
+                <strong>Atenção:</strong> a descrição não substitui a bula ou a orientação de um profissional de saúde. Se os sintomas persistirem, procure atendimento.
               </p>
-              {product.requiresPrescription && (
-                <div className="prescription-warning">
-                  <Icon name="document" />
-                  <span>
-                    <strong>Venda condicionada à receita</strong>A dispensação só ocorre após conferência e validação do receituário.
-                  </span>
-                </div>
-              )}
             </div>
           </section>
         </div>
