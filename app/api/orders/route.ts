@@ -1,7 +1,7 @@
 import { getAuthenticatedUser } from "@/lib/access";
 import { getSupabaseServerClient } from "@/lib/supabase";
 import { catalogProducts } from "@/lib/catalog";
-import { maskEmail, sanitizeAuditMetadata, sanitizeText, validateCPF } from "@/lib/security";
+import { maskEmail, sanitizeAuditMetadata, sanitizeText } from "@/lib/security";
 import {
   cleanText,
   mutationOriginAllowed,
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
 
     // 3. RECÁLCULO OBRIGATÓRIO DE PREÇOS NO SERVIDOR (PREVENÇÃO DE FRAUDE)
     // Busca os produtos oficiais no banco de dados Supabase
-    const { data: dbProducts, error: prodErr } = await client
+    const { data: dbProducts } = await client
       .from("products")
       .select("id, name, price_cents, stock, requires_prescription, is_active, regulatory_status")
       .in("id", requestedIds);

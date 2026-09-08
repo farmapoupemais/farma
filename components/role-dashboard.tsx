@@ -92,7 +92,7 @@ export type AuditLog = {
   action: string;
   entity_type: string;
   entity_id: string;
-  metadata_json?: Record<string, any>;
+  metadata_json?: Record<string, unknown>;
   created_at: string;
 };
 
@@ -183,9 +183,9 @@ export function RoleDashboard({
           }
           setCatalogError("");
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (active) {
-          setCatalogError(err?.message || "Erro ao carregar catálogo.");
+          setCatalogError(err instanceof Error ? err.message : "Erro ao carregar catálogo.");
           setAdminProducts(catalogProducts.map((p) => ({ ...p, regulatoryStatus: "approved", isActive: true })));
         }
       } finally {
@@ -284,8 +284,8 @@ export function RoleDashboard({
       if (!res.ok) throw new Error("Erro ao excluir.");
       setAdminProducts((prev) => prev.filter((p) => p.id !== id));
       setNotice("Produto excluído com sucesso.");
-    } catch (err: any) {
-      setNotice(err?.message || "Não foi possível excluir o produto.");
+    } catch (err: unknown) {
+      setNotice(err instanceof Error ? err.message : "Não foi possível excluir o produto.");
     }
     setTimeout(() => setNotice(""), 2500);
   }
@@ -323,8 +323,8 @@ export function RoleDashboard({
       setAdminProducts((prev) => prev.map((p) => (p.id === editingProduct.id ? { ...p, ...payload } : p)));
       setEditingProduct(null);
       setNotice("Produto atualizado com sucesso!");
-    } catch (err: any) {
-      setNotice(err?.message || "Erro ao atualizar.");
+    } catch (err: unknown) {
+      setNotice(err instanceof Error ? err.message : "Erro ao atualizar.");
     }
     setTimeout(() => setNotice(""), 2500);
   }
@@ -345,8 +345,8 @@ export function RoleDashboard({
         setSelectedOrder({ ...selectedOrder, status: newStatus });
       }
       setNotice(`Pedido atualizado para: ${newStatus}`);
-    } catch (err: any) {
-      setNotice(err?.message || "Erro na transição do pedido.");
+    } catch (err: unknown) {
+      setNotice(err instanceof Error ? err.message : "Erro na transição do pedido.");
     }
     setTimeout(() => setNotice(""), 2500);
   }
@@ -448,8 +448,8 @@ export function RoleDashboard({
       setTeamList((prev) => prev.filter((m) => m.email.toLowerCase() !== memberEmail.toLowerCase()));
       setNotice("Acesso revogado com sucesso.");
       setRefreshTrigger((c) => c + 1);
-    } catch (err: any) {
-      setNotice(err?.message || "Erro ao revogar.");
+    } catch (err: unknown) {
+      setNotice(err instanceof Error ? err.message : "Erro ao revogar.");
     }
     setTimeout(() => setNotice(""), 2500);
   }
@@ -470,8 +470,8 @@ export function RoleDashboard({
       );
       setNotice(`Perfil de ${memberEmail} alterado para ${roleLabels[nextRole as DashboardRole] || nextRole}.`);
       setRefreshTrigger((c) => c + 1);
-    } catch (err: any) {
-      setNotice(err?.message || "Erro ao atualizar cargo.");
+    } catch (err: unknown) {
+      setNotice(err instanceof Error ? err.message : "Erro ao atualizar cargo.");
     }
     setTimeout(() => setNotice(""), 2500);
   }
@@ -707,8 +707,6 @@ function Overview({
   const activeBannersCount = banners.filter((b) => b.is_active).length;
   const activeCouponsCount = discounts.filter((d) => d.is_active).length;
   const activeOrdersCount = orders.filter((o) => o.status === "Separando" || o.status === "Em rota").length;
-
-  const totalSalesCents = orders.reduce((sum, o) => sum + (o.status !== "Cancelado" ? o.total_cents : 0), 0);
 
   if (role === "customer") {
     return (
@@ -1072,7 +1070,7 @@ function CatalogView({
   statusFilter: string;
   setStatusFilter: (s: string) => void;
   formOpen: string | null;
-  setFormOpen: (f: any) => void;
+  setFormOpen: (f: string | null) => void;
   editingProduct: AdminProduct | null;
   setEditingProduct: (p: AdminProduct | null) => void;
   onQuickStock: (id: string, delta: number) => void;
@@ -1394,7 +1392,7 @@ function MarketingView({
   banners: AdminBanner[];
   discounts: AdminDiscount[];
   formOpen: string | null;
-  setFormOpen: (f: any) => void;
+  setFormOpen: (f: string | null) => void;
   onToggleBanner: (id: string, st: boolean) => void;
   onDeleteBanner: (id: string) => void;
   onToggleDiscount: (id: string, st: boolean) => void;
@@ -1621,7 +1619,7 @@ function TeamView({
   team: TeamMember[];
   auditLogs: AuditLog[];
   formOpen: string | null;
-  setFormOpen: (f: any) => void;
+  setFormOpen: (f: string | null) => void;
   onUpdateRole: (email: string, role: string) => void;
   onRevokeRole: (email: string) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>, ep: string) => void;

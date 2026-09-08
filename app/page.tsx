@@ -5,7 +5,6 @@ import { Icon } from "@/components/icons";
 import { ProductCard } from "@/components/product-card";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { categories } from "@/lib/catalog";
 import { getVisibleProducts } from "@/lib/products-repository";
 
 export const dynamic = "force-dynamic";

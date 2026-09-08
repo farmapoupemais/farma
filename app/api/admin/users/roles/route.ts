@@ -1,5 +1,4 @@
 import { authorize, roles, type Role } from "@/lib/access";
-import { auditEntry } from "@/lib/audit";
 import { getSupabaseServerClient } from "@/lib/supabase";
 import { cleanEmail, mutationOriginAllowed, readJsonBody, RequestBodyError } from "@/lib/validation";
 

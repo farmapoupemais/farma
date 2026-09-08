@@ -1,6 +1,6 @@
 import { getChatGPTUser } from "@/app/chatgpt-auth";
 import { can, isRole, type Permission, type Role } from "@/lib/permissions";
-import { getSupabaseServerClient, supabase } from "@/lib/supabase";
+import { getSupabaseServerClient } from "@/lib/supabase";
 
 export { can, roles, type Permission, type Role } from "@/lib/permissions";
 

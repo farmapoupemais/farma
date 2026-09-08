@@ -81,7 +81,7 @@ function isMaliciousPayload(input: string): boolean {
 // ==============================================================================
 // 3. MIDDLEWARE PRINCIPAL
 // ==============================================================================
-export function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const search = request.nextUrl.search;
   const method = request.method;
@@ -190,6 +190,8 @@ export function middleware(request: NextRequest) {
 
   return response;
 }
+
+export { proxy as middleware };
 
 export const config = {
   matcher: [

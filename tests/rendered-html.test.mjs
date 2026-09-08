@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
-import test from "node:test";
+import test, { after } from "node:test";
+
+after(() => {
+  setTimeout(() => process.exit(0), 100);
+});
 
 async function loadWorker() {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);

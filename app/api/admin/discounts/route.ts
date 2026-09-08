@@ -1,9 +1,8 @@
 import { authorize } from "@/lib/access";
-import { auditEntry } from "@/lib/audit";
 import { getSupabaseServerClient } from "@/lib/supabase";
 import { cleanText, mutationOriginAllowed, readJsonBody, RequestBodyError, toSafeInteger } from "@/lib/validation";
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const client = getSupabaseServerClient();
     const { data: rows, error } = await client

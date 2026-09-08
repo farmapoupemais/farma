@@ -1,8 +1,8 @@
 declare module "cloudflare:workers" {
   export const env: {
-    DB?: any;
-    BUCKET?: any;
+    DB?: unknown;
+    BUCKET?: unknown;
     PHARMACY_OWNER_EMAIL?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }

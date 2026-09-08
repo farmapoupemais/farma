@@ -26,7 +26,7 @@ export async function PATCH(
     const client = getSupabaseServerClient();
 
     // Check existing order in Supabase
-    const { data: current, error: fetchError } = await client
+    const { data: current } = await client
       .from("orders")
       .select("id, status")
       .eq("id", orderId)
@@ -50,10 +50,12 @@ export async function PATCH(
     const updatedAt = new Date().toISOString();
 
     // Update or upsert order status in Supabase
-    const { error: updateError } = await client
+    const { error } = await client
       .from("orders")
       .update({ status, updated_at: updatedAt })
       .eq("id", orderId);
+
+    if (error) throw error;
 
     // Audit log
     await client.from("audit_logs").insert({

@@ -10,10 +10,11 @@
     "dev": "next dev -p 3000",
     "dev:local": "next dev -p 3000",
     "build": "next build",
+    "build:worker": "vinext build",
     "start": "next start",
-    "test": "npm run build && node --experimental-loader ./tests/cloudflare-loader.mjs --test tests/*.test.mjs",
-    "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
-    "db:generate": "bash scripts/sites-env.sh -- drizzle-kit generate"
+    "test": "vinext build && node --experimental-loader ./tests/cloudflare-loader.mjs --test tests/*.test.mjs",
+    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
+    "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.115.0",

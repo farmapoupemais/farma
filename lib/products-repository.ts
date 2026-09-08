@@ -12,7 +12,25 @@ const categoryStyle: Record<string, Pick<CatalogProduct, "tone" | "icon">> = {
   "Higiene oral": { tone: "blue", icon: "spark" },
 };
 
-function toCatalogProductFromSupabase(row: any): CatalogProduct {
+interface ProductRow {
+  id: string;
+  slug: string;
+  name: string;
+  short_description?: string | null;
+  shortDescription?: string | null;
+  description?: string | null;
+  category: string;
+  brand: string;
+  price_cents?: number;
+  priceCents?: number;
+  compare_at_cents?: number | null;
+  compareAtCents?: number | null;
+  stock?: number;
+  requires_prescription?: boolean;
+  requiresPrescription?: boolean;
+}
+
+function toCatalogProductFromSupabase(row: ProductRow): CatalogProduct {
   const style = categoryStyle[row.category] ?? { tone: "teal" as const, icon: "care" as const };
   return {
     id: row.id,

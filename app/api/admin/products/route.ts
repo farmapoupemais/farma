@@ -162,7 +162,7 @@ export async function PATCH(request: Request) {
     }
 
     // Full edit
-    const updates: Record<string, any> = {
+    const updates: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     };
 

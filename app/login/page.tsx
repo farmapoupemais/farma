@@ -87,8 +87,8 @@ export default function LoginPage() {
           }, 1000);
         }
       }
-    } catch (err: any) {
-      setError(err?.message || "Ocorreu um erro ao processar sua solicitação.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Ocorreu um erro ao processar sua solicitação.");
     } finally {
       setLoading(false);
     }
@@ -110,8 +110,8 @@ export default function LoginPage() {
         },
       });
       if (oAuthError) throw oAuthError;
-    } catch (err: any) {
-      setError(err?.message || "Erro ao conectar com GitHub.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erro ao conectar com GitHub.");
       setLoading(false);
     }
   }
