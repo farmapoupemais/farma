@@ -1,202 +1,307 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ContentPage } from "@/components/content-page";
 
 export const metadata: Metadata = {
-  title: "Política de Privacidade e Proteção de Dados (LGPD)",
+  title: "Política de Privacidade, Proteção de Dados e Governança LGPD",
   description:
-    "Política de Privacidade e Proteção de Dados Pessoais e Sensíveis de Saúde da Farmácia Poupe Mais em estrita conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018) e normativas da ANVISA.",
+    "Política de Privacidade e Proteção de Dados Pessoais e Sensíveis de Saúde da Farmácia Poupe Mais em estrita conformidade com a Lei Federal nº 13.709/2018 (LGPD), Marco Civil da Internet (Lei nº 12.965/2014) e resoluções da ANVISA e da ANPD.",
 };
 
 export default function PrivacyPage() {
   return (
     <ContentPage
-      title="Política de Privacidade, Proteção de Dados e LGPD"
-      eyebrow="Transparência, Segurança Sanitária e Ética Digital"
-      description="Como a Farmácia Poupe Mais coleta, trata, armazena e protege seus dados pessoais e dados sensíveis de saúde, assegurando sigilo absoluto, respeito à Lei nº 13.709/2018 (LGPD) e cumprimento dos deveres sanitários da ANVISA."
+      title="Política de Privacidade, Proteção de Dados e Governança LGPD"
+      eyebrow="Privacidade, Tutela da Saúde & Rigor Jurídico"
+      description="Diretrizes formais de coleta, tratamento, armazenamento, sigilo farmacêutico e proteção de dados pessoais comuns e dados pessoais sensíveis de saúde tratados pela Farmácia Poupe Mais, em estrita conformidade com a Lei nº 13.709/2018 (LGPD), Marco Civil da Internet e normativas da ANVISA e da Autoridade Nacional de Proteção de Dados (ANPD)."
     >
-      {/* 1. QUADRO INSTITUCIONAL DO CONTROLADOR E DPO */}
-      <section className="legal-notice-box" aria-label="Identificação do Controlador e Encarregado">
-        <div className="legal-badge-pill">Governança de Privacidade — Art. 41 da Lei nº 13.709/2018 (LGPD)</div>
-        <h2 style={{ marginTop: "10px", fontSize: "1.25rem", color: "var(--teal-deep)" }}>
-          Controlador de Dados e Canal do Encarregado (DPO)
+      {/* 1. QUADRO INSTITUCIONAL DO CONTROLADOR E DO ENCARREGADO DE DADOS (DPO) */}
+      <section className="legal-notice-box" aria-label="Identificação do Controlador e Encarregado LGPD">
+        <div className="legal-badge-pill">Governança Institucional — Art. 41 da Lei nº 13.709/2018 (LGPD)</div>
+        <h2 style={{ marginTop: "10px", fontSize: "1.3rem", color: "var(--teal-deep)" }}>
+          Qualificação do Controlador e Canal Oficial do Encarregado (DPO)
         </h2>
-        <p style={{ margin: "6px 0 16px", fontSize: "0.85rem", color: "var(--muted)" }}>
-          A Farmácia Poupe Mais de Medicamentos e Perfumaria Ltda. atua como Controladora dos dados pessoais coletados nesta plataforma. Para exercer quaisquer direitos previstos no Art. 18 da LGPD ou tirar dúvidas sobre o tratamento de seus dados de saúde, entre em contato direto com o nosso Encarregado pelo Tratamento de Dados Pessoais.
+        <p style={{ margin: "6px 0 16px", fontSize: "0.85rem", color: "var(--muted)", lineHeight: 1.6 }}>
+          A Farmácia Poupe Mais de Medicamentos e Perfumaria Ltda. atua como Controladora de Dados Pessoais. Em cumprimento ao Artigo 41 da LGPD e regulamentações da ANPD, mantemos canal de comunicação permanente e direto para o exercício dos direitos dos titulares de dados.
         </p>
 
         <div className="legal-grid-data">
           <div className="legal-data-card">
-            <span className="legal-data-label">Controlador dos Dados</span>
+            <span className="legal-data-label">Controlador dos Dados Pessoais</span>
             <strong>Farmácia Poupe Mais de Medicamentos e Perfumaria Ltda.</strong>
-            <small>CNPJ: 00.000.000/0001-00 • Porto Alegre / RS</small>
+            <small>CNPJ: 00.000.000/0001-00 • Sede: Av. Principal da Saúde, nº 1.000 — Porto Alegre / RS</small>
           </div>
           <div className="legal-data-card">
             <span className="legal-data-label">Encarregado pelo Tratamento de Dados (DPO)</span>
-            <strong>Comitê de Governança Digital e Privacidade Poupe Mais</strong>
+            <strong>Comitê de Governança Digital, Privacidade e Compliance Farmacêutico</strong>
           </div>
           <div className="legal-data-card highlight-contact">
-            <span className="legal-data-label">Canal Direto do Titular (E-mail do DPO)</span>
+            <span className="legal-data-label">Canal Oficial de Atendimento ao Titular (E-mail do DPO)</span>
             <strong style={{ color: "var(--farma-green-dark)" }}>dpo@poupemais.com.br</strong>
-            <small>Prazo regulatório de resposta: até 15 (quinze) dias corridos conforme determinação da ANPD</small>
+            <small>Canal exclusivo para requerimentos de confirmação de tratamento, acesso, correção, eliminação, portabilidade e revogação de consentimento. Prazo de resposta: até 15 (quinze) dias corridos (Art. 19, II da LGPD).</small>
           </div>
           <div className="legal-data-card highlight-contact">
-            <span className="legal-data-label">Autoridade Fiscalizadora Nacional</span>
+            <span className="legal-data-label">Autoridade Reguladora Nacional</span>
             <span>
-              Autoridade Nacional de Proteção de Dados (ANPD):{" "}
+              <strong>Autoridade Nacional de Proteção de Dados (ANPD):</strong>{" "}
               <a href="https://www.gov.br/anpd" target="_blank" rel="noopener noreferrer">
                 www.gov.br/anpd
-              </a>
+              </a>{" "}
+              | Edifício Venâncio 2000, Bloco B60, Brasília / DF
             </span>
           </div>
         </div>
       </section>
 
-      {/* 2. TEXTO ESTRUTURADO DA POLÍTICA */}
+      {/* 2. TEXTO INTEGRAL DA POLÍTICA COM RIGOR JURÍDICO */}
       <section className="legal-clauses-wrapper">
         <div className="legal-clause">
-          <h3>1. Princípios e Compromisso com a Privacidade</h3>
+          <h3>Capítulo I — Do Glossário Jurídico e Definições Legais (Art. 5º da LGPD)</h3>
           <p>
-            1.1. Na Farmácia Poupe Mais, a privacidade é tratada como um direito fundamental inalienável, complementada pelo tradicional dever de sigilo farmacêutico. Nossas operações digitais e logísticas são orientadas pelos princípios da boa-fé, finalidade, necessidade, livre acesso, qualidade dos dados, transparência, segurança, prevenção, não discriminação e responsabilização (Art. 6º da LGPD).
+            Para os fins desta Política e fiel aplicação da Lei nº 13.709/2018, consideram-se:
           </p>
+          <ul>
+            <li><strong>Dado Pessoal (Art. 5º, I):</strong> Informação relacionada a pessoa natural identificada ou identificável (ex: nome, CPF, RG, endereço residencial, telefone, e-mail).</li>
+            <li><strong>Dado Pessoal Sensível (Art. 5º, II):</strong> Dado pessoal sobre origem racial ou étnica, convicção religiosa, opinião política, filiação a sindicato ou a organização de caráter religioso, filosófico ou político, <em>dado referente à saúde ou à vida sexual</em>, dado genético ou biométrico, quando vinculado a uma pessoa natural. No contexto desta farmácia, abrangem receitas médicas, laudos, posologias, medicamentos em uso e atendimentos farmacêuticos.</li>
+            <li><strong>Titular (Art. 5º, V):</strong> Pessoa natural a quem se referem os dados pessoais que são objeto de tratamento (o cliente, paciente ou usuário do site).</li>
+            <li><strong>Controlador (Art. 5º, VI):</strong> Pessoa natural ou jurídica a quem competem as decisões referentes ao tratamento de dados pessoais (a Farmácia Poupe Mais).</li>
+            <li><strong>Operador (Art. 5º, VII):</strong> Pessoa natural ou jurídica que realiza o tratamento de dados pessoais em nome do controlador (ex: gateways de pagamento e operadoras de entrega).</li>
+            <li><strong>Encarregado / DPO (Art. 5º, VIII):</strong> Pessoa indicada pelo controlador para atuar como canal de comunicação entre o controlador, os titulares dos dados e a Autoridade Nacional de Proteção de Dados (ANPD).</li>
+            <li><strong>Tratamento (Art. 5º, X):</strong> Toda operação realizada com dados pessoais, como as que se referem a coleta, produção, recepção, classificação, utilização, acesso, reprodução, transmissão, distribuição, processamento, arquivamento, armazenamento, eliminação, avaliação ou controle da informação, modificação, comunicação, transferência, difusão ou extração.</li>
+            <li><strong>Consentimento (Art. 5º, XII):</strong> Manifestação livre, informada e inequívoca pela qual o titular concorda com o tratamento de seus dados pessoais para uma finalidade determinada.</li>
+          </ul>
         </div>
 
         <div className="legal-clause">
-          <h3>2. Categorias de Dados Coletados e Tratados</h3>
+          <h3>Capítulo II — Dos Princípios Norteadores do Tratamento de Dados (Art. 6º da LGPD)</h3>
           <p>
-            Coletamos apenas as informações estritamente necessárias para viabilizar o fornecimento seguro de medicamentos, produtos de saúde e serviços farmacêuticos:
+            As atividades de tratamento de dados na Farmácia Poupe Mais observam a boa-fé e os dez princípios fundamentais do Artigo 6º da LGPD:
+          </p>
+          <ol>
+            <li><strong>Finalidade:</strong> Realização do tratamento para propósitos legítimos, específicos, explícitos e informados ao titular, vedado o tratamento posterior de forma incompatível com essas finalidades;</li>
+            <li><strong>Adequação:</strong> Compatibilidade do tratamento com as finalidades informadas ao titular;</li>
+            <li><strong>Necessidade (Minimização):</strong> Limitação do tratamento ao mínimo necessário para a realização de suas finalidades, com abrangência dos dados pertinentes, proporcionais e não excessivos;</li>
+            <li><strong>Livre Acesso:</strong> Garantia aos titulares de consulta facilitada e gratuita sobre a forma e a duração do tratamento, bem como sobre a integralidade de seus dados pessoais;</li>
+            <li><strong>Qualidade dos Dados:</strong> Garantia de exatidão, clareza, relevância e atualização dos dados;</li>
+            <li><strong>Transparência:</strong> Garantia de informações claras, precisas e facilmente acessíveis sobre a realização do tratamento e os respectivos agentes de tratamento;</li>
+            <li><strong>Segurança:</strong> Utilização de medidas técnicas e administrativas aptas a proteger os dados pessoais de acessos não autorizados e de situações acidentais ou ilícitas de destruição, perda, alteração ou difusão;</li>
+            <li><strong>Prevenção:</strong> Adoção de medidas para prevenir a ocorrência de danos em virtude do tratamento de dados pessoais;</li>
+            <li><strong>Não Discriminação:</strong> Impossibilidade de realização do tratamento para fins discriminatórios ilícitos ou abusivos;</li>
+            <li><strong>Responsabilização e Prestação de Contas:</strong> Demonstração, pelo agente, da adoção de medidas eficazes e capazes de comprovar a observância e o cumprimento das normas de proteção de dados.</li>
+          </ol>
+        </div>
+
+        <div className="legal-clause">
+          <h3>Capítulo III — Do Inventário de Dados Pessoais Coletados e Finalidades do Tratamento</h3>
+          <p>
+            A Farmácia Poupe Mais coleta estritamente as seguintes categorias de dados para as finalidades legítimas descritas:
           </p>
           <ul>
             <li>
-              <strong>Dados Pessoais Cadastrais</strong>: Nome completo, Cadastro de Pessoa Física (CPF — exigido obrigatoriamente pela Secretaria da Fazenda para emissão da Nota Fiscal Eletrônica), endereço residencial completo para entrega, número de telefone WhatsApp e endereço de e-mail.
+              <strong>1. Dados Pessoais Cadastrais e Fiscais:</strong> Nome completo, CPF, RG, data de nascimento, endereço residencial completo e telefone WhatsApp.
+              <br />
+              <em>Finalidades:</em> Identificação inequívoca do comprador, emissão obrigatória de Nota Fiscal de Consumidor Eletrônica (NFC-e / NF-e) perante a Secretaria da Fazenda Estadual, faturamento e cumprimento da roteirização de tele-entrega expressa.
             </li>
             <li>
-              <strong>Dados Pessoais Sensíveis de Saúde (Art. 5º, II da LGPD)</strong>:
-              Prescrições médicas, receitas de controle especial, atestados, nome e CRM/UF do médico prescritor, dosagens, histórico de dispensação farmacêutica e registros de teleorientação. <em>Esses dados recebem a mais alta camada de proteção técnica e isolamento criptográfico do sistema.</em>
+              <strong>2. Dados Pessoais Sensíveis de Saúde (Art. 5º, II e Art. 11 da LGPD):</strong> Prescrições médicas (físicas ou digitais), CRM/UF do profissional médico ou odontológico prescritor, dosagens, princípios ativos, posologia, medicamentos de uso contínuo, registros de aferição e registros de orientação farmacêutica.
+              <br />
+              <em>Finalidades:</em> Dispensação segura e orientada de medicamentos, conferência técnico-farmacêutica prévia (Art. 13 da Lei nº 13.021/2014), escrituração obrigatória no Sistema Nacional de Gerenciamento de Produtos Controlados (SNGPC/ANVISA) e guarda sanitária de receituários retidos conforme Portaria SVS/MS nº 344/1998 e RDC ANVISA nº 20/2011.
             </li>
             <li>
-              <strong>Dados de Faturamento e Pagamento</strong>:
-              Informações de cartão de crédito e débito são processadas de forma tokenizada em ambiente certificado PCI-DSS Nível 1. A Farmácia Poupe Mais <strong>não armazena o número integral nem o código de segurança (CVV)</strong> de seus cartões em seus servidores.
+              <strong>3. Dados Financeiros e de Pagamento:</strong> Dados de cartão de crédito e débito são coletados diretamente em ambiente seguro do gateway de pagamento com certificação PCI-DSS Nível 1 e criptografia de ponta a ponta. <em>A Farmácia Poupe Mais não armazena em seus servidores o número completo do cartão nem o código verificador (CVV).</em>
+              <br />
+              <em>Finalidades:</em> Processamento da transação bancária, prevenção a fraudes e conciliação financeira.
             </li>
             <li>
-              <strong>Dados de Conexão e Navegação</strong>:
-              Endereço IP, data e hora de cada transação, tipo de navegador e identificadores de sessão técnica necessários para auditoria antifraude e cumprimento do Marco Civil da Internet (Lei nº 12.965/2014, Art. 15).
+              <strong>4. Dados de Conexão, Navegação e Logs Técnicos:</strong> Endereço IP, data e hora de cada acesso, identificador de sessão, tipo de navegador e requisições no catálogo.
+              <br />
+              <em>Finalidades:</em> Cumprimento do dever legal de guarda de registros de acesso a aplicações de internet por 6 (seis) meses, estatuído no Artigo 15 da Lei nº 12.965/2014 (Marco Civil da Internet), e auditoria de segurança cibernética contra ataques.
             </li>
           </ul>
         </div>
 
         <div className="legal-clause">
-          <h3>3. Bases Legais para o Tratamento de Dados (Artigos 7º e 11 da LGPD)</h3>
+          <h3>Capítulo IV — Das Bases Legais do Tratamento (Artigos 7º e 11 da LGPD)</h3>
           <p>
-            Todo e qualquer tratamento de dados pessoais e de saúde na Farmácia Poupe Mais fundamenta-se estritamente nas seguintes hipóteses legais:
+            O tratamento de dados pessoais na Farmácia Poupe Mais é estritamente respaldado pelas seguintes hipóteses legais exaustivas:
           </p>
           <ul>
             <li>
-              <strong>Tutela da Saúde (Art. 11, II, &quot;f&quot; da LGPD)</strong>:
-              Aplicável à avaliação de receitas médicas, acompanhamento posológico, dispensação de medicamentos e prestação de assistência farmacêutica remota exclusivamente por farmacêuticos habilitados no CRF/RS.
+              <strong>Tutela da Saúde (Art. 11, II, &quot;f&quot; da LGPD):</strong> O tratamento de dados pessoais sensíveis de saúde é realizado sob a responsabilidade e supervisão exclusiva de farmacêuticos habilitados inscritos no Conselho Regional de Farmácia (CRF/RS), em estrito procedimento de assistência farmacêutica voltado à saúde e bem-estar do paciente.
             </li>
             <li>
-              <strong>Cumprimento de Obrigação Legal e Regulatória (Art. 7º, II e Art. 11, II, &quot;a&quot; da LGPD)</strong>:
-              Atendimento às normas obrigatórias da ANVISA (RDC nº 44/2009, RDC nº 20/2011, Portaria nº 344/1998), escrituração no SNGPC (Sistema Nacional de Gerenciamento de Produtos Controlados), guarda obrigatória de receituários e emissão de documentação fiscal junto à Receita Federal e Estadual.
+              <strong>Cumprimento de Obrigação Legal ou Regulatória (Art. 7º, II e Art. 11, II, &quot;a&quot; da LGPD):</strong>
+              Atendimento compulsório às resoluções e portarias da ANVISA (RDC nº 44/2009, RDC nº 20/2011, Portaria nº 344/1998), escrituração no SNGPC, emissão e guarda de documentos fiscais perante a Receita Federal e Secretaria da Fazenda do RS, e cumprimento do Art. 15 do Marco Civil da Internet.
             </li>
             <li>
-              <strong>Execução de Contrato e Procedimentos Preliminares (Art. 7º, V da LGPD)</strong>:
-              Necessário para o processamento de pedidos, liquidação de pagamentos e despacho da tele-entrega expressa no endereço informado.
+              <strong>Execução de Contrato e Procedimentos Preliminares (Art. 7º, V da LGPD):</strong>
+              Tratamento indispensável para processamento do pedido de compra, faturamento, entrega domiciliar dos medicamentos e atendimento de pós-venda.
             </li>
             <li>
-              <strong>Legítimo Interesse e Proteção ao Crédito e Antifraude (Art. 7º, IX e X da LGPD)</strong>:
-              Salvaguarda da segurança dos usuários, prevenção a invasões e monitoramento de atividades suspeitas em nossa plataforma.
+              <strong>Legítimo Interesse do Controlador (Art. 7º, IX da LGPD):</strong>
+              Aprimoramento técnico da experiência de compra, prevenção a fraudes em transações eletrônicas e segurança da infraestrutura de rede, sempre respeitados os direitos e liberdades fundamentais do titular.
             </li>
             <li>
-              <strong>Consentimento do Titular (Art. 7º, I e Art. 11, I da LGPD)</strong>:
-              Coletado de forma livre, expressa e destacada para o envio opcional de informativos semanais, cupons de desconto e para cookies analíticos e de marketing não essenciais.
+              <strong>Consentimento do Titular (Art. 7º, I e Art. 11, I da LGPD):</strong>
+              Coleta de consentimento livre, inequívoco, destacado e informado através de nossa Central Flutuante de Governança e Escolha de Dados para funcionalidades opcionais (ex: geolocalização exata, lembretes de recompra de remédios de uso contínuo e notificações telemáticas por WhatsApp).
             </li>
           </ul>
         </div>
 
         <div className="legal-clause">
-          <div className="legal-callout danger" style={{ borderLeft: "4px solid #dc2626", background: "#fef2f2", padding: "18px", borderRadius: "12px" }}>
-            <h4 style={{ margin: "0 0 8px", color: "#991b1b", fontSize: "1.05rem" }}>
-              Compromisso Incondicional: Vedação à Comercialização de Dados de Saúde (Art. 11, § 4º da LGPD)
+          <h3>Capítulo V — Da Cláusula Pétrea: Vedação Absoluta à Venda e Cessão de Dados de Saúde</h3>
+          <div className="legal-callout danger" style={{ borderLeft: "4px solid #b91c1c", background: "#fef2f2", padding: "16px", borderRadius: "12px", margin: "14px 0" }}>
+            <h4 style={{ color: "#991b1b", margin: "0 0 8px", fontSize: "1.05rem" }}>
+              Compromisso Institucional e Cláusula Pétrea — Art. 11, § 4º da Lei nº 13.709/2018
             </h4>
-            <p style={{ margin: 0, color: "#7f1d1d", fontSize: "0.85rem", lineHeight: 1.6 }}>
-              A Farmácia Poupe Mais <strong>NUNCA comercializa, aluga, cede ou compartilha dados pessoais sensíveis referentes à saúde com terceiros</strong> para obtenção de vantagem econômica. É terminantemente proibido o repasse de diagnósticos, receitas, histórico de compras ou prescrições médicas a operadoras de planos de saúde, companhias seguradoras, instituições financeiras ou empresas de publicidade direcionada.
+            <p style={{ margin: "0 0 10px", fontSize: "0.86rem", color: "#7f1d1d", lineHeight: 1.6 }}>
+              <strong>É TERMINANTEMENTE VEDADA</strong> a comercialização, aluguel, compartilhamento, cessão onerosa ou gratuita de quaisquer dados pessoais sensíveis de saúde de nossos clientes e pacientes — incluindo históricos de receituários médicos, diagnósticos clínicos, posologias e medicamentos adquiridos — com:
+            </p>
+            <ul style={{ margin: "0", paddingLeft: "20px", fontSize: "0.84rem", color: "#7f1d1d" }}>
+              <li>Operadoras de planos privados de assistência à saúde e seguradoras médicas;</li>
+              <li>Instituições financeiras, bancos e birôs de análise de crédito;</li>
+              <li>Empresas de publicidade direcionada, corretores de dados (data brokers) ou redes de mídia programática.</li>
+            </ul>
+            <p style={{ margin: "10px 0 0", fontSize: "0.82rem", color: "#991b1b" }}>
+              A Farmácia Poupe Mais repudia e proíbe qualquer prática que possa resultar em seleção de riscos, discriminação tarifária de planos de saúde ou violação do sigilo terapêutico.
             </p>
           </div>
         </div>
 
         <div className="legal-clause">
-          <h3>4. Medidas de Segurança da Informação e Auditoria</h3>
+          <h3>Capítulo VI — Do Compartilhamento Estrito e Legítimo com Terceiros</h3>
           <p>
-            4.1. <strong>Criptografia Forte</strong>: Todas as comunicações entre o seu navegador e nossos servidores são protegidas por protocolos modernos TLS 1.3 (HTTPS), com tráfego criptografado de ponta a ponta e certificados digitais de alta confiabilidade.
-          </p>
-          <p>
-            4.2. <strong>Armazenamento Isolado</strong>: Prescrições e documentos médicos são gravados em repositório seguro privado (Cloudflare R2 Storage com chaves isoladas), sem URLs públicas indexáveis por motores de busca.
-          </p>
-          <p>
-            4.3. <strong>Livro-Razão Imutável de Auditoria (Audit Trail)</strong>: Qualquer operação que acesse, consulte ou valide uma receita médica gera automaticamente um registro de log criptográfico no painel interno (`AUD-XXXXX-XF`), registrando o operador farmacêutico responsável, timestamp em milissegundos e IP de origem.
-          </p>
-          <p>
-            4.4. <strong>Controle de Acesso RBAC</strong>: Funcionários e operadores do catálogo, marketing e atendimento não possuem autorização para visualizar documentos de saúde dos clientes, privilégio restrito estritamente a farmacêuticos com registro ativo.
-          </p>
-        </div>
-
-        <div className="legal-clause">
-          <h3>5. Prazos Sanitários de Retenção e Descarte Seguro</h3>
-          <p>
-            5.1. <strong>Receitas Aprovadas e Escrituradas</strong>: São mantidas em arquivo seguro pelo prazo legal obrigatório determinado pela legislação sanitária (variando de 30 dias a 2 anos, conforme a tipologia do medicamento, classe antimicrobiana ou exigência do SNGPC/ANVISA). Findo o prazo de custódia sanitária legal, os arquivos são submetidos a expurgo criptográfico definitivo.
-          </p>
-          <p>
-            5.2. <strong>Receitas Recusadas ou com Pendências</strong>: Caso o pedido não seja concluído ou a receita apresente impedimento sanitário, os documentos associados são eliminados com segurança de nossos servidores ativos no prazo máximo de 7 (sete) dias corridos.
-          </p>
-          <p>
-            5.3. <strong>Dados Cadastrais e Notas Fiscais</strong>: Permanecem armazenados pelo prazo decadencial e prescricional legal de 5 (cinco) anos estipulado pelo Código Tributário Nacional e Código Civil.
-          </p>
-        </div>
-
-        <div className="legal-clause">
-          <h3>6. Direitos do Titular de Dados Pessoais (Art. 18 da LGPD)</h3>
-          <p>
-            Você possui pleno controle sobre seus dados pessoais e, a qualquer momento, pode solicitar ao nosso DPO através do e-mail <strong>dpo@poupemais.com.br</strong>:
+            O compartilhamento de dados pessoais restringe-se ao estritamente necessário para o cumprimento de obrigações legais e operacionais, mediante formalização de cláusulas contratuais rigorosas de sigilo e conformidade com a LGPD:
           </p>
           <ul>
-            <li>A confirmação da existência de tratamento de seus dados;</li>
-            <li>O acesso claro e gratuito aos seus dados pessoais arquivados;</li>
-            <li>A correção de dados cadastrais incompletos, inexatos ou desatualizados;</li>
-            <li>A anonimização, bloqueio ou eliminação de dados desnecessários ou excessivos;</li>
-            <li>A portabilidade dos seus dados para outro fornecedor de serviços ou produtos;</li>
-            <li>Informações sobre eventuais entidades públicas ou privadas com as quais realizamos uso compartilhado estritamente regulatório (ex: ANVISA / SEFAZ);</li>
-            <li>A revogação do consentimento concedido para comunicações e cookies de navegação a qualquer momento.</li>
+            <li><strong>Autoridades Sanitárias e Fiscais:</strong> ANVISA, Vigilância Sanitária Municipal, Conselho Regional de Farmácia (CRF/RS), Receita Federal e Secretaria Estadual da Fazenda, exclusivamente nos limites da lei e no âmbito de auditorias regulatórias obrigatórias.</li>
+            <li><strong>Operadores de Pagamento e Antifraude:</strong> Gateways de pagamento homologados com certificação PCI-DSS, para processamento de pagamentos criptografados.</li>
+            <li><strong>Operadores Logísticos e Entregadores Credenciados:</strong> Compartilhamento restrito ao nome do destinatário, endereço de entrega e telefone de contato, sendo expressamente proibido aos entregadores o acesso a diagnósticos médicos ou detalhes clínicos da prescrição.</li>
+            <li><strong>Autoridades Judiciais ou Policiais:</strong> Exclusivamente mediante apresentação de mandado judicial fundamentado ou requisição formal legalmente amparada.</li>
           </ul>
         </div>
 
         <div className="legal-clause">
-          <h3>7. Política de Cookies e Botão Flutuante de Preferências</h3>
+          <h3>Capítulo VII — Dos Prazos de Retenção e Descarte Seguro de Dados</h3>
           <p>
-            7.1. Cookies são pequenos arquivos de texto transferidos para o seu dispositivo que nos auxiliam a oferecer uma navegação rápida, estável e segura:
+            Os dados pessoais serão retidos pela Farmácia Poupe Mais durante o tempo necessário para atingir as finalidades do tratamento, observados os prazos legais de guarda obrigatória:
+          </p>
+          <div className="legal-data-table-wrap" style={{ overflowX: "auto", margin: "14px 0" }}>
+            <table style={{ width: "100%", fontSize: "0.82rem", borderCollapse: "collapse", textAlign: "left" }}>
+              <thead>
+                <tr style={{ background: "var(--teal-deep)", color: "#ffffff" }}>
+                  <th style={{ padding: "10px 12px" }}>Categoria de Dado</th>
+                  <th style={{ padding: "10px 12px" }}>Prazo de Retenção Legal</th>
+                  <th style={{ padding: "10px 12px" }}>Fundamento Legal / Regulatório</th>
+                </tr>
+              </thead>
+              <tbody style={{ divideY: "1px solid #e2ece7" }}>
+                <tr>
+                  <td style={{ padding: "10px 12px", fontWeight: "bold" }}>Receitas de Medicamentos Controlados</td>
+                  <td style={{ padding: "10px 12px" }}>5 (cinco) anos</td>
+                  <td style={{ padding: "10px 12px" }}>Portaria SVS/MS nº 344/1998 e RDC ANVISA nº 44/2009</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: "10px 12px", fontWeight: "bold" }}>Receitas de Antimicrobianos (Antibióticos)</td>
+                  <td style={{ padding: "10px 12px" }}>2 (dois) anos</td>
+                  <td style={{ padding: "10px 12px" }}>RDC ANVISA nº 20/2011, Artigo 14</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: "10px 12px", fontWeight: "bold" }}>Dados Cadastrais e Notas Fiscais Eletrônicas</td>
+                  <td style={{ padding: "10px 12px" }}>5 (cinco) anos</td>
+                  <td style={{ padding: "10px 12px" }}>Código Tributário Nacional e Código de Defesa do Consumidor</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: "10px 12px", fontWeight: "bold" }}>Logs de Acesso a Aplicações de Internet</td>
+                  <td style={{ padding: "10px 12px" }}>6 (seis) meses</td>
+                  <td style={{ padding: "10px 12px" }}>Artigo 15 da Lei nº 12.965/2014 (Marco Civil da Internet)</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: "10px 12px", fontWeight: "bold" }}>Dados Apoiados Exclusivamente no Consentimento</td>
+                  <td style={{ padding: "10px 12px" }}>Até revogação expressa pelo titular</td>
+                  <td style={{ padding: "10px 12px" }}>Artigo 8º, § 5º da Lei nº 13.709/2018 (LGPD)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            Exauridos os prazos prescricionais e regulatórios, os dados serão eliminados de forma segura mediante deleção criptográfica irreversível ou mantidos anonimizados para fins estatísticos internos (Art. 16, IV da LGPD).
+          </p>
+        </div>
+
+        <div className="legal-clause">
+          <h3>Capítulo VIII — Dos Direitos dos Titulares de Dados (Art. 18 da LGPD) e Canal de Exercício</h3>
+          <p>
+            O titular de dados pessoais possui o direito de obter da Farmácia Poupe Mais, a qualquer momento e mediante requisição formal gratuita:
           </p>
           <ul>
-            <li>
-              <strong>Cookies Estritamente Necessários</strong>: Indispensáveis para autenticação de sessão, funcionamento do carrinho de compras, finalização de pedidos e defesas de segurança cibernética (CSRF). <em>Não podem ser desativados sem comprometer a integridade funcional do site.</em>
-            </li>
-            <li>
-              <strong>Cookies Analíticos e de Desempenho (Opcionais)</strong>: Coletam métricas anônimas sobre páginas mais visitadas e velocidade de carregamento, permitindo aperfeiçoar a usabilidade do site.
-            </li>
-            <li>
-              <strong>Cookies de Marketing e Personalização (Opcionais)</strong>: Utilizados para lembrar produtos visualizados e evitar a exibição repetida de mensagens promocionais de itens de perfumaria e conveniência.
-            </li>
+            <li><strong>I — Confirmação da existência de tratamento:</strong> Saber se a farmácia trata dados sobre você;</li>
+            <li><strong>II — Acesso aos dados:</strong> Solicitar cópia legível de todos os dados cadastrais e de saúde mantidos em nossos sistemas;</li>
+            <li><strong>III — Correção de dados incompletos, inexatos ou desatualizados:</strong> Atualizar suas informações cadastrais;</li>
+            <li><strong>IV — Anonimização, bloqueio ou eliminação:</strong> Relativo a dados desnecessários, excessivos ou tratados em desconformidade com a LGPD;</li>
+            <li><strong>V — Portabilidade dos dados:</strong> Solicitar o envio dos seus dados a outro fornecedor de serviços de saúde, mediante requisição expressa e observados os segredos comerciais;</li>
+            <li><strong>VI — Eliminação dos dados pessoais tratados com consentimento:</strong> Salvo nas hipóteses de guarda obrigatória por dever regulatório da ANVISA ou dever fiscal;</li>
+            <li><strong>VII — Informação sobre compartilhamento:</strong> Conhecer as entidades públicas e privadas com as quais a farmácia realizou uso compartilhado de dados;</li>
+            <li><strong>VIII — Informação sobre a possibilidade de não fornecer consentimento:</strong> Informação sobre as consequências da negativa de consentimento;</li>
+            <li><strong>IX — Revogação do consentimento:</strong> Revogar suas autorizações a qualquer momento por meio de procedimento gratuito e facilitado.</li>
           </ul>
+          <div className="legal-callout warning">
+            <strong>Procedimento Formal para Exercício dos Direitos:</strong>
+            <br />
+            Para exercer quaisquer dos direitos acima, envie requerimento formal para o e-mail: <strong style={{ color: "var(--farma-green-dark)" }}>dpo@poupemais.com.br</strong>, indicando: (i) seu nome completo, (ii) CPF, (iii) direito que deseja exercer e (iv) comprovante de identidade para prevenção de fraudes. Responderemos no prazo regulatório de até 15 (quinze) dias corridos.
+          </div>
+        </div>
+
+        <div className="legal-clause">
+          <h3>Capítulo IX — Das Medidas de Segurança da Informação e Criptografia</h3>
           <p>
-            7.2. <strong>Gerenciador Permanente de Privacidade</strong>: A Farmácia Poupe Mais disponibiliza um <strong>botão flutuante permanente no canto inferior da tela</strong> (ícone de escudo/cookie), permitindo que você altere sua escolha entre &quot;Aceitar Todos os Cookies&quot; ou &quot;Apenas Cookies Necessários&quot; a qualquer momento durante a navegação.
+            A Farmácia Poupe Mais implementa padrões avançados de segurança técnica e administrativa para resguardar a integridade, confidencialidade e disponibilidade dos dados:
+          </p>
+          <ul>
+            <li>Criptografia de ponta a ponta nas transmissões de rede via protocolo TLS 1.3 com chaves seguras;</li>
+            <li>Isolamento de receitas médicas e documentos sensíveis em repositórios criptografados com acesso restrito a farmacêuticos habilitados;</li>
+            <li>Controle rigoroso de privilégios de acesso baseado em papéis (Role-Based Access Control - RBAC);</li>
+            <li>Trilhas de auditoria imutáveis com registros de hash criptográfico (padrão <code>AUD-XXXXX-XF</code>) para cada visualização, aprovação ou estorno;</li>
+            <li>Testes periódicos de vulnerabilidade e varreduras automatizadas de segurança.</li>
+          </ul>
+        </div>
+
+        <div className="legal-clause">
+          <h3>Capítulo X — Da Central Flutuante de Governança e Escolha de Dados</h3>
+          <p>
+            Em respeito à autodeterminação informativa do titular (Artigo 2º, II da LGPD), disponibilizamos em nossa plataforma a <strong>Central Flutuante de Governança e Escolha de Dados</strong>.
+            <br />
+            Por meio deste painel interativo permanente, acessível em todas as páginas do site através do botão flutuante no canto inferior da tela, você tem a liberdade absoluta de:
+          </p>
+          <ul>
+            <li>Verificar exatamente quais categorias de dados estão ativas;</li>
+            <li>Ativar ou desativar individualmente a coleta de dados de localização/CEP, perfil farmacoterapêutico para uso contínuo, telemetria analítica e alertas telemáticos por WhatsApp;</li>
+            <li>Manter ativas apenas as categorias estritamente obrigatórias por lei sanitária;</li>
+            <li>Consultar a data e o horário exatos do registro de seu consentimento.</li>
+          </ul>
+        </div>
+
+        <div className="legal-clause">
+          <h3>Capítulo XI — Das Notificações de Incidentes de Segurança</h3>
+          <p>
+            Na remota hipótese de ocorrência de incidente de segurança que possa acarretar risco ou dano relevante aos titulares de dados, a Farmácia Poupe Mais comunicará formalmente o fato à Autoridade Nacional de Proteção de Dados (ANPD) e aos titulares afetados, em prazo razoável, em conformidade com o Artigo 48 da Lei nº 13.709/2018, descrevendo a natureza dos dados, as medidas técnicas de proteção empregadas e as providências adotadas para mitigar os efeitos.
+          </p>
+        </div>
+
+        <div className="legal-clause">
+          <h3>Capítulo XII — Das Disposições Finais e Foro de Eleição</h3>
+          <p>
+            Esta Política integra formalmente os <Link href="/termos" className="text-link" style={{ textDecoration: "underline" }}>Termos de Uso e Condições Gerais de Dispensação Farmacêutica</Link> da Farmácia Poupe Mais, sendo regida pelas leis da República Federativa do Brasil, em especial pela Lei nº 13.709/2018 (LGPD), Marco Civil da Internet e legislação sanitária. Fica eleito o <strong>Foro da Comarca de Porto Alegre, Estado do Rio Grande do Sul</strong>, para dirimir eventuais controvérsias decorrentes deste documento, ressalvado o direito de o titular optar pelo foro de seu próprio domicílio.
           </p>
         </div>
 
         <div className="legal-clause-footer">
           <p>
-            <strong>Última atualização:</strong> 08 de setembro de 2026.
+            <strong>Vigência e Última Atualização:</strong> 08 de setembro de 2026.
             <br />
-            Encarregado pelo Tratamento de Dados (DPO): <strong>dpo@poupemais.com.br</strong>
+            <strong>Comitê de Privacidade e Proteção de Dados (DPO)</strong> — Farmácia Poupe Mais Ltda.
             <br />
-            Farmácia Poupe Mais Ltda. — Compromisso com sua saúde e com a sua privacidade.
+            Contato: <a href="mailto:dpo@poupemais.com.br" style={{ color: "var(--teal)", textDecoration: "underline" }}>dpo@poupemais.com.br</a>
           </p>
         </div>
       </section>
