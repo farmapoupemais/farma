@@ -18,10 +18,10 @@ export default function TermsPage() {
       {/* 1. QUADRO OFICIAL DE IDENTIFICAÇÃO REGULATÓRIA OBRIGATÓRIA (Art. 53 da RDC ANVISA nº 44/2009) */}
       <section className="legal-notice-box" aria-label="Identificação Regulatória e Sanitária">
         <div className="legal-badge-pill">Informações Sanitárias Obrigatórias — Art. 53 da RDC ANVISA nº 44/2009</div>
-        <h2 style={{ marginTop: "10px", fontSize: "1.3rem", color: "var(--teal-deep)" }}>
+        <h2 style={{ marginTop: "10px", fontSize: "var(--text-xl)", fontWeight: "var(--font-bold)", color: "var(--teal-deep)" }}>
           Identificação do Estabelecimento, Responsabilidade Técnica e Fiscalização
         </h2>
-        <p style={{ margin: "6px 0 16px", fontSize: "0.85rem", color: "var(--muted)", lineHeight: 1.6 }}>
+        <p style={{ margin: "6px 0 16px", fontSize: "var(--text-sm)", color: "var(--muted)", lineHeight: 1.6 }}>
           O presente comércio eletrônico opera exclusivamente como extensão digital vinculada à farmácia física aberta ao público, sob supervisão e responsabilidade contínua de farmacêutico habilitado durante todo o período de atendimento e funcionamento do estabelecimento.
         </p>
 

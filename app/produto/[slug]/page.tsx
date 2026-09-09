@@ -109,8 +109,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <div>
               <p>{product.description}</p>
               <div className="technical-specs-box" style={{ marginTop: "1.5rem", padding: "1.25rem", background: "#f8fafc", borderRadius: 12, border: "1px solid #e2e8f0" }}>
-                <h4 style={{ margin: "0 0 0.75rem", fontSize: "0.95rem", color: "#1e293b", fontWeight: 700 }}>Especificações Técnicas</h4>
-                <ul style={{ margin: 0, paddingLeft: "1.25rem", color: "#475569", fontSize: "0.9rem", lineHeight: 1.8 }}>
+                <h4 style={{ margin: "0 0 0.75rem", fontSize: "var(--text-base)", color: "#1e293b", fontWeight: "var(--font-bold)" }}>Especificações Técnicas</h4>
+                <ul style={{ margin: 0, paddingLeft: "1.25rem", color: "#475569", fontSize: "var(--text-sm)", lineHeight: 1.8 }}>
                   <li><strong>ID do Item:</strong> <code>#{product.id}</code></li>
                   <li><strong>Código de Barras (EAN-13):</strong> <code>{product.barcode || generateEan(product.id)}</code></li>
                   <li><strong>Categoria:</strong> {product.category}</li>

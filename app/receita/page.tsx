@@ -39,16 +39,16 @@ export default function PrescriptionInfoPage() {
                 <Icon name="shield" size={32} />
               </div>
               <div>
-                <h2 style={{ fontSize: "1.35rem", fontWeight: 700, margin: 0, color: "#0f172a" }}>
+                <h2 style={{ fontSize: "var(--text-xl)", fontWeight: "var(--font-bold)", margin: 0, color: "#0f172a" }}>
                   Dispensação Direta e Imediata
                 </h2>
-                <p style={{ margin: "0.25rem 0 0", color: "#64748b", fontSize: "0.95rem" }}>
+                <p style={{ margin: "0.25rem 0 0", color: "#64748b", fontSize: "var(--text-sm)" }}>
                   Todos os itens da nossa loja são aprovados para compra sem retenção documental.
                 </p>
               </div>
             </div>
 
-            <p style={{ color: "#334155", lineHeight: 1.7, fontSize: "1.05rem" }}>
+            <p style={{ color: "#334155", lineHeight: 1.7, fontSize: "var(--text-base)" }}>
               Para proporcionar a máxima agilidade aos nossos clientes, nosso modelo comercial foca
               em saúde preventiva, alívio de sintomas leves, suplementação vitamínica e dermocuidados.
               Dessa forma, seu pedido é faturado e despachado imediatamente para entrega rápida ou retirada em loja em até 30 minutos.
@@ -56,24 +56,24 @@ export default function PrescriptionInfoPage() {
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem", marginTop: "2rem", marginBottom: "2rem" }}>
               <div style={{ background: "#f8fafc", padding: "1.25rem", borderRadius: 12, border: "1px solid #e2e8f0" }}>
-                <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#0f172a", marginBottom: "0.5rem" }}>⚡ Despacho Imediato</h3>
-                <p style={{ fontSize: "0.9rem", color: "#64748b", margin: 0 }}>Sem filas ou tempo de espera para validação de receituário.</p>
+                <h3 style={{ fontSize: "var(--text-base)", fontWeight: "var(--font-bold)", color: "#0f172a", marginBottom: "0.5rem" }}>⚡ Despacho Imediato</h3>
+                <p style={{ fontSize: "var(--text-sm)", color: "#64748b", margin: 0 }}>Sem filas ou tempo de espera para validação de receituário.</p>
               </div>
               <div style={{ background: "#f8fafc", padding: "1.25rem", borderRadius: 12, border: "1px solid #e2e8f0" }}>
-                <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#0f172a", marginBottom: "0.5rem" }}>🌿 Procedência Anvisa</h3>
-                <p style={{ fontSize: "0.9rem", color: "#64748b", margin: 0 }}>Lotes originais direto das maiores distribuidoras farmacêuticas do país.</p>
+                <h3 style={{ fontSize: "var(--text-base)", fontWeight: "var(--font-bold)", color: "#0f172a", marginBottom: "0.5rem" }}>🌿 Procedência Anvisa</h3>
+                <p style={{ fontSize: "var(--text-sm)", color: "#64748b", margin: 0 }}>Lotes originais direto das maiores distribuidoras farmacêuticas do país.</p>
               </div>
               <div style={{ background: "#f8fafc", padding: "1.25rem", borderRadius: 12, border: "1px solid #e2e8f0" }}>
-                <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#0f172a", marginBottom: "0.5rem" }}>👩‍⚕️ Suporte Farmacêutico</h3>
-                <p style={{ fontSize: "0.9rem", color: "#64748b", margin: 0 }}>Nossa equipe de farmacêuticos está pronta para tirar dúvidas de posologia.</p>
+                <h3 style={{ fontSize: "var(--text-base)", fontWeight: "var(--font-bold)", color: "#0f172a", marginBottom: "0.5rem" }}>👩‍⚕️ Suporte Farmacêutico</h3>
+                <p style={{ fontSize: "var(--text-sm)", color: "#64748b", margin: 0 }}>Nossa equipe de farmacêuticos está pronta para tirar dúvidas de posologia.</p>
               </div>
             </div>
 
             <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", justifyContent: "center", marginTop: "2.5rem" }}>
-              <Link href="/catalogo" className="button button-primary" style={{ padding: "0.85rem 2rem", fontSize: "1.05rem" }}>
+              <Link href="/catalogo" className="button button-primary" style={{ padding: "0.85rem 2rem", fontSize: "var(--text-base)" }}>
                 Explorar Catálogo Completo
               </Link>
-              <Link href="/catalogo?ofertas=1" className="button button-ghost" style={{ padding: "0.85rem 2rem", fontSize: "1.05rem" }}>
+              <Link href="/catalogo?ofertas=1" className="button button-ghost" style={{ padding: "0.85rem 2rem", fontSize: "var(--text-base)" }}>
                 Ver Super Ofertas
               </Link>
             </div>

@@ -41,7 +41,7 @@ export function SiteFooter() {
           <p>Saúde, economia e conveniência para cuidar de você todos os dias.</p>
           <div className="tele-line" style={{ display: "flex", alignItems: "center", gap: "10px", margin: "14px 0", color: "#ffcb05" }}>
             <Icon name="truck" size={20} />
-            <span style={{ fontSize: "0.82rem" }}><strong>Tele-Entrega:</strong> (51) 98183-4039 • (51) 99794-8494</span>
+            <span style={{ fontSize: "var(--text-xs)" }}><strong>Tele-Entrega:</strong> (51) 98183-4039 • (51) 99794-8494</span>
           </div>
           <div className="pharmacist-line"><Icon name="shield" /><span><strong>Atendimento farmacêutico</strong>Todos os dias, das 8h às 22h</span></div>
         </div>

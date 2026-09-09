@@ -87,10 +87,10 @@ export default function DashboardPage() {
         }}
       >
         <BrandMark size={52} />
-        <h2 style={{ fontFamily: "Georgia, serif", margin: "20px 0 8px", fontSize: "1.4rem" }}>
+        <h2 style={{ fontFamily: "var(--font-serif)", margin: "20px 0 8px", fontSize: "var(--text-2xl)", fontWeight: "var(--font-bold)" }}>
           Farmácia Poupe Mais
         </h2>
-        <p style={{ color: "var(--muted, #666)", fontSize: "0.9rem" }}>
+        <p style={{ color: "var(--muted, #666)", fontSize: "var(--text-sm)" }}>
           Verificando credenciais e permissões no Supabase…
         </p>
       </div>

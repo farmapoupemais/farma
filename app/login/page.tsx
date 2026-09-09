@@ -132,10 +132,10 @@ export default function LoginPage() {
           >
             <div style={{ textAlign: "center", marginBottom: "30px" }}>
               <BrandMark size={48} />
-              <h1 style={{ fontFamily: "Georgia, serif", fontSize: "1.9rem", margin: "14px 0 6px" }}>
+              <h1 style={{ fontFamily: "var(--font-serif)", fontSize: "var(--text-3xl)", fontWeight: "var(--font-bold)", margin: "14px 0 6px" }}>
                 {mode === "login" ? "Acesse sua conta" : "Criar sua conta"}
               </h1>
-              <p style={{ color: "var(--muted)", fontSize: "0.85rem", margin: 0 }}>
+              <p style={{ color: "var(--muted)", fontSize: "var(--text-sm)", margin: 0 }}>
                 Farmácia Poupe Mais • Acesso seguro
               </p>
             </div>
@@ -202,7 +202,7 @@ export default function LoginPage() {
                   display: "flex",
                   gap: "10px",
                   alignItems: "center",
-                  fontSize: "0.78rem",
+                  fontSize: "var(--text-xs)",
                   color: "var(--teal-deep)",
                 }}
               >
@@ -220,7 +220,7 @@ export default function LoginPage() {
                   color: "#9c4c40",
                   padding: "12px 16px",
                   borderRadius: "10px",
-                  fontSize: "0.82rem",
+                  fontSize: "var(--text-xs)",
                   marginBottom: "18px",
                   lineHeight: 1.4,
                 }}
@@ -236,7 +236,7 @@ export default function LoginPage() {
                   color: "#1e7e34",
                   padding: "12px 16px",
                   borderRadius: "10px",
-                  fontSize: "0.82rem",
+                  fontSize: "var(--text-xs)",
                   marginBottom: "18px",
                   lineHeight: 1.4,
                 }}
@@ -261,7 +261,7 @@ export default function LoginPage() {
                 border: "none",
                 borderRadius: "10px",
                 fontWeight: 700,
-                fontSize: "0.9rem",
+                fontSize: "var(--text-sm)",
                 cursor: "pointer",
                 boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
                 transition: "background 0.2s",
@@ -275,7 +275,7 @@ export default function LoginPage() {
 
             <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "18px 0" }}>
               <div style={{ flex: 1, height: "1px", background: "var(--line)" }} />
-              <span style={{ fontSize: "0.75rem", color: "var(--muted)", textTransform: "uppercase", fontWeight: 700 }}>
+              <span style={{ fontSize: "var(--text-2xs)", color: "var(--muted)", textTransform: "uppercase", fontWeight: "var(--font-bold)" }}>
                 ou entre com e-mail
               </span>
               <div style={{ flex: 1, height: "1px", background: "var(--line)" }} />
@@ -284,7 +284,7 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {mode === "signup" && (
                 <div>
-                  <label htmlFor="login-name" style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, marginBottom: "6px" }}>
+                  <label htmlFor="login-name" style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: "var(--font-bold)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
                     Nome Completo
                   </label>
                   <input
@@ -302,14 +302,14 @@ export default function LoginPage() {
                       borderRadius: "10px",
                       border: "1px solid var(--line)",
                       outline: "none",
-                      fontSize: "0.9rem",
+                      fontSize: "var(--text-xs)",
                     }}
                   />
                 </div>
               )}
 
               <div>
-                <label htmlFor="login-email" style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, marginBottom: "6px" }}>
+                <label htmlFor="login-email" style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: "var(--font-bold)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
                   E-mail
                 </label>
                 <input
@@ -327,13 +327,13 @@ export default function LoginPage() {
                     borderRadius: "10px",
                     border: "1px solid var(--line)",
                     outline: "none",
-                    fontSize: "0.9rem",
+                    fontSize: "var(--text-xs)",
                   }}
                 />
               </div>
 
               <div>
-                <label htmlFor="login-password" style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, marginBottom: "6px" }}>
+                <label htmlFor="login-password" style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: "var(--font-bold)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
                   Senha
                 </label>
                 <input
@@ -352,7 +352,7 @@ export default function LoginPage() {
                     borderRadius: "10px",
                     border: "1px solid var(--line)",
                     outline: "none",
-                    fontSize: "0.9rem",
+                    fontSize: "var(--text-xs)",
                   }}
                 />
               </div>
@@ -361,7 +361,7 @@ export default function LoginPage() {
                 type="submit"
                 disabled={loading}
                 className="button button-primary"
-                style={{ width: "100%", marginTop: "10px", fontSize: "0.95rem" }}
+                style={{ width: "100%", marginTop: "10px", fontSize: "var(--text-sm)" }}
               >
                 {loading ? "Processando..." : mode === "login" ? "Entrar no Painel" : "Cadastrar e Acessar"}
               </button>
@@ -374,7 +374,7 @@ export default function LoginPage() {
                 background: "#f0fdf4",
                 border: "1px dashed #16a34a",
                 borderRadius: "12px",
-                fontSize: "0.82rem",
+                fontSize: "var(--text-xs)",
                 color: "#166534",
                 lineHeight: 1.5,
               }}
@@ -400,7 +400,7 @@ export default function LoginPage() {
                   border: "none",
                   borderRadius: "8px",
                   fontWeight: 700,
-                  fontSize: "0.82rem",
+                  fontSize: "var(--text-xs)",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
@@ -413,7 +413,7 @@ export default function LoginPage() {
             </div>
 
             <div style={{ textAlign: "center", marginTop: "20px", paddingTop: "16px", borderTop: "1px solid var(--line)" }}>
-              <Link href="/painel/demo" style={{ color: "var(--teal)", fontSize: "0.82rem", fontWeight: 700 }}>
+              <Link href="/painel/demo" style={{ color: "var(--teal)", fontSize: "var(--text-xs)", fontWeight: "var(--font-bold)" }}>
                 Ou acesse diretamente a demonstração interativa →
               </Link>
             </div>

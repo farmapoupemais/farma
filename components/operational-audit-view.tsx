@@ -214,7 +214,6 @@ export function OperationalAuditView({
             className="button button-ghost"
             onClick={fetchLogs}
             disabled={loading}
-            style={{ fontSize: "0.74rem", height: "38px" }}
           >
             <Icon name="refresh" size={16} /> {loading ? "Atualizando…" : "Recarregar Logs"}
           </button>
@@ -222,7 +221,6 @@ export function OperationalAuditView({
             type="button"
             className="button button-ghost"
             onClick={handleExportCsv}
-            style={{ fontSize: "0.74rem", height: "38px" }}
           >
             <Icon name="download" size={16} /> Exportar CSV Forense
           </button>
@@ -230,7 +228,6 @@ export function OperationalAuditView({
             type="button"
             className="button button-ghost"
             onClick={handleExportJson}
-            style={{ fontSize: "0.74rem", height: "38px" }}
           >
             <Icon name="document" size={16} /> Exportar JSON
           </button>
@@ -265,7 +262,7 @@ export function OperationalAuditView({
                   type="button"
                   className="button button-ghost"
                   onClick={() => { setSelectedDiff(ano); setRawJsonMode(false); }}
-                  style={{ fontSize: "0.72rem", height: "30px", whiteSpace: "nowrap" }}
+                  style={{ height: "34px", whiteSpace: "nowrap" }}
                 >
                   🔍 Inspecionar Diff
                 </button>
@@ -311,7 +308,7 @@ export function OperationalAuditView({
       {/* 4. SELETOR DE ESCOPOS & FILTROS AVANÇADOS */}
       <div className="audit-query-card">
         <div className="audit-scope-selector-row">
-          <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--foreground)" }}>Escopo do Evento:</span>
+          <span style={{ fontSize: "var(--text-xs)", fontWeight: "var(--font-bold)", color: "var(--ink)" }}>Escopo do Evento:</span>
           <div className="audit-scope-pills">
             <button
               type="button"
@@ -359,7 +356,7 @@ export function OperationalAuditView({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="input"
-              style={{ width: "100%", height: "36px", fontSize: "0.82rem" }}
+              style={{ width: "100%", height: "38px" }}
             />
           </div>
 
@@ -368,7 +365,7 @@ export function OperationalAuditView({
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as "all" | "success" | "failed")}
               className="input"
-              style={{ width: "100%", height: "36px", fontSize: "0.82rem" }}
+              style={{ width: "100%", height: "38px" }}
             >
               <option value="all">Todos os Status</option>
               <option value="success">Apenas Sucesso</option>
@@ -376,17 +373,17 @@ export function OperationalAuditView({
             </select>
           </div>
 
-          <button type="submit" className="button button-primary" style={{ height: "36px", fontSize: "0.8rem" }}>
+          <button type="submit" className="button button-primary" style={{ height: "38px" }}>
             <Icon name="search" size={15} /> Filtrar
           </button>
 
           {(categoryFilter !== "all" || statusFilter !== "all" || search) && (
-            <button type="button" onClick={handleResetFilters} className="button button-ghost" style={{ height: "36px", fontSize: "0.8rem" }}>
+            <button type="button" onClick={handleResetFilters} className="button button-ghost" style={{ height: "38px" }}>
               ✕ Limpar
             </button>
           )}
 
-          <div style={{ marginLeft: "auto", fontSize: "0.75rem", color: "var(--muted)", fontWeight: 600 }}>
+          <div style={{ marginLeft: "auto", fontSize: "var(--text-2xs)", color: "var(--muted)", fontWeight: "var(--font-semibold)" }}>
             Exibindo <strong>{logs.length}</strong> eventos auditados
           </div>
         </form>
@@ -421,7 +418,7 @@ export function OperationalAuditView({
                   const isAnomaly = Boolean(log.anomaly_warning);
                   return (
                     <tr key={log.id} style={{ background: isAnomaly ? "#fffbeb" : undefined }}>
-                      <td style={{ fontSize: "0.75rem", fontFamily: "monospace", color: "var(--muted)" }}>
+                      <td style={{ fontSize: "var(--text-3xs)", fontFamily: "var(--font-mono)", color: "var(--muted)" }}>
                         {new Date(log.created_at).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "medium" })}
                       </td>
 
@@ -435,44 +432,44 @@ export function OperationalAuditView({
                       </td>
 
                       <td>
-                        <div style={{ fontWeight: 700, fontSize: "0.82rem", color: "var(--foreground)" }}>
+                        <div style={{ fontWeight: "var(--font-bold)", fontSize: "var(--text-xs)", color: "var(--ink)" }}>
                           <code>{log.action}</code>
                         </div>
                         {isAnomaly && (
-                          <div style={{ fontSize: "0.7rem", color: "#b45309", fontWeight: 600, display: "flex", alignItems: "center", gap: "3px", marginTop: "2px" }}>
+                          <div style={{ fontSize: "var(--text-3xs)", color: "#b45309", fontWeight: "var(--font-semibold)", display: "flex", alignItems: "center", gap: "3px", marginTop: "2px" }}>
                             <Icon name="alert" size={11} /> {log.anomaly_warning}
                           </div>
                         )}
                       </td>
 
                       <td>
-                        <div style={{ fontWeight: 600, fontSize: "0.8rem" }}>{log.actor_email}</div>
-                        <span className="user-role-badge" style={{ fontSize: "0.68rem" }}>
+                        <div style={{ fontWeight: "var(--font-semibold)", fontSize: "var(--text-xs)", color: "var(--ink)" }}>{log.actor_email}</div>
+                        <span className="user-role-badge" style={{ fontSize: "var(--text-3xs)" }}>
                           {log.user_role}
                         </span>
                       </td>
 
                       <td>
-                        <div style={{ fontFamily: "monospace", fontSize: "0.75rem" }}>{log.ip_address}</div>
-                        <div style={{ fontSize: "0.65rem", color: "var(--muted)", maxWidth: "160px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={log.user_agent}>
+                        <div style={{ fontFamily: "var(--font-mono)", fontSize: "var(--text-xs)" }}>{log.ip_address}</div>
+                        <div style={{ fontSize: "var(--text-3xs)", color: "var(--muted)", maxWidth: "160px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={log.user_agent}>
                           {log.user_agent}
                         </div>
                       </td>
 
                       <td>
-                        <div style={{ fontSize: "0.78rem" }}>
-                          <span style={{ color: "var(--muted)", fontSize: "0.7rem" }}>{log.resource}:</span>{" "}
+                        <div style={{ fontSize: "var(--text-xs)" }}>
+                          <span style={{ color: "var(--muted)", fontSize: "var(--text-3xs)" }}>{log.resource}:</span>{" "}
                           <strong>{log.resource_id}</strong>
                         </div>
                       </td>
 
                       <td style={{ textAlign: "center" }}>
                         {log.status === "success" ? (
-                          <span className="status-badge status-approved" style={{ fontSize: "0.7rem", padding: "2px 8px" }}>
+                          <span className="status-badge status-approved" style={{ fontSize: "var(--text-3xs)", padding: "2px 8px" }}>
                             Sucesso
                           </span>
                         ) : (
-                          <span className="status-badge status-rejected" style={{ fontSize: "0.7rem", padding: "2px 8px" }}>
+                          <span className="status-badge status-rejected" style={{ fontSize: "var(--text-3xs)", padding: "2px 8px" }}>
                             Falha
                           </span>
                         )}
@@ -484,12 +481,10 @@ export function OperationalAuditView({
                           className="button button-ghost"
                           onClick={() => { setSelectedDiff(log); setRawJsonMode(false); }}
                           style={{
-                            fontSize: "0.74rem",
                             height: "30px",
                             padding: "0 10px",
                             borderColor: isAnomaly ? "#d97706" : "#00874e",
                             color: isAnomaly ? "#b45309" : "#00874e",
-                            fontWeight: 700,
                           }}
                         >
                           🔍 Inspecionar Diff
@@ -514,14 +509,14 @@ export function OperationalAuditView({
                   <span className="scope-tag-badge" style={{ background: categoryLabels[selectedDiff.category]?.bg, color: categoryLabels[selectedDiff.category]?.color }}>
                     {categoryLabels[selectedDiff.category]?.label}
                   </span>
-                  <span style={{ fontFamily: "monospace", fontSize: "0.75rem", color: "var(--muted)" }}>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "var(--text-2xs)", color: "var(--muted)" }}>
                     {new Date(selectedDiff.created_at).toISOString()}
                   </span>
                 </div>
-                <h3 style={{ margin: "6px 0 2px", fontSize: "1.2rem", color: "var(--foreground)" }}>
+                <h3 style={{ margin: "6px 0 2px", fontSize: "var(--text-lg)", fontWeight: "var(--font-bold)", color: "var(--ink)" }}>
                   Inspeção de Mutação: <code>{selectedDiff.action}</code>
                 </h3>
-                <p style={{ margin: 0, fontSize: "0.75rem", color: "var(--muted)" }}>
+                <p style={{ margin: 0, fontSize: "var(--text-2xs)", color: "var(--muted)" }}>
                   Recurso: <strong>{selectedDiff.resource}</strong> • ID: <code>{selectedDiff.resource_id}</code>
                 </p>
               </div>
@@ -542,8 +537,8 @@ export function OperationalAuditView({
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <span style={{ color: "#d97706" }}><Icon name="alert" size={18} /></span>
                   <div>
-                    <strong style={{ color: "#92400e", fontSize: "0.85rem" }}>Alerta de Auditoria:</strong>
-                    <div style={{ color: "#78350f", fontSize: "0.78rem" }}>{selectedDiff.anomaly_warning}</div>
+                    <strong style={{ color: "#92400e", fontSize: "var(--text-xs)", fontWeight: "var(--font-bold)" }}>Alerta de Auditoria:</strong>
+                    <div style={{ color: "#78350f", fontSize: "var(--text-xs)" }}>{selectedDiff.anomaly_warning}</div>
                   </div>
                 </div>
               </div>
@@ -554,15 +549,15 @@ export function OperationalAuditView({
               <div className="diff-meta-col">
                 <span className="diff-meta-title">Ator Responsável:</span>
                 <span className="diff-meta-val"><strong>{selectedDiff.actor_email}</strong></span>
-                <span className="user-role-badge" style={{ fontSize: "0.68rem" }}>{selectedDiff.user_role}</span>
+                <span className="user-role-badge" style={{ fontSize: "var(--text-3xs)" }}>{selectedDiff.user_role}</span>
               </div>
               <div className="diff-meta-col">
                 <span className="diff-meta-title">Endereço IP:</span>
-                <span className="diff-meta-val" style={{ fontFamily: "monospace" }}>{selectedDiff.ip_address}</span>
+                <span className="diff-meta-val" style={{ fontFamily: "var(--font-mono)", fontSize: "var(--text-xs)" }}>{selectedDiff.ip_address}</span>
               </div>
               <div className="diff-meta-col" style={{ flex: 2 }}>
                 <span className="diff-meta-title">Dispositivo / User-Agent:</span>
-                <span className="diff-meta-val" style={{ fontSize: "0.7rem" }} title={selectedDiff.user_agent}>
+                <span className="diff-meta-val" style={{ fontSize: "var(--text-xs)" }} title={selectedDiff.user_agent}>
                   {selectedDiff.user_agent}
                 </span>
               </div>

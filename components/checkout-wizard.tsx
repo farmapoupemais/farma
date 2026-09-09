@@ -420,7 +420,7 @@ export function CheckoutWizard() {
         <span>
           <Icon name="cart" size={42} />
         </span>
-        <h2 style={{ margin: "16px 0 8px", fontSize: "1.6rem" }}>Seu carrinho está vazio</h2>
+        <h2 style={{ margin: "16px 0 8px", fontSize: "var(--text-2xl)", fontWeight: "var(--font-bold)" }}>Seu carrinho está vazio</h2>
         <p style={{ color: "var(--muted)", marginBottom: "24px" }}>
           Adicione produtos ao carrinho antes de finalizar seu pedido.
         </p>
@@ -1145,7 +1145,7 @@ export function CheckoutWizard() {
                 {/* 3. DÉBITO ONLINE */}
                 {paymentMethod === "debit_card" && (
                   <div className="pm-details-box card-box">
-                    <p style={{ marginBottom: "16px", color: "var(--muted)", fontSize: "0.9rem" }}>
+                    <p style={{ marginBottom: "16px", color: "var(--muted)", fontSize: "var(--text-sm)" }}>
                       Aceitamos cartões de débito Elo, Mastercard, Visa e Cartão de Débito Virtual Caixa.
                     </p>
                     <div className="checkout-form-grid">

@@ -18,10 +18,10 @@ export default function PrivacyPage() {
       {/* 1. QUADRO INSTITUCIONAL DO CONTROLADOR E DO ENCARREGADO DE DADOS (DPO) */}
       <section className="legal-notice-box" aria-label="Identificação do Controlador e Encarregado LGPD">
         <div className="legal-badge-pill">Governança Institucional — Art. 41 da Lei nº 13.709/2018 (LGPD)</div>
-        <h2 style={{ marginTop: "10px", fontSize: "1.3rem", color: "var(--teal-deep)" }}>
+        <h2 style={{ marginTop: "10px", fontSize: "var(--text-xl)", fontWeight: "var(--font-bold)", color: "var(--teal-deep)" }}>
           Qualificação do Controlador e Canal Oficial do Encarregado (DPO)
         </h2>
-        <p style={{ margin: "6px 0 16px", fontSize: "0.85rem", color: "var(--muted)", lineHeight: 1.6 }}>
+        <p style={{ margin: "6px 0 16px", fontSize: "var(--text-sm)", color: "var(--muted)", lineHeight: 1.6 }}>
           A Farmácia Poupe Mais de Medicamentos e Perfumaria Ltda. atua como Controladora de Dados Pessoais. Em cumprimento ao Artigo 41 da LGPD e regulamentações da ANPD, mantemos canal de comunicação permanente e direto para o exercício dos direitos dos titulares de dados.
         </p>
 
@@ -151,18 +151,18 @@ export default function PrivacyPage() {
         <div className="legal-clause">
           <h3>Capítulo V — Da Cláusula Pétrea: Vedação Absoluta à Venda e Cessão de Dados de Saúde</h3>
           <div className="legal-callout danger" style={{ borderLeft: "4px solid #b91c1c", background: "#fef2f2", padding: "16px", borderRadius: "12px", margin: "14px 0" }}>
-            <h4 style={{ color: "#991b1b", margin: "0 0 8px", fontSize: "1.05rem" }}>
+            <h4 style={{ color: "#991b1b", margin: "0 0 8px", fontSize: "var(--text-base)", fontWeight: "var(--font-bold)" }}>
               Compromisso Institucional e Cláusula Pétrea — Art. 11, § 4º da Lei nº 13.709/2018
             </h4>
-            <p style={{ margin: "0 0 10px", fontSize: "0.86rem", color: "#7f1d1d", lineHeight: 1.6 }}>
+            <p style={{ margin: "0 0 10px", fontSize: "var(--text-sm)", color: "#7f1d1d", lineHeight: 1.6 }}>
               <strong>É TERMINANTEMENTE VEDADA</strong> a comercialização, aluguel, compartilhamento, cessão onerosa ou gratuita de quaisquer dados pessoais sensíveis de saúde de nossos clientes e pacientes — incluindo históricos de receituários médicos, diagnósticos clínicos, posologias e medicamentos adquiridos — com:
             </p>
-            <ul style={{ margin: "0", paddingLeft: "20px", fontSize: "0.84rem", color: "#7f1d1d" }}>
+            <ul style={{ margin: "0", paddingLeft: "20px", fontSize: "var(--text-sm)", color: "#7f1d1d" }}>
               <li>Operadoras de planos privados de assistência à saúde e seguradoras médicas;</li>
               <li>Instituições financeiras, bancos e birôs de análise de crédito;</li>
               <li>Empresas de publicidade direcionada, corretores de dados (data brokers) ou redes de mídia programática.</li>
             </ul>
-            <p style={{ margin: "10px 0 0", fontSize: "0.82rem", color: "#991b1b" }}>
+            <p style={{ margin: "10px 0 0", fontSize: "var(--text-xs)", color: "#991b1b" }}>
               A Farmácia Poupe Mais repudia e proíbe qualquer prática que possa resultar em seleção de riscos, discriminação tarifária de planos de saúde ou violação do sigilo terapêutico.
             </p>
           </div>
@@ -187,7 +187,7 @@ export default function PrivacyPage() {
             Os dados pessoais serão retidos pela Farmácia Poupe Mais durante o tempo necessário para atingir as finalidades do tratamento, observados os prazos legais de guarda obrigatória:
           </p>
           <div className="legal-data-table-wrap" style={{ overflowX: "auto", margin: "14px 0" }}>
-            <table style={{ width: "100%", fontSize: "0.82rem", borderCollapse: "collapse", textAlign: "left" }}>
+            <table style={{ width: "100%", fontSize: "var(--text-xs)", borderCollapse: "collapse", textAlign: "left" }}>
               <thead>
                 <tr style={{ background: "var(--teal-deep)", color: "#ffffff" }}>
                   <th style={{ padding: "10px 12px" }}>Categoria de Dado</th>

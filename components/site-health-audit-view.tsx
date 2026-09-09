@@ -142,7 +142,7 @@ export function SiteHealthAuditView({
             className="button button-primary"
             onClick={fetchSiteAudit}
             disabled={loading}
-            style={{ fontSize: "0.78rem", height: "38px" }}
+            style={{ height: "38px" }}
           >
             <Icon name="refresh" size={16} /> {loading ? "Auditando Site em Tempo Real…" : "Executar Auditoria Agora"}
           </button>
@@ -320,7 +320,7 @@ export function SiteHealthAuditView({
           </div>
 
           <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-            <span style={{ fontSize: "0.72rem", color: "var(--muted)", fontWeight: 700 }}>Status:</span>
+            <span style={{ fontSize: "var(--text-xs)", color: "var(--muted)", fontWeight: "var(--font-bold)" }}>Status:</span>
             <button
               type="button"
               className={`audit-pill-btn ${statusFilter === "all" ? "active" : ""}`}
@@ -344,7 +344,7 @@ export function SiteHealthAuditView({
             </button>
           </div>
 
-          <div style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 600 }}>
+          <div style={{ fontSize: "var(--text-2xs)", color: "var(--muted)", fontWeight: "var(--font-semibold)" }}>
             Exibindo <strong>{filteredChecks.length}</strong> itens auditados
           </div>
         </div>
