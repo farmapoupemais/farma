@@ -1,5 +1,6 @@
 import { authorize } from "@/lib/access";
 import { getSupabaseServerClient } from "@/lib/supabase";
+import { recordAuditMutation } from "@/lib/audit-interceptor";
 import { cleanText, mutationOriginAllowed, readJsonBody, RequestBodyError, toSafeInteger } from "@/lib/validation";
 
 export async function GET() {
@@ -52,14 +53,18 @@ export async function POST(request: Request) {
 
     if (insertError) throw insertError;
 
-    // Audit log
-    await client.from("audit_logs").insert({
-      actor_email: auth.actor.email.toLowerCase(),
+    // Audit log imutável de criação de cupom de desconto
+    await recordAuditMutation({
+      req: request,
+      category: "admin",
       action: "discount.create",
-      entity_type: "discount",
-      entity_id: id,
-      metadata_json: { code, kind },
-      created_at: now,
+      resource: "discounts",
+      resourceId: id,
+      actorEmail: auth.actor.email,
+      actorRole: auth.actor.role,
+      oldValues: null,
+      newValues: { id, name, code, kind, amount, minSubtotalCents },
+      status: "success",
     });
 
     return Response.json({ discount: { id, code } }, { status: 201 });
@@ -90,6 +95,19 @@ export async function PATCH(request: Request) {
 
     if (error) throw error;
 
+    await recordAuditMutation({
+      req: request,
+      category: "admin",
+      action: "discount.toggle",
+      resource: "discounts",
+      resourceId: id,
+      actorEmail: auth.actor.email,
+      actorRole: auth.actor.role,
+      oldValues: { id, isActive: !isActive },
+      newValues: { id, isActive },
+      status: "success",
+    });
+
     return Response.json({ ok: true, id, isActive });
   } catch {
     return Response.json({ error: "Erro ao atualizar desconto." }, { status: 500 });
@@ -107,8 +125,27 @@ export async function DELETE(request: Request) {
     if (!id) return Response.json({ error: "ID do desconto não informado." }, { status: 400 });
 
     const client = getSupabaseServerClient();
+    const { data: existing } = await client
+      .from("discounts")
+      .select("id, name, code, amount, kind")
+      .eq("id", id)
+      .maybeSingle();
+
     const { error } = await client.from("discounts").delete().eq("id", id);
     if (error) throw error;
+
+    await recordAuditMutation({
+      req: request,
+      category: "admin",
+      action: "discount.delete",
+      resource: "discounts",
+      resourceId: id,
+      actorEmail: auth.actor.email,
+      actorRole: auth.actor.role,
+      oldValues: existing || { id },
+      newValues: null,
+      status: "success",
+    });
 
     return Response.json({ ok: true });
   } catch {

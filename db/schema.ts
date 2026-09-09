@@ -119,6 +119,16 @@ export const auditLogs = sqliteTable("audit_logs", {
   action: text("action").notNull(),
   entityType: text("entity_type").notNull(),
   entityId: text("entity_id").notNull(),
+  category: text("category").notNull().default("admin"),
+  userRole: text("user_role").notNull().default("system"),
+  ipAddress: text("ip_address").notNull().default("127.0.0.1"),
+  userAgent: text("user_agent").notNull().default("internal"),
+  resource: text("resource").notNull().default(""),
+  resourceId: text("resource_id").notNull().default(""),
+  oldValuesJson: text("old_values_json").notNull().default("{}"),
+  newValuesJson: text("new_values_json").notNull().default("{}"),
+  status: text("status").notNull().default("success"),
   metadataJson: text("metadata_json").notNull().default("{}"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
+

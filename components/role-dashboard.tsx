@@ -6,6 +6,8 @@ import type { Role } from "@/lib/access";
 import { catalogProducts, formatCurrency, type ProductColor } from "@/lib/catalog";
 import { BrandMark, Icon } from "./icons";
 import { supabase } from "@/lib/supabase";
+import { OperationalAuditView } from "./operational-audit-view";
+import { SiteHealthAuditView } from "./site-health-audit-view";
 
 type DashboardRole = Role;
 type ViewKey = "overview" | "orders" | "financial" | "audit" | "catalog" | "marketing" | "team" | "account";
@@ -23,7 +25,7 @@ const navItems: { key: ViewKey; label: string; icon: string; roles: DashboardRol
   { key: "overview", label: "Visão geral", icon: "spark", roles: ["owner", "manager", "pharmacist", "catalog", "support", "customer"] },
   { key: "orders", label: "Pedidos", icon: "cart", roles: ["owner", "manager", "support", "customer"] },
   { key: "financial", label: "Financeiro & Caixa", icon: "banknote", roles: ["owner", "manager"] },
-  { key: "audit", label: "Auditoria Financeira (Tudo)", icon: "shield", roles: ["owner", "manager"] },
+  { key: "audit", label: "Suíte de Auditoria Integral", icon: "shield", roles: ["owner", "manager"] },
   { key: "catalog", label: "Produtos e estoque", icon: "capsule", roles: ["owner", "manager", "catalog"] },
   { key: "marketing", label: "Banners e descontos", icon: "sun", roles: ["owner", "manager", "catalog"] },
   { key: "team", label: "Equipe e permissões", icon: "user", roles: ["owner"] },
@@ -3482,6 +3484,7 @@ function AuditView({
     });
   });
 
+  const [activeSubTab, setActiveSubTab] = useState<"operations" | "financial" | "site_health">("operations");
   const [loading, setLoading] = useState(false);
   const [selectedDossier, setSelectedDossier] = useState<FinancialAuditRecord | null>(null);
   const [manualModalOpen, setManualModalOpen] = useState(false);
@@ -3826,18 +3829,60 @@ function AuditView({
 
   return (
     <div className="financial-audit-view">
-      {/* 1. CABEÇALHO DA PLATAFORMA */}
-      <div className="audit-top-header">
-        <div>
-          <h2>
-            <span style={{ color: "#00874e" }}><Icon name="shield" size={26} /></span>
-            Plataforma de Auditoria Financeira Integral
-          </h2>
-          <p>
-            Rastreabilidade e conciliação de <strong>100% dos fluxos monetários</strong> (pedidos e-commerce, balcão, tele-entrega expressa, despesas e fornecedores).
-            Consulte instantaneamente por <strong>data, dia, hora, total e pessoa</strong>.
-          </p>
-        </div>
+      {/* 0. SELETOR PRINCIPAL DAS SUB-ABAS DA SUÍTE DE AUDITORIA */}
+      <div className="audit-suite-subtabs">
+        <button
+          type="button"
+          onClick={() => setActiveSubTab("operations")}
+          className={`audit-suite-tab-btn ${activeSubTab === "operations" ? "active" : ""}`}
+        >
+          <Icon name="shield" size={17} />
+          <span>Auditoria de Operações, Catálogo & Segurança (Os 4 Escopos)</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSubTab("financial")}
+          className={`audit-suite-tab-btn ${activeSubTab === "financial" ? "active" : ""}`}
+        >
+          <Icon name="banknote" size={17} />
+          <span>Auditoria Financeira & Livro-Razão Integral</span>
+          <span className="audit-tab-badge-neutral">{records.length}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSubTab("site_health")}
+          className={`audit-suite-tab-btn ${activeSubTab === "site_health" ? "active" : ""}`}
+        >
+          <Icon name="spark" size={17} />
+          <span>Diagnóstico & Saúde do Site (Shopify & Mailchimp Benchmark)</span>
+          <span className="audit-tab-badge-success">A+</span>
+        </button>
+      </div>
+
+      {activeSubTab === "operations" && (
+        <OperationalAuditView onNotice={onNotice} />
+      )}
+
+      {activeSubTab === "site_health" && (
+        <SiteHealthAuditView onNotice={onNotice} />
+      )}
+
+      {activeSubTab === "financial" && (
+        <>
+          {/* 1. CABEÇALHO DA PLATAFORMA FINANCEIRA */}
+          <div className="audit-top-header">
+            <div>
+              <h2>
+                <span style={{ color: "#00874e" }}><Icon name="shield" size={26} /></span>
+                Plataforma de Auditoria Financeira Integral
+              </h2>
+              <p>
+                Rastreabilidade e conciliação de <strong>100% dos fluxos monetários</strong> (pedidos e-commerce, balcão, tele-entrega expressa, despesas e fornecedores).
+                Consulte instantaneamente por <strong>data, dia, hora, total e pessoa</strong>.
+              </p>
+            </div>
 
         <div className="audit-header-actions">
           <button
@@ -4592,6 +4637,8 @@ function AuditView({
             </form>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

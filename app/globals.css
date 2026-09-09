@@ -4542,4 +4542,709 @@ body { background: var(--paper); color: var(--ink); font-family: Inter, ui-sans-
   border-top: 1px solid #e2e8f0;
 }
 
+/* ==============================================================================
+   SUÍTE DE AUDITORIA INTEGRAL & GOVERNANÇA (SHOPIFY, MAILCHIMP & OS 4 ESCOPOS)
+============================================================================== */
+
+/* Sub-abas de navegação da suíte */
+.audit-suite-subtabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.audit-suite-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  border-radius: 8px 8px 0 0;
+}
+
+.audit-suite-tab-btn:hover {
+  color: #00874e;
+  background: #f8fafc;
+}
+
+.audit-suite-tab-btn.active {
+  color: #00874e;
+  border-bottom-color: #00874e;
+  background: #e6f7ef;
+}
+
+.audit-tab-badge-neutral {
+  font-size: 0.68rem;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.audit-tab-badge-alert {
+  font-size: 0.68rem;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+  animation: pulse-badge 2s infinite;
+}
+
+.audit-tab-badge-success {
+  font-size: 0.68rem;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  background: #00874e;
+  color: #ffffff;
+  font-weight: 800;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+/* Central de Alertas de Anomalias em Tempo Real */
+.anomaly-alert-container {
+  background: #fffbeb;
+  border: 1px solid #fef3c7;
+  border-left: 5px solid #d97706;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.08);
+}
+
+.anomaly-alert-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.anomaly-alert-icon {
+  color: #d97706;
+  margin-top: 2px;
+}
+
+.anomaly-alert-header strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #92400e;
+}
+
+.anomaly-alert-header p {
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  color: #78350f;
+}
+
+.anomaly-alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.anomaly-alert-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #ffffff;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.anomaly-alert-badge {
+  font-size: 0.64rem;
+  font-weight: 800;
+  background: #ef4444;
+  color: #ffffff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.anomaly-alert-details {
+  flex: 1;
+}
+
+.anomaly-alert-title {
+  font-size: 0.8rem;
+  color: #1e293b;
+}
+
+.anomaly-alert-msg {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #b45309;
+}
+
+.anomaly-alert-meta {
+  font-size: 0.68rem;
+  color: #64748b;
+}
+
+/* Seletor de Escopos do Evento (4 Categorias) */
+.audit-scope-selector-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.audit-scope-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.audit-scope-pill {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.audit-scope-pill:hover {
+  background: #f1f5f9;
+}
+
+.audit-scope-pill.active {
+  background: #00874e;
+  color: #ffffff;
+  border-color: #00874e;
+}
+
+.audit-scope-pill.auth.active {
+  background: #6366f1;
+  border-color: #6366f1;
+}
+
+.audit-scope-pill.catalog.active {
+  background: #0284c7;
+  border-color: #0284c7;
+}
+
+.audit-scope-pill.orders.active {
+  background: #00874e;
+  border-color: #00874e;
+}
+
+.audit-scope-pill.admin.active {
+  background: #e11d48;
+  border-color: #e11d48;
+}
+
+.scope-tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+
+/* Visualizador de Diff (Diff Inspector) */
+.diff-modal-card {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.diff-meta-strip {
+  display: flex;
+  gap: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 10px 14px;
+  flex-wrap: wrap;
+}
+
+.diff-meta-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 140px;
+}
+
+.diff-meta-title {
+  font-size: 0.68rem;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.diff-meta-val {
+  font-size: 0.8rem;
+  color: #0f172a;
+}
+
+.diff-comparison-table-wrapper {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.diff-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.diff-table th {
+  text-align: left;
+  padding: 8px 12px;
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 700;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.diff-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.diff-row-changed {
+  background: #fdfefe;
+}
+
+.diff-key-cell {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.diff-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  font-size: 0.76rem;
+  max-width: 100%;
+  word-break: break-word;
+}
+
+.diff-removed {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  text-decoration: line-through;
+}
+
+.diff-added {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  font-weight: 700;
+}
+
+.diff-unchanged {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.diff-sign {
+  font-weight: 900;
+  font-size: 0.85rem;
+}
+
+.diff-empty {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.diff-raw-json-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .diff-raw-json-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.diff-json-pane {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.diff-json-label {
+  padding: 6px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.diff-json-label.old {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.diff-json-label.new {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.diff-json-code {
+  margin: 0;
+  padding: 10px;
+  font-size: 0.7rem;
+  font-family: ui-monospace, monospace;
+  max-height: 280px;
+  overflow-y: auto;
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+.diff-json-code.old {
+  color: #fca5a5;
+}
+
+.diff-json-code.new {
+  color: #86efac;
+}
+
+/* DIAGNÓSTICO DO SITE (SHOPIFY & MAILCHIMP BENCHMARK) */
+.site-audit-score-banner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: linear-gradient(135deg, #00874e 0%, #005a34 100%);
+  color: #ffffff;
+  padding: 1.5rem 1.75rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 16px rgba(0, 135, 78, 0.15);
+  flex-wrap: wrap;
+}
+
+.site-audit-big-score-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.site-audit-score-circle {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 4px solid #facc15;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.site-audit-score-number {
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.site-audit-score-scale {
+  font-size: 0.65rem;
+  opacity: 0.8;
+  font-weight: 700;
+}
+
+.site-audit-grade-pill {
+  background: #facc15;
+  color: #713f12;
+  font-size: 0.74rem;
+  font-weight: 900;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  letter-spacing: 0.5px;
+}
+
+.site-audit-score-info {
+  flex: 1;
+  min-width: 260px;
+}
+
+.site-audit-score-info h3 {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+  color: #ffffff;
+}
+
+.site-audit-score-info p {
+  margin: 0 0 12px;
+  font-size: 0.84rem;
+  opacity: 0.95;
+  line-height: 1.4;
+}
+
+.site-audit-score-stats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.site-audit-stat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.site-audit-stat-chip .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.site-audit-stat-chip.passed {
+  color: #a7f3d0;
+}
+
+.site-audit-stat-chip.warning {
+  color: #fde68a;
+}
+
+.site-audit-stat-chip.critical {
+  color: #fca5a5;
+}
+
+.site-audit-pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 1.25rem;
+}
+
+.site-audit-pillar-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.site-audit-pillar-card:hover {
+  transform: translateY(-2px);
+  border-color: #00874e;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.site-audit-pillar-card.active {
+  border-color: #00874e;
+  border-width: 2px;
+  background: #f0fdf4;
+}
+
+.pillar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.pillar-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pillar-score {
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+
+.site-audit-pillar-card h4 {
+  margin: 0 0 4px;
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.pillar-source {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.site-audit-pillar-card p {
+  margin: 0 0 12px;
+  font-size: 0.78rem;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.pillar-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  color: #64748b;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 8px;
+}
+
+.pillar-status-chip {
+  font-weight: 700;
+  color: #00874e;
+  background: #e6f7ef;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Checklist detalhado */
+.site-audit-checklist-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.site-audit-checklist-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.site-audit-item-row {
+  display: flex;
+  gap: 16px;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+  align-items: flex-start;
+}
+
+.site-audit-item-row:last-child {
+  border-bottom: none;
+}
+
+.site-audit-item-status-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 90px;
+}
+
+.status-chip {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-align: center;
+  width: 100%;
+}
+
+.status-chip.passed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-chip.warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-chip.critical {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.item-score {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.site-audit-item-content {
+  flex: 1;
+}
+
+.item-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.item-title-row h4 {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #0f172a;
+}
+
+.source-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.metric-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: #e6f7ef;
+  color: #00874e;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.item-desc {
+  margin: 0 0 6px;
+  font-size: 0.8rem;
+  color: #334155;
+  line-height: 1.4;
+}
+
+.item-recommendation {
+  font-size: 0.74rem;
+  color: #00874e;
+  background: #f0fdf4;
+  border-left: 3px solid #00874e;
+  padding: 4px 8px;
+  border-radius: 0 4px 4px 0;
+}
+
+
 

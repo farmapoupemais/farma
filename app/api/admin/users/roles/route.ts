@@ -1,5 +1,6 @@
 import { authorize, roles, type Role } from "@/lib/access";
 import { getSupabaseServerClient } from "@/lib/supabase";
+import { recordAuditMutation } from "@/lib/audit-interceptor";
 import { cleanEmail, mutationOriginAllowed, readJsonBody, RequestBodyError } from "@/lib/validation";
 
 export async function GET(request: Request) {
@@ -42,6 +43,13 @@ export async function POST(request: Request) {
     const client = getSupabaseServerClient();
     const now = new Date().toISOString();
 
+    const { data: existingUser } = await client
+      .from("user_roles")
+      .select("role")
+      .eq("email", email)
+      .maybeSingle();
+    const oldRole = existingUser?.role || "customer";
+
     const { error: roleError } = await client.from("user_roles").upsert({
       email,
       role,
@@ -51,14 +59,18 @@ export async function POST(request: Request) {
 
     if (roleError) throw roleError;
 
-    // Record audit log
-    await client.from("audit_logs").insert({
-      actor_email: auth.actor.email.toLowerCase(),
+    // Audit log imutável de alteração de perfil RBAC
+    await recordAuditMutation({
+      req: request,
+      category: "auth",
       action: "user.role.assign",
-      entity_type: "user",
-      entity_id: email,
-      metadata_json: { role },
-      created_at: now,
+      resource: "users",
+      resourceId: email,
+      actorEmail: auth.actor.email,
+      actorRole: auth.actor.role,
+      oldValues: { email, role: oldRole },
+      newValues: { email, role },
+      status: "success",
     });
 
     return Response.json({ user: { email, role } }, { status: 201 });
@@ -83,17 +95,27 @@ export async function DELETE(request: Request) {
     }
 
     const client = getSupabaseServerClient();
+    const { data: existingUser } = await client
+      .from("user_roles")
+      .select("role")
+      .eq("email", email)
+      .maybeSingle();
+
     const { error } = await client.from("user_roles").delete().eq("email", email);
     if (error) throw error;
 
-    // Audit log
-    await client.from("audit_logs").insert({
-      actor_email: auth.actor.email.toLowerCase(),
+    // Audit log imutável de revogação de perfil
+    await recordAuditMutation({
+      req: request,
+      category: "auth",
       action: "user.role.revoke",
-      entity_type: "user",
-      entity_id: email,
-      metadata_json: { revokedRole: "customer" },
-      created_at: new Date().toISOString(),
+      resource: "users",
+      resourceId: email,
+      actorEmail: auth.actor.email,
+      actorRole: auth.actor.role,
+      oldValues: { email, role: existingUser?.role || "staff" },
+      newValues: { email, role: "customer" },
+      status: "success",
     });
 
     return Response.json({ ok: true, email });

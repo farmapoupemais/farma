@@ -182,8 +182,20 @@ WITH CHECK (public.is_owner());
 -- ==============================================================================
 -- 8. POLÍTICAS DE LOGS DE AUDITORIA (TRILHA IMUTÁVEL)
 -- ==============================================================================
+-- Assegurar colunas essenciais do schema de auditoria
+ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'admin';
+ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS user_role TEXT NOT NULL DEFAULT 'system';
+ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS ip_address TEXT NOT NULL DEFAULT '127.0.0.1';
+ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS user_agent TEXT NOT NULL DEFAULT 'internal';
+ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS resource TEXT NOT NULL DEFAULT '';
+ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS resource_id TEXT NOT NULL DEFAULT '';
+ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS old_values JSONB NOT NULL DEFAULT '{}';
+ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS new_values JSONB NOT NULL DEFAULT '{}';
+ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'success';
+
 -- Inserção permitida para qualquer usuário autenticado realizando ações
 CREATE POLICY "system_insert_audit"
+
 ON public.audit_logs FOR INSERT
 WITH CHECK (TRUE);
 

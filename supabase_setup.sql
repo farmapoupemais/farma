@@ -120,16 +120,37 @@ CREATE TABLE IF NOT EXISTS public.prescription_usages (
   used_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 10. TABELA DE AUDITORIA
+-- 10. TABELA DE AUDITORIA IMUTÁVEL (APPEND-ONLY)
 CREATE TABLE IF NOT EXISTS public.audit_logs (
   id BIGSERIAL PRIMARY KEY,
   actor_email TEXT NOT NULL,
   action TEXT NOT NULL,
   entity_type TEXT NOT NULL,
   entity_id TEXT NOT NULL,
+  category TEXT NOT NULL DEFAULT 'admin',
+  user_role TEXT NOT NULL DEFAULT 'system',
+  ip_address TEXT NOT NULL DEFAULT '127.0.0.1',
+  user_agent TEXT NOT NULL DEFAULT 'internal',
+  resource TEXT NOT NULL DEFAULT '',
+  resource_id TEXT NOT NULL DEFAULT '',
+  old_values JSONB NOT NULL DEFAULT '{}',
+  new_values JSONB NOT NULL DEFAULT '{}',
+  status TEXT NOT NULL DEFAULT 'success',
   metadata_json JSONB NOT NULL DEFAULT '{}',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Migrações seguras idempotentes caso a tabela já exista
+ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'admin';
+ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS user_role TEXT NOT NULL DEFAULT 'system';
+ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS ip_address TEXT NOT NULL DEFAULT '127.0.0.1';
+ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS user_agent TEXT NOT NULL DEFAULT 'internal';
+ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS resource TEXT NOT NULL DEFAULT '';
+ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS resource_id TEXT NOT NULL DEFAULT '';
+ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS old_values JSONB NOT NULL DEFAULT '{}';
+ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS new_values JSONB NOT NULL DEFAULT '{}';
+ALTER TABLE public.audit_logs ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'success';
+
 
 -- ==============================================================================
 -- DESATIVAR RLS (Permitir leitura/escrita pública e segura pela aplicação)

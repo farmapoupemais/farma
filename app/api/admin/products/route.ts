@@ -1,5 +1,6 @@
 import { authorize } from "@/lib/access";
 import { getSupabaseServerClient } from "@/lib/supabase";
+import { recordAuditMutation } from "@/lib/audit-interceptor";
 import { catalogProducts, generateEan, type ProductColor } from "@/lib/catalog";
 import { extractProductMetadata, injectProductMetadata } from "@/lib/products-repository";
 import {
@@ -133,14 +134,29 @@ export async function POST(request: Request) {
 
     if (insertError) throw insertError;
 
-    // Audit log
-    await client.from("audit_logs").insert({
-      actor_email: auth.actor.email.toLowerCase(),
+    // Audit log imutável enriquecido
+    await recordAuditMutation({
+      req: request,
+      category: "catalog",
       action: "product.create",
-      entity_type: "product",
-      entity_id: id,
-      metadata_json: { slug, name, barcode, imagesCount: images.length, colorsCount: colors.length },
-      created_at: now,
+      resource: "products",
+      resourceId: id,
+      actorEmail: auth.actor.email,
+      actorRole: auth.actor.role,
+      oldValues: null,
+      newValues: {
+        id,
+        slug,
+        name,
+        brand,
+        category,
+        priceCents,
+        compareAtCents,
+        stock,
+        barcode,
+        imagesCount: images.length,
+      },
+      status: "success",
     });
 
     return Response.json(
@@ -205,13 +221,27 @@ export async function PATCH(request: Request) {
 
       if (updateErr) throw updateErr;
 
+      // Audit log imutável de movimentação de estoque
+      await recordAuditMutation({
+        req: request,
+        category: "catalog",
+        action: "product.stock_change",
+        resource: "products",
+        resourceId: id,
+        actorEmail: auth.actor.email,
+        actorRole: auth.actor.role,
+        oldValues: { stock: current.stock, name: current.name },
+        newValues: { stock: newStock, name: current.name, deltaStock: delta },
+        status: "success",
+      });
+
       return Response.json({ id, stock: newStock });
     }
 
     // Full edit
     const { data: currentProduct } = await client
       .from("products")
-      .select("description, short_description, brand, category")
+      .select("id, name, slug, brand, category, short_description, description, price_cents, compare_at_cents, stock, is_active")
       .eq("id", id)
       .maybeSingle();
 
@@ -258,14 +288,39 @@ export async function PATCH(request: Request) {
 
     if (updateError) throw updateError;
 
-    // Audit log
-    await client.from("audit_logs").insert({
-      actor_email: auth.actor.email.toLowerCase(),
-      action: "product.update",
-      entity_type: "product",
-      entity_id: id,
-      metadata_json: { ...updates, barcode, imagesCount: images.length, colorsCount: colors.length },
-      created_at: new Date().toISOString(),
+    // Detectar tipo específico de mutação para trilha forense
+    const isPriceChange = body.priceCents !== undefined && currentProduct?.price_cents !== body.priceCents;
+    const isStockChange = body.stock !== undefined && currentProduct?.stock !== body.stock;
+    const auditAction = isPriceChange ? "product.price_change" : isStockChange ? "product.stock_change" : "product.update";
+
+    // Audit log imutável enriquecido com diff
+    await recordAuditMutation({
+      req: request,
+      category: "catalog",
+      action: auditAction,
+      resource: "products",
+      resourceId: id,
+      actorEmail: auth.actor.email,
+      actorRole: auth.actor.role,
+      oldValues: {
+        name: currentProduct?.name,
+        priceCents: currentProduct?.price_cents,
+        compareAtCents: currentProduct?.compare_at_cents,
+        stock: currentProduct?.stock,
+        brand: currentProduct?.brand,
+        category: currentProduct?.category,
+        isActive: currentProduct?.is_active,
+      },
+      newValues: {
+        name: updates.name ?? currentProduct?.name,
+        priceCents: updates.price_cents ?? currentProduct?.price_cents,
+        compareAtCents: updates.compare_at_cents ?? currentProduct?.compare_at_cents,
+        stock: updates.stock ?? currentProduct?.stock,
+        brand: updates.brand ?? currentProduct?.brand,
+        category: updates.category ?? currentProduct?.category,
+        isActive: updates.is_active ?? currentProduct?.is_active,
+      },
+      status: "success",
     });
 
     return Response.json({
@@ -296,10 +351,40 @@ export async function DELETE(request: Request) {
     if (!id) return Response.json({ error: "ID do produto não informado." }, { status: 400 });
 
     const client = getSupabaseServerClient();
+    const { data: existing } = await client
+      .from("products")
+      .select("id, name, slug, brand, category, price_cents, stock")
+      .eq("id", id)
+      .maybeSingle();
+
     const { error } = await client.from("products").delete().eq("id", id);
     if (error) throw error;
 
-    return Response.json({ ok: true });
+    // Audit log imutável de exclusão de produto
+    await recordAuditMutation({
+      req: request,
+      category: "catalog",
+      action: "product.delete",
+      resource: "products",
+      resourceId: id,
+      actorEmail: auth.actor.email,
+      actorRole: auth.actor.role,
+      oldValues: existing
+        ? {
+            id: existing.id,
+            name: existing.name,
+            slug: existing.slug,
+            brand: existing.brand,
+            category: existing.category,
+            priceCents: existing.price_cents,
+            stock: existing.stock,
+          }
+        : { id },
+      newValues: null,
+      status: "success",
+    });
+
+    return Response.json({ ok: true, id });
   } catch {
     return Response.json({ error: "Erro ao excluir o produto." }, { status: 500 });
   }

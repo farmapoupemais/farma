@@ -1,6 +1,7 @@
 import { authorize } from "@/lib/access";
 import { canTransitionOrder, isKnownOrderStatus } from "@/lib/order-policy";
 import { getSupabaseServerClient } from "@/lib/supabase";
+import { recordAuditMutation } from "@/lib/audit-interceptor";
 import { mutationOriginAllowed, readJsonBody, RequestBodyError } from "@/lib/validation";
 
 export async function PATCH(
@@ -28,7 +29,7 @@ export async function PATCH(
     // Check existing order in Supabase
     const { data: current } = await client
       .from("orders")
-      .select("id, status")
+      .select("id, status, total_cents, customer_email")
       .eq("id", orderId)
       .maybeSingle();
 
@@ -57,14 +58,29 @@ export async function PATCH(
 
     if (error) throw error;
 
-    // Audit log
-    await client.from("audit_logs").insert({
-      actor_email: auth.actor.email.toLowerCase(),
-      action: "order.status.update",
-      entity_type: "order",
-      entity_id: orderId,
-      metadata_json: { from: currentStatus, to: status },
-      created_at: updatedAt,
+    // Audit log imutável de transição de status de pedido
+    const actionName = status === "cancelled" ? "order.cancel" : status === "paid" ? "order.payment_confirmed" : "order.status_update";
+    await recordAuditMutation({
+      req: request,
+      category: "orders",
+      action: actionName,
+      resource: "orders",
+      resourceId: orderId,
+      actorEmail: auth.actor.email,
+      actorRole: auth.actor.role,
+      oldValues: {
+        id: orderId,
+        status: currentStatus,
+        totalCents: current?.total_cents,
+        customerEmail: current?.customer_email,
+      },
+      newValues: {
+        id: orderId,
+        status,
+        totalCents: current?.total_cents,
+        customerEmail: current?.customer_email,
+      },
+      status: "success",
     });
 
     return Response.json({ order: { id: orderId, status } });
