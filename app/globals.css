@@ -4064,3 +4064,482 @@ body { background: var(--paper); color: var(--ink); font-family: Inter, ui-sans-
   }
 }
 
+/* ==========================================================================
+   PLATAFORMA DE AUDITORIA FINANCEIRA INTEGRAL (PAINEL ADMINISTRATIVO)
+   ========================================================================== */
+.financial-audit-view {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  width: 100%;
+}
+
+.audit-top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 20px 24px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 10px rgba(0, 40, 20, 0.04);
+}
+
+.audit-top-header h2 {
+  margin: 0 0 4px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #003820;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.audit-top-header p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.audit-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Painel de Consulta & Filtros Avançados */
+.audit-query-card {
+  background: #ffffff;
+  border: 1.5px solid #d1fae5;
+  border-radius: 18px;
+  padding: 22px 24px;
+  box-shadow: 0 4px 20px rgba(0, 135, 78, 0.05);
+}
+
+.audit-query-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.audit-query-title-row h3 {
+  margin: 0;
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: #005a34;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.audit-query-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.audit-query-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.audit-query-field label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.audit-query-field input,
+.audit-query-field select {
+  height: 40px;
+  padding: 0 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 0.78rem;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.audit-query-field input:focus,
+.audit-query-field select:focus {
+  border-color: #00874e;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(0, 135, 78, 0.12);
+}
+
+.audit-quick-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.audit-pill-btn {
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.audit-pill-btn:hover {
+  border-color: #00874e;
+  color: #00874e;
+  background: #f0fdf4;
+}
+
+.audit-pill-btn.active {
+  background: #00874e;
+  border-color: #00874e;
+  color: #ffffff;
+}
+
+/* Cards de Balanço em Tempo Real */
+.audit-kpis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.audit-kpi-card {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.audit-kpi-card.highlight-green {
+  border-left: 4px solid #00874e;
+}
+
+.audit-kpi-card.highlight-red {
+  border-left: 4px solid #dc2626;
+}
+
+.audit-kpi-card.highlight-blue {
+  border-left: 4px solid #0284c7;
+}
+
+.audit-kpi-card small {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.audit-kpi-card strong {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.audit-kpi-card span {
+  font-size: 0.68rem;
+  color: #94a3b8;
+}
+
+/* Tabela do Livro-Razão Imutável */
+.audit-ledger-card {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+}
+
+.audit-ledger-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--line);
+  background: #fcfdfd;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.audit-ledger-table-wrap {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.audit-ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.76rem;
+}
+
+.audit-ledger-table th {
+  padding: 12px 16px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1.5px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.audit-ledger-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  vertical-align: middle;
+}
+
+.audit-ledger-table tr:hover td {
+  background: #f8faf9;
+}
+
+/* Elementos Visuais das Células */
+.audit-protocol-tag {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  display: inline-block;
+}
+
+.audit-date-cell strong {
+  display: block;
+  font-size: 0.78rem;
+  color: #0f172a;
+}
+
+.audit-date-cell small {
+  display: block;
+  font-size: 0.65rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.audit-time-cell strong {
+  display: block;
+  font-size: 0.76rem;
+  color: #0f172a;
+  font-family: ui-monospace, monospace;
+}
+
+.audit-shift-tag {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.audit-shift-tag.madrugada { background: #e0e7ff; color: #3730a3; }
+.audit-shift-tag.manha { background: #fef3c7; color: #92400e; }
+.audit-shift-tag.tarde { background: #ffedd5; color: #9a3412; }
+.audit-shift-tag.noite { background: #ede9fe; color: #5b21b6; }
+
+.audit-person-cell strong {
+  display: block;
+  font-size: 0.8rem;
+  color: #0f172a;
+}
+
+.audit-person-cell small {
+  display: block;
+  font-size: 0.68rem;
+  color: #64748b;
+}
+
+.audit-role-tag {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #475569;
+  margin-top: 2px;
+}
+
+.audit-payment-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.audit-amount-cell {
+  text-align: right;
+  font-size: 0.84rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.audit-amount-cell.credit { color: #00874e; }
+.audit-amount-cell.debit { color: #dc2626; }
+.audit-amount-cell.neutral { color: #64748b; }
+
+/* Modal Dossiê de Auditoria Financeira */
+.audit-dossier-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(5px);
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+.audit-dossier-card {
+  width: min(720px, 100%);
+  max-height: 90vh;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+}
+
+.audit-dossier-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: #005a34;
+  color: #ffffff;
+}
+
+.audit-dossier-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.audit-dossier-header p {
+  margin: 2px 0 0;
+  font-size: 0.72rem;
+  color: #bbf7d0;
+}
+
+.audit-dossier-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.audit-dossier-section {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 18px;
+}
+
+.audit-dossier-section h4 {
+  margin: 0 0 10px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #005a34;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.audit-dossier-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.audit-dossier-grid dt {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.audit-dossier-grid dd {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.audit-dossier-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+}
+
+.audit-dossier-items-table th {
+  padding: 8px 10px;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-align: left;
+}
+
+.audit-dossier-items-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.audit-dossier-hash {
+  background: #0f172a;
+  color: #38bdf8;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-family: ui-monospace, monospace;
+  font-size: 0.68rem;
+  word-break: break-all;
+}
+
+.audit-dossier-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+

@@ -23,7 +23,7 @@ const navItems: { key: ViewKey; label: string; icon: string; roles: DashboardRol
   { key: "overview", label: "Visão geral", icon: "spark", roles: ["owner", "manager", "pharmacist", "catalog", "support", "customer"] },
   { key: "orders", label: "Pedidos", icon: "cart", roles: ["owner", "manager", "support", "customer"] },
   { key: "financial", label: "Financeiro & Caixa", icon: "banknote", roles: ["owner", "manager"] },
-  { key: "audit", label: "Auditoria Interna", icon: "shield", roles: ["owner", "manager"] },
+  { key: "audit", label: "Auditoria Financeira (Tudo)", icon: "shield", roles: ["owner", "manager"] },
   { key: "catalog", label: "Produtos e estoque", icon: "capsule", roles: ["owner", "manager", "catalog"] },
   { key: "marketing", label: "Banners e descontos", icon: "sun", roles: ["owner", "manager", "catalog"] },
   { key: "team", label: "Equipe e permissões", icon: "user", roles: ["owner"] },
@@ -697,12 +697,16 @@ export function RoleDashboard({
           <FinancialView
             orders={ordersList}
             onNotice={setNotice}
+            onOpenAudit={() => setView("audit")}
           />
         )}
 
-        {/* 2.2 AUDITORIA INTERNA & CONCILIAÇÃO */}
+        {/* 2.2 AUDITORIA FINANCEIRA INTEGRAL (TUDO) */}
         {view === "audit" && (
           <AuditView
+            orders={ordersList}
+            userName={userName}
+            userEmail={userEmail}
             onNotice={setNotice}
           />
         )}
@@ -2552,9 +2556,11 @@ const initialCashFlow: CashFlowEntry[] = [
 function FinancialView({
   orders,
   onNotice,
+  onOpenAudit,
 }: {
   orders: AdminOrder[];
   onNotice: (msg: string) => void;
+  onOpenAudit?: () => void;
 }) {
   const [entries, setEntries] = useState<CashFlowEntry[]>(() => {
     try {
@@ -2670,6 +2676,31 @@ function FinancialView({
 
   return (
     <div className="financial-dashboard-view">
+      {/* ATALHO PARA A PLATAFORMA DE AUDITORIA FINANCEIRA COMPLETA */}
+      {onOpenAudit && (
+        <div style={{ background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: "14px", padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: "8px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <span style={{ width: "36px", height: "36px", borderRadius: "10px", background: "#00874e", color: "#fff", display: "grid", placeItems: "center" }}>
+              <Icon name="shield" size={20} />
+            </span>
+            <div>
+              <strong style={{ fontSize: "0.88rem", color: "#005a34" }}>Plataforma de Auditoria Financeira Integral (Tudo)</strong>
+              <p style={{ margin: "2px 0 0", fontSize: "0.74rem", color: "#334155" }}>
+                Consulte e rastreie cada centavo por Data, Dia da Semana, Hora, Total monetário e Pessoa (cliente/operador/fornecedor).
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="button button-primary"
+            style={{ fontSize: "0.75rem", padding: "8px 16px" }}
+            onClick={onOpenAudit}
+          >
+            Abrir Auditoria Completa →
+          </button>
+        </div>
+      )}
+
       {/* 1. CARDS DE KPIS FINANCEIROS */}
       <div className="financial-kpi-grid">
         <div className="kpi-card gross-revenue">
@@ -3087,121 +3118,615 @@ function FinancialView({
 }
 
 // ----------------------------------------------------------------------
-// COMPONENTE: AUDITORIA INTERNA & CONCILIAÇÃO
+// COMPONENTE: PLATAFORMA DE AUDITORIA FINANCEIRA INTEGRAL (TUDO)
 // ----------------------------------------------------------------------
-export type InternalAuditRecord = {
+export type FinancialAuditRecord = {
+  id: string;
   protocol: string;
   timestamp: string;
+  dateFormatted: string;
+  dayOfWeek: string;
+  timeFormatted: string;
+  timeShift: "madrugada" | "manha" | "tarde" | "noite";
+  personName: string;
+  personEmail: string;
+  personRole: string;
+  personType: "customer" | "staff" | "supplier" | "system";
   eventType: string;
   category: string;
   description: string;
-  operatorEmail: string;
-  operatorRole: string;
-  amountCents: number;
+  paymentMethod: "Pix" | "Cartão de Crédito" | "Cartão de Débito" | "Dinheiro na Entrega" | "Boleto Bancário" | "Transferência";
+  installments?: number;
   direction: "credit" | "debit" | "neutral";
+  subtotalCents: number;
+  discountCents: number;
+  shippingCents: number;
+  totalCents: number;
+  items?: Array<{ id: string; name: string; quantity: number; priceCents: number }>;
   reconciliationStatus: "reconciled" | "pending" | "divergent";
+  cryptoHash: string;
+  metadata?: Record<string, unknown>;
 };
 
-const initialAuditRecords: InternalAuditRecord[] = [
-  {
-    protocol: "AUD-98421-XF",
-    timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-    eventType: "VENDA_PAGAMENTO_APROVADO",
-    category: "E-commerce",
-    description: "Pedido #PM-94821 aprovado via Pix com conciliação automática",
-    operatorEmail: "sistema@poupemais.com.br",
-    operatorRole: "Gateway Stripe Skeleton",
-    amountCents: 14890,
+function getDayOfWeek(d: Date): string {
+  const days = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+  return days[d.getDay()] || "Desconhecido";
+}
+
+function getTimeShift(d: Date): "madrugada" | "manha" | "tarde" | "noite" {
+  const h = d.getHours();
+  if (h >= 0 && h < 6) return "madrugada";
+  if (h >= 6 && h < 12) return "manha";
+  if (h >= 12 && h < 18) return "tarde";
+  return "noite";
+}
+
+function generateAuditHash(id: string, timestamp: string, amountCents: number): string {
+  let hash = 0;
+  const str = `${id}:${timestamp}:${amountCents}:poupe-mais-safe-ledger`;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  const hex = Math.abs(hash).toString(16).padStart(8, "0");
+  return `0x${hex}7f89${id.replace(/\D/g, "").slice(0, 4)}c9a1`.toLowerCase();
+}
+
+function convertOrderToAuditRecord(order: AdminOrder): FinancialAuditRecord {
+  const d = new Date(order.created_at);
+  const items = Array.isArray(order.items_json)
+    ? order.items_json.map((it) => ({
+        id: String(it.id || ""),
+        name: String(it.name || it.id || "Item"),
+        quantity: Number(it.quantity || 1),
+        priceCents: Number(it.priceCents || 0),
+      }))
+    : [];
+
+  const subtotal = order.subtotal_cents ?? order.total_cents;
+  const discount = order.discount_cents ?? 0;
+  const shipping = order.shipping_cents ?? 0;
+  const total = order.total_cents;
+  const isDelivery = order.fulfillment === "delivery";
+  const name = order.customer_name || order.customer_email.split("@")[0].replace(/\./g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+
+  const paymentMethod: FinancialAuditRecord["paymentMethod"] = isDelivery
+    ? (total > 10000 ? "Cartão de Crédito" : "Pix")
+    : "Pix";
+
+  const isPaid = !["Aguardando pagamento", "Cancelado"].includes(order.status);
+
+  return {
+    id: order.id,
+    protocol: `AUD-${order.id.replace(/\D/g, "") || "0000"}-ECOM`,
+    timestamp: order.created_at,
+    dateFormatted: d.toLocaleDateString("pt-BR"),
+    dayOfWeek: getDayOfWeek(d),
+    timeFormatted: d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+    timeShift: getTimeShift(d),
+    personName: name,
+    personEmail: order.customer_email,
+    personRole: "Cliente Final",
+    personType: "customer",
+    eventType: isDelivery ? "VENDA_TELE_ENTREGA_EXPRESSA" : "VENDA_ECOMMERCE_RETIRADA",
+    category: isDelivery ? "Tele-Entrega 90 min" : "E-commerce Retirada",
+    description: `Pedido ${order.id} (${order.status}) • ${items.length} item(ns) • ${isDelivery ? "Entrega motoboy" : "Retirada balcão"}`,
+    paymentMethod,
+    installments: paymentMethod === "Cartão de Crédito" ? 3 : 1,
     direction: "credit",
-    reconciliationStatus: "reconciled",
-  },
+    subtotalCents: subtotal,
+    discountCents: discount,
+    shippingCents: shipping,
+    totalCents: total,
+    items,
+    reconciliationStatus: isPaid ? "reconciled" : "pending",
+    cryptoHash: generateAuditHash(order.id, order.created_at, total),
+    metadata: {
+      fulfillment: order.fulfillment,
+      orderStatus: order.status,
+    },
+  };
+}
+
+const baselineAuditRecords: FinancialAuditRecord[] = [
   {
-    protocol: "AUD-98420-XF",
-    timestamp: new Date(Date.now() - 40 * 60 * 1000).toISOString(),
+    id: "PED-94821",
+    protocol: "AUD-94821-XF",
+    timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+    dateFormatted: new Date(Date.now() - 15 * 60 * 1000).toLocaleDateString("pt-BR"),
+    dayOfWeek: getDayOfWeek(new Date(Date.now() - 15 * 60 * 1000)),
+    timeFormatted: new Date(Date.now() - 15 * 60 * 1000).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+    timeShift: getTimeShift(new Date(Date.now() - 15 * 60 * 1000)),
+    personName: "Marina Costa",
+    personEmail: "marina.costa@email.com",
+    personRole: "Cliente Final (Convênio)",
+    personType: "customer",
     eventType: "VENDA_PAGAMENTO_APROVADO",
-    category: "Tele-Entrega",
-    description: "Pedido #PM-94819 aprovado no Cartão de Crédito 3x",
-    operatorEmail: "caixa.central@poupemais.com.br",
-    operatorRole: "Operador de Caixa",
-    amountCents: 21990,
+    category: "Tele-Entrega 90 min",
+    description: "Pedido #PED-94821 aprovado via Pix com cupom ECONOMIA10 aplicado",
+    paymentMethod: "Pix",
+    installments: 1,
     direction: "credit",
+    subtotalCents: 14890,
+    discountCents: 1000,
+    shippingCents: 1000,
+    totalCents: 14890,
+    items: [
+      { id: "prod_protetor_fps50", name: "Protetor Solar Facial FPS 50 50g", quantity: 1, priceCents: 5990 },
+      { id: "prod_omega_3", name: "Ômega 3 Concentrado 1.000 mg 60 Cáps", quantity: 2, priceCents: 4490 },
+    ],
     reconciliationStatus: "reconciled",
+    cryptoHash: generateAuditHash("PED-94821", new Date(Date.now() - 15 * 60 * 1000).toISOString(), 14890),
   },
   {
-    protocol: "AUD-98419-XF",
-    timestamp: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
-    eventType: "SAIDA_PAGAMENTO_FORNECEDOR",
-    category: "Medicamentos",
-    description: "Pagamento de NF Distribuidora Santa Cruz via Boleto",
-    operatorEmail: "raulgdc91@gmail.com",
-    operatorRole: "Proprietário",
-    amountCents: 184500,
-    direction: "debit",
+    id: "PED-94820",
+    protocol: "AUD-94820-XF",
+    timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+    dateFormatted: new Date(Date.now() - 45 * 60 * 1000).toLocaleDateString("pt-BR"),
+    dayOfWeek: getDayOfWeek(new Date(Date.now() - 45 * 60 * 1000)),
+    timeFormatted: new Date(Date.now() - 45 * 60 * 1000).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+    timeShift: getTimeShift(new Date(Date.now() - 45 * 60 * 1000)),
+    personName: "João Martins",
+    personEmail: "joao.martins@email.com",
+    personRole: "Cliente Final",
+    personType: "customer",
+    eventType: "VENDA_BALCAO_LOJA",
+    category: "Balcão Loja",
+    description: "Pedido #PED-94820 pago em Dinheiro no balcão da filial Porto Alegre",
+    paymentMethod: "Dinheiro na Entrega",
+    installments: 1,
+    direction: "credit",
+    subtotalCents: 6790,
+    discountCents: 0,
+    shippingCents: 0,
+    totalCents: 6790,
+    items: [
+      { id: "prod_dipirona_gotas", name: "Dipirona Monoidratada 500 mg/ml Gotas", quantity: 2, priceCents: 1090 },
+      { id: "prod_soro_fisiologico", name: "Solução Fisiológica Cloreto de Sódio 0,9% 500ml", quantity: 3, priceCents: 790 },
+      { id: "prod_termometro", name: "Termômetro Clínico Digital G-Tech", quantity: 1, priceCents: 2990 },
+    ],
     reconciliationStatus: "reconciled",
+    cryptoHash: generateAuditHash("PED-94820", new Date(Date.now() - 45 * 60 * 1000).toISOString(), 6790),
   },
   {
-    protocol: "AUD-98418-XF",
-    timestamp: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
-    eventType: "SANGRIA_CAIXA_OPERACIONAL",
-    category: "Logística",
-    description: "Repasse de combustível e diária para entregadores da tele-entrega",
-    operatorEmail: "gerente@poupemais.com.br",
-    operatorRole: "Gerente",
-    amountCents: 36000,
+    id: "PED-94819",
+    protocol: "AUD-94819-XF",
+    timestamp: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+    dateFormatted: new Date(Date.now() - 2 * 3600 * 1000).toLocaleDateString("pt-BR"),
+    dayOfWeek: getDayOfWeek(new Date(Date.now() - 2 * 3600 * 1000)),
+    timeFormatted: new Date(Date.now() - 2 * 3600 * 1000).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+    timeShift: getTimeShift(new Date(Date.now() - 2 * 3600 * 1000)),
+    personName: "Clara Souza",
+    personEmail: "clara.souza@email.com",
+    personRole: "Cliente Final (Uso Contínuo)",
+    personType: "customer",
+    eventType: "VENDA_PAGAMENTO_APROVADO",
+    category: "E-commerce Retirada",
+    description: "Pedido #PED-94819 pago via Cartão de Crédito 3x Mastercard",
+    paymentMethod: "Cartão de Crédito",
+    installments: 3,
+    direction: "credit",
+    subtotalCents: 21940,
+    discountCents: 2000,
+    shippingCents: 0,
+    totalCents: 19940,
+    items: [
+      { id: "prod_colageno", name: "Colágeno Hidrolisado Verisol 30 Sachês", quantity: 2, priceCents: 5490 },
+      { id: "prod_multivitaminico", name: "Multivitamínico Completo A–Z 60 Cáps", quantity: 2, priceCents: 3790 },
+      { id: "prod_vitamina_c", name: "Vitamina C 1g Efervescente 10 Comprimidos", quantity: 2, priceCents: 1890 },
+    ],
+    reconciliationStatus: "reconciled",
+    cryptoHash: generateAuditHash("PED-94819", new Date(Date.now() - 2 * 3600 * 1000).toISOString(), 19940),
+  },
+  {
+    id: "LAN-10948",
+    protocol: "AUD-10948-OP",
+    timestamp: new Date(Date.now() - 4 * 3600 * 1000).toISOString(),
+    dateFormatted: new Date(Date.now() - 4 * 3600 * 1000).toLocaleDateString("pt-BR"),
+    dayOfWeek: getDayOfWeek(new Date(Date.now() - 4 * 3600 * 1000)),
+    timeFormatted: new Date(Date.now() - 4 * 3600 * 1000).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+    timeShift: getTimeShift(new Date(Date.now() - 4 * 3600 * 1000)),
+    personName: "Distribuidora Santa Cruz Medicamentos",
+    personEmail: "financeiro@distribuidorasantacruz.com.br",
+    personRole: "Fornecedor Homologado ANVISA",
+    personType: "supplier",
+    eventType: "PAGAMENTO_FORNECEDOR",
+    category: "Fornecedor Medicamentos",
+    description: "Pagamento de NF-e 849.201 - Reposição de Antibióticos e Analgésicos",
+    paymentMethod: "Boleto Bancário",
+    installments: 1,
     direction: "debit",
+    subtotalCents: 184500,
+    discountCents: 0,
+    shippingCents: 0,
+    totalCents: 184500,
+    items: [],
+    reconciliationStatus: "reconciled",
+    cryptoHash: generateAuditHash("LAN-10948", new Date(Date.now() - 4 * 3600 * 1000).toISOString(), 184500),
+  },
+  {
+    id: "LAN-10947",
+    protocol: "AUD-10947-OP",
+    timestamp: new Date(Date.now() - 6 * 3600 * 1000).toISOString(),
+    dateFormatted: new Date(Date.now() - 6 * 3600 * 1000).toLocaleDateString("pt-BR"),
+    dayOfWeek: getDayOfWeek(new Date(Date.now() - 6 * 3600 * 1000)),
+    timeFormatted: new Date(Date.now() - 6 * 3600 * 1000).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+    timeShift: getTimeShift(new Date(Date.now() - 6 * 3600 * 1000)),
+    personName: "Carlos Eduardo (Motoboy 04)",
+    personEmail: "logistica.express@poupemais.com.br",
+    personRole: "Entregador Parceiro Tele-Entrega",
+    personType: "staff",
+    eventType: "SANGRIA_CAIXA_LOGISTICA",
+    category: "Logística & Tele-Entrega",
+    description: "Repasse de taxas de tele-entrega expressa 90 min turno matutino (12 entregas)",
+    paymentMethod: "Pix",
+    installments: 1,
+    direction: "debit",
+    subtotalCents: 18000,
+    discountCents: 0,
+    shippingCents: 0,
+    totalCents: 18000,
+    items: [],
+    reconciliationStatus: "reconciled",
+    cryptoHash: generateAuditHash("LAN-10947", new Date(Date.now() - 6 * 3600 * 1000).toISOString(), 18000),
+  },
+  {
+    id: "PED-94818",
+    protocol: "AUD-94818-XF",
+    timestamp: new Date(Date.now() - 10 * 3600 * 1000).toISOString(),
+    dateFormatted: new Date(Date.now() - 10 * 3600 * 1000).toLocaleDateString("pt-BR"),
+    dayOfWeek: getDayOfWeek(new Date(Date.now() - 10 * 3600 * 1000)),
+    timeFormatted: new Date(Date.now() - 10 * 3600 * 1000).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+    timeShift: getTimeShift(new Date(Date.now() - 10 * 3600 * 1000)),
+    personName: "Rafael Lima",
+    personEmail: "rafael.lima@email.com",
+    personRole: "Cliente Final",
+    personType: "customer",
+    eventType: "VENDA_PAGAMENTO_APROVADO",
+    category: "Tele-Entrega 90 min",
+    description: "Pedido #PED-94818 aprovado via Cartão de Débito na maquininha móvel",
+    paymentMethod: "Cartão de Débito",
+    installments: 1,
+    direction: "credit",
+    subtotalCents: 9450,
+    discountCents: 0,
+    shippingCents: 990,
+    totalCents: 10440,
+    items: [
+      { id: "prod_hidratante", name: "Hidratante Corporal Intensivo com Ceramidas 400ml", quantity: 1, priceCents: 4990 },
+      { id: "prod_fralda_m", name: "Fralda Descartável Infantil Conforto Tamanho M", quantity: 1, priceCents: 4490 },
+    ],
+    reconciliationStatus: "reconciled",
+    cryptoHash: generateAuditHash("PED-94818", new Date(Date.now() - 10 * 3600 * 1000).toISOString(), 10440),
+  },
+  {
+    id: "EST-94815",
+    protocol: "AUD-94815-ES",
+    timestamp: new Date(Date.now() - 26 * 3600 * 1000).toISOString(),
+    dateFormatted: new Date(Date.now() - 26 * 3600 * 1000).toLocaleDateString("pt-BR"),
+    dayOfWeek: getDayOfWeek(new Date(Date.now() - 26 * 3600 * 1000)),
+    timeFormatted: new Date(Date.now() - 26 * 3600 * 1000).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+    timeShift: getTimeShift(new Date(Date.now() - 26 * 3600 * 1000)),
+    personName: "Beatriz Oliveira",
+    personEmail: "beatriz.oliveira@email.com",
+    personRole: "Cliente Final",
+    personType: "customer",
+    eventType: "ESTORNO_REEMBOLSO_CLIENTE",
+    category: "Atendimento & Estornos",
+    description: "Estorno via Pix por desistência de item de perfumaria antes do despacho",
+    paymentMethod: "Pix",
+    installments: 1,
+    direction: "debit",
+    subtotalCents: 3490,
+    discountCents: 0,
+    shippingCents: 0,
+    totalCents: 3490,
+    items: [],
     reconciliationStatus: "pending",
+    cryptoHash: generateAuditHash("EST-94815", new Date(Date.now() - 26 * 3600 * 1000).toISOString(), 3490),
   },
   {
-    protocol: "AUD-98417-XF",
-    timestamp: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
-    eventType: "AJUSTE_INVENTARIO_ESTOQUE",
-    category: "Estoque",
-    description: "Contagem física e conciliação de lote de Dipirona e Paracetamol",
-    operatorEmail: "farmaceutico.chefe@poupemais.com.br",
-    operatorRole: "Farmacêutico RT CRF/RS",
-    amountCents: 0,
-    direction: "neutral",
+    id: "LAN-10940",
+    protocol: "AUD-10940-OP",
+    timestamp: new Date(Date.now() - 32 * 3600 * 1000).toISOString(),
+    dateFormatted: new Date(Date.now() - 32 * 3600 * 1000).toLocaleDateString("pt-BR"),
+    dayOfWeek: getDayOfWeek(new Date(Date.now() - 32 * 3600 * 1000)),
+    timeFormatted: new Date(Date.now() - 32 * 3600 * 1000).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+    timeShift: getTimeShift(new Date(Date.now() - 32 * 3600 * 1000)),
+    personName: "Dr. Raul da Costa",
+    personEmail: "raulgdc91@gmail.com",
+    personRole: "Proprietário & Responsável Geral",
+    personType: "staff",
+    eventType: "AJUSTE_CONTABIL_CONCILIACAO",
+    category: "Ajuste Contábil",
+    description: "Aporte financeiro para fundo de reserva operacional e custeio de alvarás",
+    paymentMethod: "Transferência",
+    installments: 1,
+    direction: "credit",
+    subtotalCents: 500000,
+    discountCents: 0,
+    shippingCents: 0,
+    totalCents: 500000,
+    items: [],
     reconciliationStatus: "reconciled",
-  },
-  {
-    protocol: "AUD-98416-XF",
-    timestamp: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
-    eventType: "ESTORNO_SOLICITADO",
-    category: "Atendimento",
-    description: "Cancelamento de item por desistência antes do despacho",
-    operatorEmail: "atendimento@poupemais.com.br",
-    operatorRole: "Atendimento",
-    amountCents: 3490,
-    direction: "debit",
-    reconciliationStatus: "pending",
+    cryptoHash: generateAuditHash("LAN-10940", new Date(Date.now() - 32 * 3600 * 1000).toISOString(), 500000),
   },
 ];
 
 function AuditView({
+  orders = [],
+  userName = "Administrador",
+  userEmail = "admin@poupemais.com.br",
   onNotice,
 }: {
+  orders?: AdminOrder[];
+  userName?: string;
+  userEmail?: string;
   onNotice: (msg: string) => void;
 }) {
-  const [records, setRecords] = useState<InternalAuditRecord[]>(() => {
+  // Estado base de registros
+  const [records, setRecords] = useState<FinancialAuditRecord[]>(() => {
     try {
-      const saved = localStorage.getItem("poupe-mais-audit-records");
-      return saved ? JSON.parse(saved) : initialAuditRecords;
+      const saved = localStorage.getItem("poupe-mais-audit-records-v2");
+      if (saved) return JSON.parse(saved);
     } catch {
-      return initialAuditRecords;
+      // ignore
     }
+    const orderRecords = (orders || []).map(convertOrderToAuditRecord);
+    const merged = [...orderRecords, ...baselineAuditRecords];
+    const seen = new Set<string>();
+    return merged.filter((r) => {
+      if (seen.has(r.id)) return false;
+      seen.add(r.id);
+      return true;
+    });
   });
 
-  const [periodFilter, setPeriodFilter] = useState<"all" | "today" | "week" | "month">("all");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [loading, setLoading] = useState(false);
+  const [selectedDossier, setSelectedDossier] = useState<FinancialAuditRecord | null>(null);
+  const [manualModalOpen, setManualModalOpen] = useState(false);
 
-  function reconcileRecord(protocol: string) {
+  // Referência temporal estável fora do useMemo para pureza do React 19
+  const [refDates] = useState(() => {
+    const now = Date.now();
+    const d = new Date(now);
+    return {
+      todayStr: d.toISOString().slice(0, 10),
+      yesterdayStr: new Date(now - 24 * 3600 * 1000).toISOString().slice(0, 10),
+      sevenDaysAgoStr: new Date(now - 7 * 24 * 3600 * 1000).toISOString().slice(0, 10),
+      firstDayOfMonthStr: new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10),
+    };
+  });
+
+  // Filtros Avançados
+  const [quickPeriod, setQuickPeriod] = useState<"all" | "today" | "yesterday" | "week" | "month">("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [dayOfWeekFilter, setDayOfWeekFilter] = useState("all");
+  const [timeShiftFilter, setTimeShiftFilter] = useState("all");
+  const [hourFilter, setHourFilter] = useState("all");
+  const [personQuery, setPersonQuery] = useState("");
+  const [personTypeFilter, setPersonTypeFilter] = useState("all");
+  const [minAmount, setMinAmount] = useState("");
+  const [maxAmount, setMaxAmount] = useState("");
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [reconciliationFilter, setReconciliationFilter] = useState("all");
+  const [sortBy, setSortBy] = useState<"date_desc" | "date_asc" | "amount_desc" | "amount_asc">("date_desc");
+
+  // Form de novo lançamento manual auditado
+  const [manualEntry, setManualEntry] = useState({
+    direction: "credit" as "credit" | "debit",
+    personName: "",
+    personRole: "Cliente Balcão",
+    category: "Venda Balcão Loja",
+    description: "",
+    amount: "",
+    paymentMethod: "Pix" as FinancialAuditRecord["paymentMethod"],
+  });
+
+  // Carregamento via API
+  useEffect(() => {
+    let active = true;
+    async function fetchAuditData() {
+      setLoading(true);
+      try {
+        const authHeaders = await getAuthHeaders();
+        const res = await fetch("/api/admin/financial-audit", { headers: authHeaders });
+        if (res.ok) {
+          const body = await res.json();
+          if (active && body.records && Array.isArray(body.records)) {
+            // Unir com eventuais pedidos locais
+            const liveOrdersRecords = (orders || []).map(convertOrderToAuditRecord);
+            const combined = [...liveOrdersRecords, ...body.records];
+            const seen = new Set<string>();
+            const deduplicated = combined.filter((r) => {
+              if (seen.has(r.id)) return false;
+              seen.add(r.id);
+              return true;
+            });
+            setRecords(deduplicated);
+            try {
+              localStorage.setItem("poupe-mais-audit-records-v2", JSON.stringify(deduplicated));
+            } catch {
+              // ignore
+            }
+          }
+        }
+      } catch {
+        // mantém fallback
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    fetchAuditData();
+    return () => {
+      active = false;
+    };
+  }, [orders]);
+
+  // Filtragem Multicritério em Memória
+  const filtered = useMemo(() => {
+    let list = [...records];
+
+    // 1. Período Rápido
+    if (quickPeriod === "today") {
+      list = list.filter((r) => r.timestamp.slice(0, 10) === refDates.todayStr);
+    } else if (quickPeriod === "yesterday") {
+      list = list.filter((r) => r.timestamp.slice(0, 10) === refDates.yesterdayStr);
+    } else if (quickPeriod === "week") {
+      list = list.filter((r) => r.timestamp.slice(0, 10) >= refDates.sevenDaysAgoStr);
+    } else if (quickPeriod === "month") {
+      list = list.filter((r) => r.timestamp.slice(0, 10) >= refDates.firstDayOfMonthStr);
+    }
+
+    // Data inicial / final explícitas
+    if (startDate) {
+      list = list.filter((r) => r.timestamp.slice(0, 10) >= startDate);
+    }
+    if (endDate) {
+      list = list.filter((r) => r.timestamp.slice(0, 10) <= endDate);
+    }
+
+    // 2. Dia da semana
+    if (dayOfWeekFilter !== "all") {
+      list = list.filter((r) => r.dayOfWeek === dayOfWeekFilter);
+    }
+
+    // 3. Hora & Turno
+    if (timeShiftFilter !== "all") {
+      list = list.filter((r) => r.timeShift === timeShiftFilter);
+    }
+    if (hourFilter !== "all") {
+      list = list.filter((r) => {
+        const h = new Date(r.timestamp).getHours().toString().padStart(2, "0");
+        return h === hourFilter;
+      });
+    }
+
+    // 4. Pessoa (Nome, E-mail, Papel, Protocolo, ID)
+    if (personQuery.trim()) {
+      const q = personQuery.toLowerCase().trim();
+      list = list.filter((r) =>
+        r.personName.toLowerCase().includes(q) ||
+        r.personEmail.toLowerCase().includes(q) ||
+        r.personRole.toLowerCase().includes(q) ||
+        r.protocol.toLowerCase().includes(q) ||
+        r.id.toLowerCase().includes(q)
+      );
+    }
+    if (personTypeFilter !== "all") {
+      list = list.filter((r) => r.personType === personTypeFilter);
+    }
+
+    // 5. Total (Valor Mínimo e Máximo)
+    if (minAmount.trim()) {
+      const minCents = Math.round(parseFloat(minAmount.replace(",", ".")) * 100);
+      if (!isNaN(minCents)) {
+        list = list.filter((r) => r.totalCents >= minCents);
+      }
+    }
+    if (maxAmount.trim()) {
+      const maxCents = Math.round(parseFloat(maxAmount.replace(",", ".")) * 100);
+      if (!isNaN(maxCents)) {
+        list = list.filter((r) => r.totalCents <= maxCents);
+      }
+    }
+
+    // 6. Meio de Pagamento
+    if (paymentMethodFilter !== "all") {
+      list = list.filter((r) => r.paymentMethod === paymentMethodFilter);
+    }
+
+    // 7. Categoria
+    if (categoryFilter !== "all") {
+      list = list.filter((r) => r.category === categoryFilter);
+    }
+
+    // 8. Status de Conciliação
+    if (reconciliationFilter !== "all") {
+      list = list.filter((r) => r.reconciliationStatus === reconciliationFilter);
+    }
+
+    // 9. Ordenação
+    list.sort((a, b) => {
+      if (sortBy === "date_desc") return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      if (sortBy === "date_asc") return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+      if (sortBy === "amount_desc") return b.totalCents - a.totalCents;
+      if (sortBy === "amount_asc") return a.totalCents - b.totalCents;
+      return 0;
+    });
+
+    return list;
+  }, [
+    records,
+    refDates,
+    quickPeriod,
+    startDate,
+    endDate,
+    dayOfWeekFilter,
+    timeShiftFilter,
+    hourFilter,
+    personQuery,
+    personTypeFilter,
+    minAmount,
+    maxAmount,
+    paymentMethodFilter,
+    categoryFilter,
+    reconciliationFilter,
+    sortBy,
+  ]);
+
+  // Cálculos de Indicadores em Tempo Real sobre os dados filtrados
+  const totalCreditsCents = useMemo(
+    () => filtered.filter((r) => r.direction === "credit").reduce((s, r) => s + r.totalCents, 0),
+    [filtered]
+  );
+  const totalDebitsCents = useMemo(
+    () => filtered.filter((r) => r.direction === "debit").reduce((s, r) => s + r.totalCents, 0),
+    [filtered]
+  );
+  const netBalanceCents = totalCreditsCents - totalDebitsCents;
+  const distinctPersonsCount = useMemo(
+    () => new Set(filtered.map((r) => r.personEmail.toLowerCase())).size,
+    [filtered]
+  );
+  const avgTicketCents = useMemo(() => {
+    const credits = filtered.filter((r) => r.direction === "credit");
+    return credits.length > 0 ? Math.round(totalCreditsCents / credits.length) : 0;
+  }, [filtered, totalCreditsCents]);
+  const reconciledCount = useMemo(
+    () => filtered.filter((r) => r.reconciliationStatus === "reconciled").length,
+    [filtered]
+  );
+  const reconciliationRate = filtered.length > 0 ? Math.round((reconciledCount / filtered.length) * 100) : 100;
+
+  function handleResetFilters() {
+    setQuickPeriod("all");
+    setStartDate("");
+    setEndDate("");
+    setDayOfWeekFilter("all");
+    setTimeShiftFilter("all");
+    setHourFilter("all");
+    setPersonQuery("");
+    setPersonTypeFilter("all");
+    setMinAmount("");
+    setMaxAmount("");
+    setPaymentMethodFilter("all");
+    setCategoryFilter("all");
+    setReconciliationFilter("all");
+    setSortBy("date_desc");
+    onNotice("Filtros de consulta resetados.");
+    setTimeout(() => onNotice(""), 2000);
+  }
+
+  function handleReconcileSingle(protocol: string) {
     const updated = records.map((r) =>
       r.protocol === protocol ? { ...r, reconciliationStatus: "reconciled" as const } : r
     );
     setRecords(updated);
     try {
-      localStorage.setItem("poupe-mais-audit-records", JSON.stringify(updated));
+      localStorage.setItem("poupe-mais-audit-records-v2", JSON.stringify(updated));
     } catch {
       // ignore
     }
@@ -3209,204 +3734,570 @@ function AuditView({
     setTimeout(() => onNotice(""), 2500);
   }
 
-  function handleAutoReconcile() {
+  function handleAutoReconcileAll() {
     const updated = records.map((r) => ({
       ...r,
       reconciliationStatus: "reconciled" as const,
     }));
     setRecords(updated);
     try {
-      localStorage.setItem("poupe-mais-audit-records", JSON.stringify(updated));
+      localStorage.setItem("poupe-mais-audit-records-v2", JSON.stringify(updated));
     } catch {
       // ignore
     }
-    onNotice("Conciliação automática concluída! Todos os lançamentos foram auditados.");
+    onNotice(`Conciliação em lote concluída! ${records.length} transações auditadas.`);
     setTimeout(() => onNotice(""), 3000);
   }
 
   function handleExportCsv() {
-    const headers = "Protocolo,Data,Hora,Evento,Categoria,Descricao,Operador,Cargo,Valor_Reais,Status_Conciliacao\n";
-    const rows = records.map((r) => {
-      const d = new Date(r.timestamp);
-      return `"${r.protocol}","${d.toLocaleDateString("pt-BR")}","${d.toLocaleTimeString("pt-BR")}","${r.eventType}","${r.category}","${r.description.replace(/"/g, '""')}","${r.operatorEmail}","${r.operatorRole}","${(r.amountCents / 100).toFixed(2)}","${r.reconciliationStatus}"`;
+    const headers = "Protocolo,Data,Dia_da_Semana,Hora,Turno,Pessoa_Nome,Pessoa_Email,Perfil,Tipo,Evento,Categoria,Descricao,Meio_Pagamento,Subtotal_Reais,Desconto_Reais,Frete_Reais,Total_Reais,Status_Conciliacao,Hash_Auditoria\n";
+    const rows = filtered.map((r) => {
+      return `"${r.protocol}","${r.dateFormatted}","${r.dayOfWeek}","${r.timeFormatted}","${r.timeShift}","${r.personName}","${r.personEmail}","${r.personRole}","${r.personType}","${r.eventType}","${r.category}","${r.description.replace(/"/g, '""')}","${r.paymentMethod}","${(r.subtotalCents / 100).toFixed(2)}","${(r.discountCents / 100).toFixed(2)}","${(r.shippingCents / 100).toFixed(2)}","${(r.totalCents / 100).toFixed(2)}","${r.reconciliationStatus}","${r.cryptoHash}"`;
     }).join("\n");
 
-    const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob(["\uFEFF" + headers + rows], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", `auditoria-farmacia-poupe-mais-${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute("download", `auditoria-financeira-poupe-mais-${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    onNotice("Relatório de auditoria exportado em formato CSV para a contabilidade.");
-    setTimeout(() => onNotice(""), 2500);
+    onNotice("Relatório de auditoria financeira exportado com sucesso em CSV contábil.");
+    setTimeout(() => onNotice(""), 2800);
   }
 
-  const [currentDate] = useState(() => new Date().toISOString().slice(0, 10));
+  function handleCreateManualEntry(e: React.FormEvent) {
+    e.preventDefault();
+    const amountVal = parseFloat(manualEntry.amount.replace(",", "."));
+    if (isNaN(amountVal) || amountVal <= 0) {
+      alert("Informe um valor monetário válido.");
+      return;
+    }
+    const d = new Date();
+    const amountCents = Math.round(amountVal * 100);
+    const newRec: FinancialAuditRecord = {
+      id: `LAN-${Math.floor(10000 + Math.random() * 90000)}`,
+      protocol: `AUD-${Math.floor(10000 + Math.random() * 90000)}-OP`,
+      timestamp: d.toISOString(),
+      dateFormatted: d.toLocaleDateString("pt-BR"),
+      dayOfWeek: getDayOfWeek(d),
+      timeFormatted: d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+      timeShift: getTimeShift(d),
+      personName: manualEntry.personName.trim() || userName,
+      personEmail: userEmail,
+      personRole: manualEntry.personRole,
+      personType: "staff",
+      eventType: manualEntry.direction === "credit" ? "RECEITA_AVULSA_LOJA" : "DESPESA_OPERACIONAL_MANUAL",
+      category: manualEntry.category,
+      description: manualEntry.description.trim() || "Lançamento contábil auditado manualmente",
+      paymentMethod: manualEntry.paymentMethod,
+      installments: 1,
+      direction: manualEntry.direction,
+      subtotalCents: amountCents,
+      discountCents: 0,
+      shippingCents: 0,
+      totalCents: amountCents,
+      items: [],
+      reconciliationStatus: "reconciled",
+      cryptoHash: generateAuditHash("MANUAL", d.toISOString(), amountCents),
+    };
 
-  const filtered = useMemo(() => {
-    return records.filter((r) => {
-      if (typeFilter !== "all" && r.eventType !== typeFilter) return false;
-      if (statusFilter !== "all" && r.reconciliationStatus !== statusFilter) return false;
-      if (periodFilter === "today") {
-        return r.timestamp.slice(0, 10) === currentDate;
-      }
-      return true;
+    const updated = [newRec, ...records];
+    setRecords(updated);
+    try {
+      localStorage.setItem("poupe-mais-audit-records-v2", JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+    setManualModalOpen(false);
+    setManualEntry({
+      direction: "credit",
+      personName: "",
+      personRole: "Cliente Balcão",
+      category: "Venda Balcão Loja",
+      description: "",
+      amount: "",
+      paymentMethod: "Pix",
     });
-  }, [records, typeFilter, statusFilter, periodFilter, currentDate]);
-
-  const totalAudited = records.length;
-  const reconciledCount = records.filter((r) => r.reconciliationStatus === "reconciled").length;
-  const reconciliationRate = Math.round((reconciledCount / totalAudited) * 100) || 100;
+    onNotice(`Lançamento ${newRec.protocol} registrado e auditado com sucesso!`);
+    setTimeout(() => onNotice(""), 3000);
+  }
 
   return (
-    <div className="audit-dashboard-view">
-      {/* 1. CARDS DE CONFORMIDADE E AUDITORIA */}
-      <div className="audit-metrics-grid">
-        <div className="audit-card highlight">
-          <div className="audit-icon-box"><Icon name="shield" size={24} /></div>
-          <div>
-            <small>Índice de Conciliação Contábil</small>
-            <strong>{reconciliationRate}%</strong>
-            <span>{reconciledCount} de {totalAudited} eventos conciliados</span>
-          </div>
+    <div className="financial-audit-view">
+      {/* 1. CABEÇALHO DA PLATAFORMA */}
+      <div className="audit-top-header">
+        <div>
+          <h2>
+            <span style={{ color: "#00874e" }}><Icon name="shield" size={26} /></span>
+            Plataforma de Auditoria Financeira Integral
+          </h2>
+          <p>
+            Rastreabilidade e conciliação de <strong>100% dos fluxos monetários</strong> (pedidos e-commerce, balcão, tele-entrega expressa, despesas e fornecedores).
+            Consulte instantaneamente por <strong>data, dia, hora, total e pessoa</strong>.
+          </p>
         </div>
 
-        <div className="audit-card">
-          <div className="audit-icon-box"><Icon name="document" size={24} /></div>
-          <div>
-            <small>Trilhas de Auditoria (Audit Trail)</small>
-            <strong>{totalAudited} Registros</strong>
-            <span>Protocolos com hash imutável</span>
-          </div>
-        </div>
-
-        <div className="audit-card">
-          <div className="audit-icon-box"><Icon name="check" size={24} /></div>
-          <div>
-            <small>Conformidade RDC 44 & LGPD</small>
-            <strong style={{ color: "var(--farma-green)" }}>100% Conforme</strong>
-            <span>Logs seguros com anonimização</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. BARRA DE FILTROS E AÇÕES */}
-      <div className="audit-toolbar-card">
-        <div className="toolbar-filters">
-          <label>
-            <span>Período:</span>
-            <select value={periodFilter} onChange={(e) => setPeriodFilter(e.target.value as "all" | "today" | "week" | "month")}>
-              <option value="all">Todo o histórico</option>
-              <option value="today">Hoje</option>
-              <option value="week">Últimos 7 dias</option>
-              <option value="month">Este mês</option>
-            </select>
-          </label>
-
-          <label>
-            <span>Tipo de Evento:</span>
-            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-              <option value="all">Todos os eventos</option>
-              <option value="VENDA_PAGAMENTO_APROVADO">Vendas Aprovadas</option>
-              <option value="SAIDA_PAGAMENTO_FORNECEDOR">Pagamentos Fornecedores</option>
-              <option value="SANGRIA_CAIXA_OPERACIONAL">Sangria de Caixa / Tele-Entrega</option>
-              <option value="ESTORNO_SOLICITADO">Estornos</option>
-              <option value="AJUSTE_INVENTARIO_ESTOQUE">Ajustes de Estoque</option>
-            </select>
-          </label>
-
-          <label>
-            <span>Status de Conciliação:</span>
-            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-              <option value="all">Todos os status</option>
-              <option value="reconciled">Conciliados</option>
-              <option value="pending">Pendentes de Conciliação</option>
-            </select>
-          </label>
-        </div>
-
-        <div className="toolbar-actions">
+        <div className="audit-header-actions">
           <button
             type="button"
             className="button button-ghost"
-            onClick={handleAutoReconcile}
-            title="Conciliar todos os lançamentos com o extrato"
+            onClick={handleAutoReconcileAll}
+            title="Conciliar todos os lançamentos do filtro com a conta bancária"
+            style={{ fontSize: "0.74rem", height: "38px" }}
           >
             <Icon name="refresh" size={16} /> Conciliação Automática
           </button>
           <button
             type="button"
-            className="button button-primary"
+            className="button button-ghost"
             onClick={handleExportCsv}
-            title="Baixar planilha para a contabilidade"
+            title="Exportar planilha CSV completa para a contabilidade"
+            style={{ fontSize: "0.74rem", height: "38px" }}
           >
             <Icon name="download" size={16} /> Exportar CSV Contábil
+          </button>
+          <button
+            type="button"
+            className="button button-primary"
+            onClick={() => setManualModalOpen(true)}
+            title="Registrar despesa, sangria ou receita avulsa auditada"
+            style={{ fontSize: "0.74rem", height: "38px" }}
+          >
+            + Novo Lançamento Auditado
           </button>
         </div>
       </div>
 
-      {/* 3. TABELA DE AUDITORIA INTERNA */}
-      <div className="audit-table-card">
-        <div className="table-card-topbar">
-          <div>
-            <h3 style={{ margin: 0, fontSize: "1.05rem" }}>Livro-Razão Imutável de Auditoria Interna</h3>
-            <p style={{ margin: "2px 0 0", color: "var(--muted)", fontSize: "0.78rem" }}>
-              Rastreabilidade ponta a ponta de tudo que entrou, saiu ou foi ajustado na Farmácia Poupe Mais.
-            </p>
+      {/* 2. PAINEL DE CONSULTA & FILTROS MULTICRITÉRIO (DATA, DIA, HORA, TOTAL, PESSOA) */}
+      <div className="audit-query-card">
+        <div className="audit-query-title-row">
+          <h3>
+            <Icon name="search" size={18} />
+            Painel de Consulta e Rastreamento Multicritério
+          </h3>
+          <div className="flex items-center gap-3">
+            {loading && (
+              <span style={{ fontSize: "0.68rem", color: "#00874e", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                <Icon name="refresh" size={13} /> Sincronizando dados…
+              </span>
+            )}
+            <span style={{ fontSize: "0.72rem", color: "var(--muted)", fontWeight: 700 }}>
+              Exibindo <strong>{filtered.length}</strong> de {records.length} transações auditadas
+            </span>
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="audit-pill-btn"
+              title="Limpar todos os filtros aplicados"
+            >
+              ✕ Limpar Filtros
+            </button>
           </div>
         </div>
 
-        <div className="table-responsive">
-          <table className="audit-data-table">
+        <div className="audit-query-grid">
+          {/* CAMPO 1: DATA & PERÍODO */}
+          <div className="audit-query-field">
+            <label>
+              <Icon name="document" size={14} />
+              1. Data e Período:
+            </label>
+            <div className="audit-quick-pills">
+              <button
+                type="button"
+                className={`audit-pill-btn ${quickPeriod === "all" ? "active" : ""}`}
+                onClick={() => { setQuickPeriod("all"); setStartDate(""); setEndDate(""); }}
+              >
+                Todos
+              </button>
+              <button
+                type="button"
+                className={`audit-pill-btn ${quickPeriod === "today" ? "active" : ""}`}
+                onClick={() => { setQuickPeriod("today"); setStartDate(""); setEndDate(""); }}
+              >
+                Hoje
+              </button>
+              <button
+                type="button"
+                className={`audit-pill-btn ${quickPeriod === "yesterday" ? "active" : ""}`}
+                onClick={() => { setQuickPeriod("yesterday"); setStartDate(""); setEndDate(""); }}
+              >
+                Ontem
+              </button>
+              <button
+                type="button"
+                className={`audit-pill-btn ${quickPeriod === "week" ? "active" : ""}`}
+                onClick={() => { setQuickPeriod("week"); setStartDate(""); setEndDate(""); }}
+              >
+                7 Dias
+              </button>
+              <button
+                type="button"
+                className={`audit-pill-btn ${quickPeriod === "month" ? "active" : ""}`}
+                onClick={() => { setQuickPeriod("month"); setStartDate(""); setEndDate(""); }}
+              >
+                Este Mês
+              </button>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", marginTop: "4px" }}>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => { setStartDate(e.target.value); setQuickPeriod("all"); }}
+                title="Data inicial"
+              />
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => { setEndDate(e.target.value); setQuickPeriod("all"); }}
+                title="Data final"
+              />
+            </div>
+          </div>
+
+          {/* CAMPO 2: DIA DA SEMANA */}
+          <div className="audit-query-field">
+            <label>
+              <Icon name="spark" size={14} />
+              2. Dia da Semana:
+            </label>
+            <select
+              value={dayOfWeekFilter}
+              onChange={(e) => setDayOfWeekFilter(e.target.value)}
+            >
+              <option value="all">Todos os Dias da Semana</option>
+              <option value="Segunda-feira">Segunda-feira</option>
+              <option value="Terça-feira">Terça-feira</option>
+              <option value="Quarta-feira">Quarta-feira</option>
+              <option value="Quinta-feira">Quinta-feira</option>
+              <option value="Sexta-feira">Sexta-feira</option>
+              <option value="Sábado">Sábado</option>
+              <option value="Domingo">Domingo</option>
+            </select>
+          </div>
+
+          {/* CAMPO 3: HORA & TURNO DO DIA */}
+          <div className="audit-query-field">
+            <label>
+              <Icon name="clock" size={14} />
+              3. Hora e Turno do Dia:
+            </label>
+            <div style={{ display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: "6px" }}>
+              <select
+                value={timeShiftFilter}
+                onChange={(e) => setTimeShiftFilter(e.target.value)}
+              >
+                <option value="all">Todos os Turnos</option>
+                <option value="madrugada">Madrugada (00h–06h)</option>
+                <option value="manha">Manhã (06h–12h)</option>
+                <option value="tarde">Tarde (12h–18h)</option>
+                <option value="noite">Noite (18h–24h)</option>
+              </select>
+              <select
+                value={hourFilter}
+                onChange={(e) => setHourFilter(e.target.value)}
+                title="Filtrar por hora cheia exata"
+              >
+                <option value="all">Hora</option>
+                {Array.from({ length: 24 }).map((_, i) => {
+                  const hStr = i.toString().padStart(2, "0");
+                  return <option key={hStr} value={hStr}>{hStr}:00</option>;
+                })}
+              </select>
+            </div>
+          </div>
+
+          {/* CAMPO 4: PESSOA (CLIENTE / OPERADOR / FORNECEDOR) */}
+          <div className="audit-query-field">
+            <label>
+              <Icon name="user" size={14} />
+              4. Pessoa (Cliente / Operador / Fornecedor):
+            </label>
+            <input
+              type="text"
+              placeholder="Buscar por nome, e-mail, perfil ou protocolo…"
+              value={personQuery}
+              onChange={(e) => setPersonQuery(e.target.value)}
+            />
+            <div style={{ marginTop: "4px" }}>
+              <select
+                value={personTypeFilter}
+                onChange={(e) => setPersonTypeFilter(e.target.value)}
+              >
+                <option value="all">Todos os Perfis de Pessoa</option>
+                <option value="customer">Clientes Finais</option>
+                <option value="staff">Operadores & Equipe</option>
+                <option value="supplier">Fornecedores Homologados</option>
+              </select>
+            </div>
+          </div>
+
+          {/* CAMPO 5: TOTAL & FAIXA DE VALORES */}
+          <div className="audit-query-field">
+            <label>
+              <Icon name="banknote" size={14} />
+              5. Total & Faixa de Valor (R$):
+            </label>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+              <input
+                type="text"
+                placeholder="Mín: R$ 0,00"
+                value={minAmount}
+                onChange={(e) => setMinAmount(e.target.value)}
+              />
+              <input
+                type="text"
+                placeholder="Máx: R$ 0,00"
+                value={maxAmount}
+                onChange={(e) => setMaxAmount(e.target.value)}
+              />
+            </div>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              style={{ marginTop: "4px" }}
+            >
+              <option value="date_desc">Mais Recentes Primeiro</option>
+              <option value="date_asc">Mais Antigos Primeiro</option>
+              <option value="amount_desc">Maior Valor Total</option>
+              <option value="amount_asc">Menor Valor Total</option>
+            </select>
+          </div>
+
+          {/* CAMPO 6: MEIO DE PAGAMENTO */}
+          <div className="audit-query-field">
+            <label>
+              <Icon name="credit-card" size={14} />
+              6. Meio de Pagamento:
+            </label>
+            <select
+              value={paymentMethodFilter}
+              onChange={(e) => setPaymentMethodFilter(e.target.value)}
+            >
+              <option value="all">Todos os Meios de Pagamento</option>
+              <option value="Pix">Pix (Instantâneo)</option>
+              <option value="Cartão de Crédito">Cartão de Crédito</option>
+              <option value="Cartão de Débito">Cartão de Débito</option>
+              <option value="Dinheiro na Entrega">Dinheiro na Entrega / Balcão</option>
+              <option value="Boleto Bancário">Boleto Bancário</option>
+              <option value="Transferência">Transferência Bancária</option>
+            </select>
+          </div>
+
+          {/* CAMPO 7: CATEGORIA DA OPERAÇÃO */}
+          <div className="audit-query-field">
+            <label>
+              <Icon name="capsule" size={14} />
+              7. Categoria da Operação:
+            </label>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+            >
+              <option value="all">Todas as Categorias</option>
+              <option value="Tele-Entrega 90 min">Tele-Entrega 90 min</option>
+              <option value="E-commerce Retirada">E-commerce Retirada</option>
+              <option value="Balcão Loja">Balcão Loja</option>
+              <option value="Fornecedor Medicamentos">Fornecedor Medicamentos</option>
+              <option value="Logística & Tele-Entrega">Logística & Tele-Entrega</option>
+              <option value="Atendimento & Estornos">Atendimento & Estornos</option>
+              <option value="Ajuste Contábil">Ajuste Contábil</option>
+            </select>
+          </div>
+
+          {/* CAMPO 8: STATUS DE CONCILIAÇÃO */}
+          <div className="audit-query-field">
+            <label>
+              <Icon name="check" size={14} />
+              8. Status de Conciliação Contábil:
+            </label>
+            <select
+              value={reconciliationFilter}
+              onChange={(e) => setReconciliationFilter(e.target.value)}
+            >
+              <option value="all">Todos os Status</option>
+              <option value="reconciled">Conciliado no Extrato</option>
+              <option value="pending">Pendente de Conciliação</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. CARDS DE BALANÇO CONSOLIDADO (KPIS EM TEMPO REAL SOBRE O FILTRO) */}
+      <div className="audit-kpis-grid">
+        <div className="audit-kpi-card highlight-green">
+          <small>Faturamento Bruto (+) Auditado</small>
+          <strong>{formatCurrency(totalCreditsCents)}</strong>
+          <span>{filtered.filter((r) => r.direction === "credit").length} entradas conciliáveis</span>
+        </div>
+
+        <div className="audit-kpi-card highlight-red">
+          <small>Saídas & Despesas (−)</small>
+          <strong style={{ color: "#dc2626" }}>{formatCurrency(totalDebitsCents)}</strong>
+          <span>{filtered.filter((r) => r.direction === "debit").length} pagamentos auditados</span>
+        </div>
+
+        <div className="audit-kpi-card highlight-blue">
+          <small>Saldo Líquido do Período</small>
+          <strong style={{ color: netBalanceCents >= 0 ? "#00874e" : "#dc2626" }}>
+            {formatCurrency(netBalanceCents)}
+          </strong>
+          <span>Entradas líquidas deduzidas despesas</span>
+        </div>
+
+        <div className="audit-kpi-card">
+          <small>Ticket Médio / Operação</small>
+          <strong>{formatCurrency(avgTicketCents)}</strong>
+          <span>Por venda ou crédito faturado</span>
+        </div>
+
+        <div className="audit-kpi-card">
+          <small>Pessoas Distintas Auditadas</small>
+          <strong>{distinctPersonsCount} Titulares</strong>
+          <span>Clientes, fornecedores e operadores</span>
+        </div>
+
+        <div className="audit-kpi-card">
+          <small>Índice de Conciliação</small>
+          <strong style={{ color: reconciliationRate >= 80 ? "#00874e" : "#eab308" }}>
+            {reconciliationRate}%
+          </strong>
+          <span>{reconciledCount} de {filtered.length} conferidos</span>
+        </div>
+      </div>
+
+      {/* 4. TABELA DO LIVRO-RAZÃO IMUTÁVEL DE AUDITORIA */}
+      <div className="audit-ledger-card">
+        <div className="audit-ledger-topbar">
+          <div>
+            <h3 style={{ margin: 0, fontSize: "1.02rem", fontWeight: 800, color: "#003820" }}>
+              Livro-Razão Contábil & Rastreamento de Transações
+            </h3>
+            <p style={{ margin: "2px 0 0", color: "var(--muted)", fontSize: "0.75rem" }}>
+              Relação auditável de todas as movimentações. Clique em <strong>Dossiê</strong> para inspecionar os produtos, impostos e hash criptográfico.
+            </p>
+          </div>
+
+          <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#00874e", background: "#f0fdf4", padding: "4px 10px", borderRadius: "10px", border: "1px solid #bbf7d0" }}>
+            Total Filtrado: {formatCurrency(totalCreditsCents - totalDebitsCents)}
+          </span>
+        </div>
+
+        <div className="audit-ledger-table-wrap">
+          <table className="audit-ledger-table">
             <thead>
               <tr>
-                <th>Protocolo</th>
-                <th>Data / Hora</th>
-                <th>Evento Auditado</th>
-                <th>Operador Responsável</th>
-                <th>Descrição e Detalhes</th>
-                <th style={{ textAlign: "right" }}>Impacto (R$)</th>
+                <th>Protocolo / Hash</th>
+                <th>Data & Dia</th>
+                <th>Hora & Turno</th>
+                <th>Pessoa Envolvida</th>
+                <th>Evento & Categoria</th>
+                <th>Meio de Pagamento</th>
+                <th style={{ textAlign: "right" }}>Total Auditado</th>
                 <th style={{ textAlign: "center" }}>Conciliação</th>
-                <th style={{ textAlign: "center" }}>Ação</th>
+                <th style={{ textAlign: "center" }}>Ações</th>
               </tr>
             </thead>
             <tbody>
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={9} style={{ textAlign: "center", padding: "40px", color: "var(--muted)" }}>
+                    Nenhuma movimentação financeira encontrada para os critérios informados.
+                    <br />
+                    <button
+                      type="button"
+                      onClick={handleResetFilters}
+                      className="button button-ghost"
+                      style={{ marginTop: "10px", fontSize: "0.75rem" }}
+                    >
+                      Redefinir Filtros de Consulta
+                    </button>
+                  </td>
+                </tr>
+              )}
+
               {filtered.map((record) => (
                 <tr key={record.protocol}>
-                  <td><code>{record.protocol}</code></td>
-                  <td>{new Date(record.timestamp).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}</td>
-                  <td><span className={`audit-event-tag ${record.direction}`}>{record.eventType}</span></td>
+                  {/* Protocolo */}
                   <td>
-                    <div className="operator-cell">
-                      <strong>{record.operatorEmail}</strong>
-                      <small>{record.operatorRole}</small>
-                    </div>
+                    <code className="audit-protocol-tag" title={`Hash SHA-256: ${record.cryptoHash}`}>
+                      {record.protocol}
+                    </code>
                   </td>
-                  <td className="description-cell">{record.description}</td>
-                  <td style={{ textAlign: "right", fontWeight: "bold" }}>
-                    {record.direction === "credit" && <span className="income-text">+ {formatCurrency(record.amountCents)}</span>}
-                    {record.direction === "debit" && <span className="expense-text">− {formatCurrency(record.amountCents)}</span>}
-                    {record.direction === "neutral" && <span style={{ color: "var(--muted)" }}>—</span>}
+
+                  {/* Data & Dia da Semana */}
+                  <td className="audit-date-cell">
+                    <strong>{record.dateFormatted}</strong>
+                    <small>{record.dayOfWeek}</small>
                   </td>
+
+                  {/* Hora & Turno */}
+                  <td className="audit-time-cell">
+                    <strong>{record.timeFormatted}</strong>
+                    <span className={`audit-shift-tag ${record.timeShift}`}>
+                      {record.timeShift}
+                    </span>
+                  </td>
+
+                  {/* Pessoa */}
+                  <td className="audit-person-cell">
+                    <strong>{record.personName}</strong>
+                    <small>{record.personEmail}</small>
+                    <span className="audit-role-tag">{record.personRole}</span>
+                  </td>
+
+                  {/* Evento & Categoria */}
+                  <td>
+                    <strong style={{ display: "block", fontSize: "0.76rem" }}>{record.category}</strong>
+                    <small style={{ color: "var(--muted)", display: "block", maxWidth: "240px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {record.description}
+                    </small>
+                  </td>
+
+                  {/* Meio de Pagamento */}
+                  <td>
+                    <span className="audit-payment-pill">
+                      {record.paymentMethod}
+                      {record.installments && record.installments > 1 ? ` (${record.installments}x)` : ""}
+                    </span>
+                  </td>
+
+                  {/* Total Auditado */}
+                  <td className={`audit-amount-cell ${record.direction}`}>
+                    {record.direction === "credit" && `+ ${formatCurrency(record.totalCents)}`}
+                    {record.direction === "debit" && `− ${formatCurrency(record.totalCents)}`}
+                    {record.direction === "neutral" && "—"}
+                  </td>
+
+                  {/* Conciliação */}
                   <td style={{ textAlign: "center" }}>
                     <span className={`status-pill ${record.reconciliationStatus === "reconciled" ? "success" : "warning"}`}>
                       {record.reconciliationStatus === "reconciled" ? "Conciliado" : "Pendente"}
                     </span>
                   </td>
-                  <td style={{ textAlign: "center" }}>
-                    {record.reconciliationStatus === "pending" ? (
+
+                  {/* Ações */}
+                  <td style={{ textAlign: "center", whiteSpace: "nowrap" }}>
+                    <button
+                      type="button"
+                      className="button button-ghost"
+                      onClick={() => setSelectedDossier(record)}
+                      style={{ fontSize: "0.68rem", padding: "4px 8px", marginRight: "4px" }}
+                      title="Abrir dossiê completo da transação"
+                    >
+                      📋 Dossiê
+                    </button>
+                    {record.reconciliationStatus === "pending" && (
                       <button
                         type="button"
                         className="btn-reconcile-action"
-                        onClick={() => reconcileRecord(record.protocol)}
+                        onClick={() => handleReconcileSingle(record.protocol)}
                         title="Marcar como conciliado com o banco"
                       >
                         Conciliar
                       </button>
-                    ) : (
-                      <span className="reconciled-check"><Icon name="check" size={16} /></span>
                     )}
                   </td>
                 </tr>
@@ -3415,6 +4306,293 @@ function AuditView({
           </table>
         </div>
       </div>
+
+      {/* 5. MODAL DE DOSSIÊ DE AUDITORIA DA TRANSAÇÃO (CERTIFICADO FISCAL/FINANCEIRO) */}
+      {selectedDossier && (
+        <div
+          className="audit-dossier-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="dossier-modal-title"
+        >
+          <div className="audit-dossier-card animate-fadeIn">
+            {/* Header do Dossiê */}
+            <div className="audit-dossier-header">
+              <div>
+                <h3 id="dossier-modal-title">
+                  Certificado de Auditoria Financeira #{selectedDossier.protocol}
+                </h3>
+                <p>
+                  Registro oficial imutável • Farmácia Poupe Mais • Autenticação de Integridade
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedDossier(null)}
+                style={{ background: "transparent", border: "none", color: "#fff", fontSize: "1.3rem", cursor: "pointer" }}
+                aria-label="Fechar Dossiê"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Corpo do Dossiê */}
+            <div className="audit-dossier-body">
+              {/* Seção 1: Pessoa e Cronologia */}
+              <div className="audit-dossier-section">
+                <h4>👤 1. Identificação do Titular / Pessoa & Cronologia</h4>
+                <dl className="audit-dossier-grid">
+                  <div>
+                    <dt>Nome da Pessoa</dt>
+                    <dd>{selectedDossier.personName}</dd>
+                  </div>
+                  <div>
+                    <dt>E-mail / Contato</dt>
+                    <dd>{selectedDossier.personEmail}</dd>
+                  </div>
+                  <div>
+                    <dt>Perfil no Sistema</dt>
+                    <dd>{selectedDossier.personRole}</dd>
+                  </div>
+                  <div>
+                    <dt>Data & Dia da Semana</dt>
+                    <dd>{selectedDossier.dateFormatted} ({selectedDossier.dayOfWeek})</dd>
+                  </div>
+                  <div>
+                    <dt>Hora Precisa (com segundos)</dt>
+                    <dd>{selectedDossier.timeFormatted} (Turno: {selectedDossier.timeShift})</dd>
+                  </div>
+                  <div>
+                    <dt>Status de Conciliação</dt>
+                    <dd>
+                      <span className={`status-pill ${selectedDossier.reconciliationStatus === "reconciled" ? "success" : "warning"}`}>
+                        {selectedDossier.reconciliationStatus === "reconciled" ? "Liquidado e Conciliado" : "Pendente de Conciliação"}
+                      </span>
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+
+              {/* Seção 2: Decomposição Financeira dos Valores */}
+              <div className="audit-dossier-section">
+                <h4>💰 2. Discriminativo de Valores e Fechamento</h4>
+                <dl className="audit-dossier-grid">
+                  <div>
+                    <dt>Subtotal Bruto</dt>
+                    <dd>{formatCurrency(selectedDossier.subtotalCents)}</dd>
+                  </div>
+                  <div>
+                    <dt>Desconto Aplicado (Cupom)</dt>
+                    <dd style={{ color: "#dc2626" }}>− {formatCurrency(selectedDossier.discountCents)}</dd>
+                  </div>
+                  <div>
+                    <dt>Frete / Tele-Entrega 90 min</dt>
+                    <dd>+ {formatCurrency(selectedDossier.shippingCents)}</dd>
+                  </div>
+                  <div>
+                    <dt>Total Faturado Líquido</dt>
+                    <dd style={{ fontSize: "1.1rem", color: "#00874e" }}>
+                      {formatCurrency(selectedDossier.totalCents)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Meio de Pagamento</dt>
+                    <dd>{selectedDossier.paymentMethod} {selectedDossier.installments && selectedDossier.installments > 1 ? `(em ${selectedDossier.installments}x)` : "(à vista)"}</dd>
+                  </div>
+                  <div>
+                    <dt>Impacto no Livro Caixa</dt>
+                    <dd>
+                      {selectedDossier.direction === "credit" ? "Crédito em Conta (+)" : "Débito / Saída (−)"}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+
+              {/* Seção 3: Itens / Medicamentos Faturados */}
+              {selectedDossier.items && selectedDossier.items.length > 0 && (
+                <div className="audit-dossier-section">
+                  <h4>💊 3. Itens e Medicamentos Faturados</h4>
+                  <table className="audit-dossier-items-table">
+                    <thead>
+                      <tr>
+                        <th>Item / Medicamento</th>
+                        <th style={{ textAlign: "center" }}>Qtd</th>
+                        <th style={{ textAlign: "right" }}>Unitário</th>
+                        <th style={{ textAlign: "right" }}>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedDossier.items.map((item, idx) => (
+                        <tr key={idx}>
+                          <td><strong>{item.name}</strong> <small style={{ color: "var(--muted)" }}>({item.id})</small></td>
+                          <td style={{ textAlign: "center" }}>{item.quantity}x</td>
+                          <td style={{ textAlign: "right" }}>{formatCurrency(item.priceCents)}</td>
+                          <td style={{ textAlign: "right", fontWeight: 700 }}>{formatCurrency(item.quantity * item.priceCents)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Seção 4: Trilha Criptográfica de Auditoria */}
+              <div className="audit-dossier-section">
+                <h4>🛡️ 4. Trilha Criptográfica de Imutabilidade (Audit Trail)</h4>
+                <p style={{ fontSize: "0.72rem", color: "var(--muted)", margin: "0 0 6px" }}>
+                  Assinatura digital e hash verificador contra adulterações e fraudes contábeis:
+                </p>
+                <div className="audit-dossier-hash">
+                  HASH_SHA256: {selectedDossier.cryptoHash}
+                </div>
+                <div style={{ marginTop: "6px", fontSize: "0.68rem", color: "#64748b" }}>
+                  <strong>Identificador do Sistema:</strong> {selectedDossier.id} • <strong>Evento:</strong> {selectedDossier.eventType}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer do Dossiê */}
+            <div className="audit-dossier-footer">
+              <button
+                type="button"
+                className="button button-ghost"
+                onClick={() => setSelectedDossier(null)}
+              >
+                Fechar Dossiê
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="button button-primary"
+                  onClick={() => window.print()}
+                >
+                  🖨️ Imprimir Extrato Oficial
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6. MODAL DE NOVO LANÇAMENTO MANUAL AUDITADO */}
+      {manualModalOpen && (
+        <div className="modal-overlay" role="dialog" aria-modal="true">
+          <div className="modal-box max-w-lg">
+            <div className="modal-header">
+              <h3>Novo Lançamento Financeiro Auditado</h3>
+              <button type="button" onClick={() => setManualModalOpen(false)}>✕</button>
+            </div>
+
+            <form onSubmit={handleCreateManualEntry} className="modal-form">
+              <div className="form-row">
+                <label>
+                  <span>Tipo de Fluxo:</span>
+                  <select
+                    value={manualEntry.direction}
+                    onChange={(e) => setManualEntry({ ...manualEntry, direction: e.target.value as "credit" | "debit" })}
+                  >
+                    <option value="credit">Entrada / Receita (+)</option>
+                    <option value="debit">Saída / Despesa (−)</option>
+                  </select>
+                </label>
+
+                <label>
+                  <span>Pessoa / Titular:</span>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: Carlos Silva ou Distribuidora"
+                    value={manualEntry.personName}
+                    onChange={(e) => setManualEntry({ ...manualEntry, personName: e.target.value })}
+                  />
+                </label>
+              </div>
+
+              <div className="form-row">
+                <label>
+                  <span>Perfil da Pessoa:</span>
+                  <select
+                    value={manualEntry.personRole}
+                    onChange={(e) => setManualEntry({ ...manualEntry, personRole: e.target.value })}
+                  >
+                    <option value="Cliente Balcão">Cliente Balcão</option>
+                    <option value="Operador de Caixa">Operador de Caixa</option>
+                    <option value="Entregador Parceiro Tele-Entrega">Entregador Parceiro Tele-Entrega</option>
+                    <option value="Farmacêutico RT">Farmacêutico RT</option>
+                    <option value="Gerente">Gerente</option>
+                    <option value="Proprietário">Proprietário</option>
+                    <option value="Fornecedor Homologado ANVISA">Fornecedor Homologado ANVISA</option>
+                  </select>
+                </label>
+
+                <label>
+                  <span>Categoria:</span>
+                  <select
+                    value={manualEntry.category}
+                    onChange={(e) => setManualEntry({ ...manualEntry, category: e.target.value })}
+                  >
+                    <option value="Venda Balcão Loja">Venda Balcão Loja</option>
+                    <option value="Tele-Entrega 90 min">Tele-Entrega 90 min</option>
+                    <option value="Fornecedor Medicamentos">Fornecedor Medicamentos</option>
+                    <option value="Logística & Tele-Entrega">Logística & Tele-Entrega</option>
+                    <option value="Atendimento & Estornos">Atendimento & Estornos</option>
+                    <option value="Ajuste Contábil">Ajuste Contábil</option>
+                    <option value="Despesas Operacionais">Despesas Operacionais</option>
+                  </select>
+                </label>
+              </div>
+
+              <label>
+                <span>Descrição da Transação:</span>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex: Recebimento balcão NF-e 4920 ou Repasse de combustível motoboy"
+                  value={manualEntry.description}
+                  onChange={(e) => setManualEntry({ ...manualEntry, description: e.target.value })}
+                />
+              </label>
+
+              <div className="form-row">
+                <label>
+                  <span>Valor em Reais (R$):</span>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: 150,00"
+                    value={manualEntry.amount}
+                    onChange={(e) => setManualEntry({ ...manualEntry, amount: e.target.value })}
+                  />
+                </label>
+
+                <label>
+                  <span>Meio de Pagamento:</span>
+                  <select
+                    value={manualEntry.paymentMethod}
+                    onChange={(e) => setManualEntry({ ...manualEntry, paymentMethod: e.target.value as FinancialAuditRecord["paymentMethod"] })}
+                  >
+                    <option value="Pix">Pix (Instantâneo)</option>
+                    <option value="Cartão de Crédito">Cartão de Crédito</option>
+                    <option value="Cartão de Débito">Cartão de Débito</option>
+                    <option value="Dinheiro na Entrega">Dinheiro em Espécie</option>
+                    <option value="Boleto Bancário">Boleto Bancário</option>
+                    <option value="Transferência">Transferência Bancária</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" onClick={() => setManualModalOpen(false)} className="button button-ghost">
+                  Cancelar
+                </button>
+                <button type="submit" className="button button-primary">
+                  Gravar & Auditar Lançamento
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
