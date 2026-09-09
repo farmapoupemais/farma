@@ -3363,28 +3363,44 @@ body { background: var(--paper); color: var(--ink); font-family: Inter, ui-sans-
   white-space: nowrap;
 }
 
-.cookie-btn-primary {
+.cookie-btn-primary,
+.cookie-btn-accept {
   background: #00874e;
   color: #ffffff;
   border: 1px solid #00874e;
   box-shadow: 0 4px 14px rgba(0, 135, 78, 0.28);
 }
 
-.cookie-btn-primary:hover {
+.cookie-btn-primary:hover,
+.cookie-btn-accept:hover {
   background: #005a34;
   border-color: #005a34;
   transform: translateY(-1px);
 }
 
-.cookie-btn-outline {
+.cookie-btn-outline,
+.cookie-btn-customize {
   background: #ffffff;
   color: #005a34;
   border: 1.5px solid #00874e;
 }
 
-.cookie-btn-outline:hover {
+.cookie-btn-outline:hover,
+.cookie-btn-customize:hover {
   background: #f0fdf4;
   border-color: #005a34;
+}
+
+.cookie-btn-necessary {
+  background: #f8fafc;
+  color: #334155;
+  border: 1.5px solid #cbd5e1;
+}
+
+.cookie-btn-necessary:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
 }
 
 .cookie-btn-link {
@@ -3414,7 +3430,8 @@ body { background: var(--paper); color: var(--ink); font-family: Inter, ui-sans-
 /* ==========================================================================
    MODAL DE GERENCIAMENTO DE COOKIES & LGPD
    ========================================================================== */
-.cookie-modal-backdrop {
+.cookie-modal-backdrop,
+.cookie-modal-overlay {
   position: fixed;
   inset: 0;
   z-index: 9998;
