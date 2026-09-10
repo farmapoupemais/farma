@@ -153,25 +153,24 @@ export function CookieConsentBanner() {
         <aside
           className="cookie-consent-banner"
           role="region"
-          aria-label="Central de Escolha de Cessão de Dados e Privacidade LGPD"
+          aria-label="Privacidade e Proteção de Dados Pessoais (LGPD)"
         >
           <div className="cookie-banner-content">
             <div className="cookie-banner-icon">
-              <Shield size={28} className="text-[#00874e]" />
+              <Shield size={18} className="text-[#00874e]" />
             </div>
             <div className="cookie-banner-text">
-              <h4>Privacidade e Escolha de Cessão de Dados (LGPD)</h4>
+              <h4>Privacidade e Dados Pessoais (LGPD)</h4>
               <p>
-                Na <strong>Farmácia Poupe Mais</strong>, a proteção da sua saúde e dos seus dados pessoais é um dever ético e legal (Lei nº 13.709/2018).
-                Você tem o direito inalienável de <strong>escolher exatamente quais dados autoriza tratar</strong>: apenas o mínimo indispensável por lei sanitária (emissão de NF-e e ANVISA) ou dados adicionais para tele-entrega em 90 min e lembretes de receitas.
+                Tratamos dados mínimos essenciais para notas fiscais e normas da ANVISA. Você pode personalizar suas preferências a qualquer momento.
               </p>
-              <div className="flex items-center gap-3 mt-2 text-xs font-bold text-[#00874e]">
+              <div className="cookie-banner-links">
                 <Link href="/privacidade" className="hover:underline">
-                  Ler Política de Privacidade (LGPD) →
+                  Política de Privacidade
                 </Link>
                 <span>•</span>
                 <Link href="/termos" className="hover:underline">
-                  Termos de Uso Sanitários →
+                  Termos de Uso
                 </Link>
               </div>
             </div>
@@ -182,25 +181,25 @@ export function CookieConsentBanner() {
               type="button"
               onClick={handleAcceptNecessaryOnly}
               className="cookie-btn cookie-btn-necessary"
-              title="Autoriza apenas os dados legalmente obrigatórios para emissão de nota e saúde"
+              title="Autoriza apenas os dados estritamente obrigatórios por lei"
             >
-              Ceder Apenas o Obrigatório por Lei
+              Apenas Obrigatórios
             </button>
             <button
               type="button"
               onClick={handleOpenModal}
-              className="cookie-btn cookie-btn-customize flex items-center justify-center gap-1.5"
-              title="Abrir painel detalhado para ligar e desligar cada tipo de dado pessoal"
+              className="cookie-btn cookie-btn-customize flex items-center justify-center gap-1"
+              title="Personalizar quais dados pessoais você autoriza"
             >
-              <SlidersHorizontal size={15} /> Personalizar Escolhas
+              <SlidersHorizontal size={13} /> Personalizar
             </button>
             <button
               type="button"
               onClick={handleAcceptAll}
               className="cookie-btn cookie-btn-accept"
-              title="Autoriza todas as funcionalidades de tele-entrega, receitas e atendimento"
+              title="Autoriza todas as preferências de conveniência e tele-entrega"
             >
-              Ceder Todos os Dados
+              Aceitar Todos
             </button>
           </div>
         </aside>
@@ -428,13 +427,13 @@ export function CookieConsentBanner() {
           type="button"
           onClick={handleOpenModal}
           className="floating-cookie-trigger-btn group"
-          title="Central Flutuante de Governança LGPD — Gerencie quais dados autoriza tratar a qualquer momento"
-          aria-label="Abrir Central de Preferências e Cessão de Dados LGPD"
+          title="Privacidade e Dados Pessoais (LGPD)"
+          aria-label="Abrir Preferências de Privacidade e Dados LGPD"
         >
           <span className="floating-cookie-icon text-[#00874e] group-hover:scale-110 transition-transform">
-            <Shield size={16} />
+            <Shield size={13} />
           </span>
-          <span className="font-bold text-xs">Privacidade & Dados LGPD</span>
+          <span>Privacidade &amp; LGPD</span>
         </button>
       )}
     </>
