@@ -5328,11 +5328,43 @@ body { background: var(--paper); color: var(--ink); font-family: Inter, ui-sans-
    CHATBOT FLUTUANTE DE BULAS OFICIAIS ANVISA (SEM CUSTO DE API / ZERO IA PAGA)
    ========================================================================== */
 
-.bula-floating-trigger-btn {
+.bula-floating-wrapper {
   position: fixed;
   bottom: 94px;
   right: 24px;
   z-index: 9998;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.bula-floating-hint-badge {
+  pointer-events: auto;
+  background: #004d2a;
+  color: #ffcb05;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(0, 77, 42, 0.35);
+  border: 1px solid #ffcb05;
+  white-space: nowrap;
+  animation: floatHint 3s ease-in-out infinite;
+}
+
+@keyframes floatHint {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.bula-floating-trigger-btn {
+  pointer-events: auto;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -5576,6 +5608,29 @@ body { background: var(--paper); color: var(--ink); font-family: Inter, ui-sans-
   color: #ffffff;
 }
 
+.bula-chip-symptom {
+  background: #fefce8;
+  border-color: #fde047;
+  color: #854d0e;
+  font-weight: 700;
+}
+
+.bula-chip-symptom:hover {
+  background: #fef08a;
+  border-color: #ca8a04;
+  color: #713f12;
+}
+
+.bula-problem-alert-box {
+  background: #fffbeb;
+  border: 1.5px solid #f59e0b;
+  border-left: 4px solid #d97706;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.12);
+}
+
 /* Corpo de Mensagens */
 .bula-chat-body {
   flex: 1;
@@ -5793,11 +5848,18 @@ body { background: var(--paper); color: var(--ink); font-family: Inter, ui-sans-
 
 /* Responsividade Mobile */
 @media (max-width: 640px) {
-  .bula-floating-trigger-btn {
+  .bula-floating-wrapper {
     bottom: 148px;
     right: 14px;
-    padding: 6px 12px 6px 6px;
     z-index: 9998;
+  }
+
+  .bula-floating-hint-badge {
+    display: none;
+  }
+
+  .bula-floating-trigger-btn {
+    padding: 6px 12px 6px 6px;
   }
   
   .bula-chat-window {

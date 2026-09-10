@@ -131,7 +131,7 @@ export const BULAS_DATABASE: BulaOficial[] = [
     registroAnvisa: "MS 1.0573.0119",
     apresentacao: "Comprimidos mastigáveis • Sabor Menta",
     classeTerapeutica: "Antiácido estomacal",
-    sinonimos: ["antiacido", "azia", "antiácido", "estomago", "queimacao", "refluxo", "mastigavel"],
+    sinonimos: ["antiacido", "antiácido", "antiacido mastigavel", "mastigavel", "hidroxido de aluminio", "hidroxido de magnesio"],
     linkFonteOficial: "https://consultas.anvisa.gov.br/#/bulario/",
     nomeFonteOficial: "Bulário Eletrônico da ANVISA",
     secoes: {
@@ -156,7 +156,7 @@ export const BULAS_DATABASE: BulaOficial[] = [
     registroAnvisa: "MS 1.1557.0034",
     apresentacao: "Frasco com 120 ml • Uso adulto",
     classeTerapeutica: "Fitoterápico broncodilatador e expectorante",
-    sinonimos: ["guaco", "xarope", "tosse", "catarro", "peito cheio", "mikania glomerata", "expectorante"],
+    sinonimos: ["guaco", "xarope de guaco", "xarope guaco", "mikania glomerata"],
     linkFonteOficial: "https://consultas.anvisa.gov.br/#/bulario/",
     nomeFonteOficial: "Bulário Eletrônico da ANVISA",
     secoes: {
@@ -181,7 +181,7 @@ export const BULAS_DATABASE: BulaOficial[] = [
     registroAnvisa: "MS 1.0043.1042",
     apresentacao: "Comprimidos revestidos de 600 mg",
     classeTerapeutica: "Anti-inflamatório Não Esteroidal (AINE)",
-    sinonimos: ["ibuprofeno", "advil", "alivium", "ibuprofeno 600", "inflamacao", "anti-inflamatorio"],
+    sinonimos: ["ibuprofeno", "advil", "alivium", "ibuprofeno 600"],
     linkFonteOficial: "https://consultas.anvisa.gov.br/#/bulario/",
     nomeFonteOficial: "Bulário Eletrônico da ANVISA",
     secoes: {
@@ -206,7 +206,7 @@ export const BULAS_DATABASE: BulaOficial[] = [
     registroAnvisa: "MS 1.0235.0741",
     apresentacao: "Cápsulas com microgrânulos gastrorresistentes de 20 mg",
     classeTerapeutica: "Inibidor da Bomba de Prótons (IBP)",
-    sinonimos: ["omeprazol", "losec", "gastrite", "ulcera", "refluxo esofagico", "estomago"],
+    sinonimos: ["omeprazol", "losec", "omeprazol 20"],
     linkFonteOficial: "https://consultas.anvisa.gov.br/#/bulario/",
     nomeFonteOficial: "Bulário Eletrônico da ANVISA",
     secoes: {
@@ -231,7 +231,7 @@ export const BULAS_DATABASE: BulaOficial[] = [
     registroAnvisa: "MS 1.0583.0312",
     apresentacao: "Comprimidos de 10 mg",
     classeTerapeutica: "Anti-histamínico (Antialérgico)",
-    sinonimos: ["loratadina", "claritin", "alergia", "rinite", "urticaria", "coriza", "coceira"],
+    sinonimos: ["loratadina", "claritin", "loratadina 10"],
     linkFonteOficial: "https://consultas.anvisa.gov.br/#/bulario/",
     nomeFonteOficial: "Bulário Eletrônico da ANVISA",
     secoes: {
@@ -281,7 +281,7 @@ export const BULAS_DATABASE: BulaOficial[] = [
     registroAnvisa: "MS 1.0573.0142",
     apresentacao: "Caixa com 4 envelopes para diluição",
     classeTerapeutica: "Solução de Reidratação Eletrolítica Oral (Padrão OMS)",
-    sinonimos: ["sais", "reidratacao", "soro caseiro", "desidratacao", "diarreia", "vomito", "hidratacao"],
+    sinonimos: ["sais", "sais de reidratacao", "reidratacao oral", "soro de reidratacao"],
     linkFonteOficial: "https://consultas.anvisa.gov.br/#/bulario/",
     nomeFonteOficial: "Bulário Eletrônico da ANVISA",
     secoes: {
@@ -336,7 +336,7 @@ export const BULAS_DATABASE: BulaOficial[] = [
     registroAnvisa: "Processo ANVISA 25351.312984/2023-12 (Grau 2)",
     apresentacao: "Loção cremosa • Frasco 100 ml",
     classeTerapeutica: "Repelente de Insetos (Cosmético de Grau 2)",
-    sinonimos: ["repelente", "icaridina", "dengue", "pernilongo", "mosquito", "mordida de inseto"],
+    sinonimos: ["repelente", "icaridina", "repelente de icaridina", "repelente corporal"],
     linkFonteOficial: "https://consultas.anvisa.gov.br/#/cosmeticos/registrados/",
     nomeFonteOficial: "Consulta de Cosméticos Registrados da ANVISA (RDC 752/2022)",
     secoes: {
@@ -361,7 +361,7 @@ export const BULAS_DATABASE: BulaOficial[] = [
     registroAnvisa: "Processo ANVISA 25351.109823/2024-88 (Grau 1)",
     apresentacao: "Frasco conta-gotas 30 ml • Uso facial",
     classeTerapeutica: "Dermocosmético Facial Notificado (Grau 1)",
-    sinonimos: ["niacinamida", "serum", "vitamina b3", "manchas", "poros", "lumina"],
+    sinonimos: ["niacinamida", "serum de niacinamida", "serum niacinamida", "vitamina b3"],
     linkFonteOficial: "https://consultas.anvisa.gov.br/#/cosmeticos/regularizados/",
     nomeFonteOficial: "Consulta de Cosméticos Notificados da ANVISA (RDC 752/2022)",
     secoes: {
@@ -386,7 +386,7 @@ export const BULAS_DATABASE: BulaOficial[] = [
     registroAnvisa: "Processo ANVISA 25351.204958/2024-11 (Grau 1)",
     apresentacao: "Frasco dosador com 400 ml • Sem fragrância",
     classeTerapeutica: "Dermocosmético Hidratante Notificado (Grau 1)",
-    sinonimos: ["hidratante", "ceramidas", "pele seca", "locao corporal", "dermaleve", "creme hidratante"],
+    sinonimos: ["hidratante", "hidratante com ceramidas", "ceramidas", "locao corporal", "creme hidratante"],
     linkFonteOficial: "https://consultas.anvisa.gov.br/#/cosmeticos/regularizados/",
     nomeFonteOficial: "Consulta de Cosméticos Notificados da ANVISA (RDC 752/2022)",
     secoes: {

@@ -26,29 +26,45 @@ interface MensagemChat {
   timestamp: string;
 }
 
+export const SINTOMAS_RAPIDOS = [
+  { label: "🌡️ Febre", query: "Quais remédios dizem na bula para febre?" },
+  { label: "🤕 Dor de Cabeça", query: "Quais remédios dizem na bula para dor de cabeça?" },
+  { label: "🫄 Azia & Queimação", query: "Quais remédios dizem na bula para azia e má digestão?" },
+  { label: "🫁 Tosse com Catarro", query: "Quais remédios dizem na bula para tosse com catarro?" },
+  { label: "🩸 Cólica Menstrual", query: "Quais remédios dizem na bula para cólica menstrual?" },
+  { label: "🌿 Alergia & Rinite", query: "Quais remédios dizem na bula para alergia e rinite?" },
+  { label: "💧 Desidratação / Diarreia", query: "O que diz a bula para desidratação e diarreia?" },
+  { label: "🦟 Repelente / Dengue", query: "Repelente protege contra mosquito da dengue?" },
+  { label: "☀️ Protetor Solar", query: "Protetor solar para proteção contra queimadura de sol" }
+];
+
 const MENSAGEM_INICIAL: MensagemChat = {
   id: "msg_intro",
   autor: "bot",
   texto:
     "Olá! Sou o Assistente de Consulta a Bulas e Rotulagens Oficiais (ANVISA) da Farmácia Poupe Mais.\n\n" +
-    "Aqui você consulta EXCLUSIVAMENTE o texto literal de bulas de medicamentos (RDC nº 47/2009) e rotulagens oficiais de cosméticos (RDC nº 752/2022) aprovados pela ANVISA.\n\n" +
-    "⚠️ Não realizamos diagnósticos médicos, nem orientamos condutas terapêuticas ou prescrições.\n\n" +
-    "Selecione um produto abaixo ou digite sua dúvida:",
+    "Aqui você pode:\n" +
+    "1. 💊 Digitar o NOME DO REMÉDIO para ver a bula oficial registrada na ANVISA (ex: Paracetamol, Dipirona, Ibuprofeno, Omeprazol);\n" +
+    "2. 📋 Digitar seu PROBLEMA OU SINTOMA para consultar quais remédios dizem na bula oficial a indicação para a queixa (ex: febre, dor de cabeça, azia, tosse com catarro, cólica, refluxo).\n\n" +
+    "⚠️ ALERTA SANITÁRIO OBRIGATÓRIO (ANVISA / CFM / CFF):\n" +
+    "NUNCA tome medicamentos sem consultar seu médico ou farmacêutico habilitado! A automedicação é extremamente perigosa devido a INTERAÇÕES MEDICAMENTOSAS GRAVES (com outros remédios ou álcool) e contraindicações severas.",
   timestamp: "Oficial",
   resposta: {
     tipo: "ajuda_geral",
     conteudoLiteral: "",
     rodapeRegulatorio:
-      "Fonte Oficial: Bulário Eletrônico & Consulta de Cosméticos da ANVISA. Informação estritamente literal não prescritiva.",
+      "Fonte Oficial: Bulário Eletrônico & Consulta de Cosméticos da ANVISA. Informação estritamente literal não prescritiva. Não substitui consulta médica presencial.",
     linkFonteOficial: PORTAIS_OFICIAIS_ANVISA.bularioEletronico.url,
     nomeFonteOficial: PORTAIS_OFICIAIS_ANVISA.bularioEletronico.nome,
     sugestoesRapidas: [
-      "Paracetamol",
-      "Dipirona",
-      "Ibuprofeno",
-      "Protetor Solar FPS 50",
-      "Repelente Icaridina",
-      "Sérum Niacinamida"
+      "Remédios para Febre",
+      "Remédios para Dor de Cabeça",
+      "Remédios para Azia",
+      "Remédios para Tosse",
+      "Cólica Menstrual",
+      "Bula Paracetamol",
+      "Bula Dipirona",
+      "Bula Ibuprofeno"
     ]
   }
 };
@@ -155,23 +171,28 @@ export function BulaFloatingChatbot() {
 
   return (
     <>
-      {/* 1. BOTÃO FLUTUANTE DE ACESSO AO CHATBOT DE BULAS (Posicionado acima do WhatsApp) */}
+      {/* 1. BOTÃO FLUTUANTE DE ACESSO AO CHATBOT DE BULAS (Sobreposto e flutuante na rolagem) */}
       {!aberto && (
-        <button
-          type="button"
-          onClick={() => setAberto(true)}
-          className="bula-floating-trigger-btn group"
-          aria-label="Abrir assistente de consulta a bulas de medicamentos da ANVISA"
-          title="Tire dúvidas consultando o texto oficial da bula dos medicamentos (ANVISA)"
-        >
-          <div className="bula-floating-icon-wrap">
-            <FileText size={22} className="text-white group-hover:scale-110 transition-transform" />
+        <div className="bula-floating-wrapper">
+          <div className="bula-floating-hint-badge">
+            <span>💬 Dúvidas sobre remédios? Consulte a Bula</span>
           </div>
-          <div className="bula-floating-text-wrap text-left">
-            <span className="bula-floating-badge">Oficial ANVISA</span>
-            <strong className="bula-floating-title">Consultar Bulas</strong>
-          </div>
-        </button>
+          <button
+            type="button"
+            onClick={() => setAberto(true)}
+            className="bula-floating-trigger-btn group"
+            aria-label="Abrir assistente de consulta a bulas de medicamentos da ANVISA"
+            title="Tire dúvidas sobre medicamentos ou consulte quais remédios tratam seu sintoma segundo a bula oficial ANVISA"
+          >
+            <div className="bula-floating-icon-wrap">
+              <FileText size={22} className="text-white group-hover:scale-110 transition-transform" />
+            </div>
+            <div className="bula-floating-text-wrap text-left">
+              <span className="bula-floating-badge">Oficial ANVISA</span>
+              <strong className="bula-floating-title">Bulas & Sintomas</strong>
+            </div>
+          </button>
+        </div>
       )}
 
       {/* 2. JANELA FLUTUANTE DO CHATBOT */}
@@ -230,26 +251,44 @@ export function BulaFloatingChatbot() {
             </p>
           </div>
 
-          {/* Seletor rápido de medicamentos e cosméticos em carrossel horizontal */}
-          <div className="bula-quick-med-bar">
-            <span className="bula-quick-label">Itens rápidos:</span>
-            <div className="bula-quick-chips-scroll">
-              {BULAS_DATABASE.map((bula) => {
-                const ativo = medicamentoSelecionado?.id === bula.id;
-                const isCosmetico = bula.tipoItem === "cosmetico";
-                return (
+          {/* Seletor rápido de Sintomas e Medicamentos */}
+          <div className="bula-quick-med-bar flex flex-col gap-1.5">
+            <div className="flex items-center gap-2 overflow-hidden w-full">
+              <span className="bula-quick-label">Sintomas:</span>
+              <div className="bula-quick-chips-scroll">
+                {SINTOMAS_RAPIDOS.map((sintoma, idx) => (
                   <button
-                    key={bula.id}
+                    key={idx}
                     type="button"
-                    onClick={() => selecionarMedicamento(bula)}
-                    className={`bula-chip-item ${ativo ? "bula-chip-active" : ""} ${isCosmetico ? "bula-chip-cosmetic" : ""}`}
-                    title={`${isCosmetico ? "Cosmético" : "Medicamento"}: ${bula.nomeComercial}`}
+                    onClick={() => enviarMensagem(sintoma.query)}
+                    className="bula-chip-item bula-chip-symptom"
+                    title={`Consultar remédios indicados na bula para ${sintoma.label}`}
                   >
-                    <span>{isCosmetico ? "🧴" : "💊"}</span>
-                    <span>{bula.nomeComercial.split(" ")[0]}</span>
+                    <span>{sintoma.label}</span>
                   </button>
-                );
-              })}
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 overflow-hidden w-full">
+              <span className="bula-quick-label">Remédios:</span>
+              <div className="bula-quick-chips-scroll">
+                {BULAS_DATABASE.map((bula) => {
+                  const ativo = medicamentoSelecionado?.id === bula.id;
+                  const isCosmetico = bula.tipoItem === "cosmetico";
+                  return (
+                    <button
+                      key={bula.id}
+                      type="button"
+                      onClick={() => selecionarMedicamento(bula)}
+                      className={`bula-chip-item ${ativo ? "bula-chip-active" : ""} ${isCosmetico ? "bula-chip-cosmetic" : ""}`}
+                      title={`${isCosmetico ? "Cosmético" : "Medicamento"}: ${bula.nomeComercial}`}
+                    >
+                      <span>{isCosmetico ? "🧴" : "💊"}</span>
+                      <span>{bula.nomeComercial.split(" ")[0]}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
@@ -273,6 +312,23 @@ export function BulaFloatingChatbot() {
                   <div className="bula-msg-text whitespace-pre-line leading-relaxed">
                     {msg.texto}
                   </div>
+
+                  {/* Alerta de Segurança para Consulta por Problema/Sintoma */}
+                  {msg.resposta?.tipo === "consulta_problema" && (
+                    <div className="bula-problem-alert-box">
+                      <div className="flex items-center gap-2 font-bold text-amber-950 text-xs mb-1.5">
+                        <AlertTriangle size={16} className="text-amber-600 flex-shrink-0" />
+                        Alerta Sanitário: Consulta Estritamente não Prescritiva
+                      </div>
+                      <p className="text-[11.5px] text-amber-900 leading-normal mb-1.5 font-medium">
+                        <strong>NUNCA tome medicamentos sem consultar seu médico ou farmacêutico.</strong> A automedicação é perigosa porque existem <strong>interações medicamentosas graves</strong> (que anulam efeitos ou geram toxicidade), além de contraindicações severas.
+                      </p>
+                      <div className="text-[10px] text-amber-800 bg-amber-100/80 p-1.5 rounded border border-amber-300 font-semibold flex items-center gap-1">
+                        <span>⚖️</span>
+                        <span>Texto literal do Item 1 da Bula Oficial ANVISA (RDC nº 47/2009 e Art. 282 do CP)</span>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Link Oficial Governamental ANVISA */}
                   {msg.resposta?.linkFonteOficial && (

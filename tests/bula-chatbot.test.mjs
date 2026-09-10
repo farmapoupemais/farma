@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   identificarMedicamento,
+  buscarMedicamentosPorProblema,
   classificarIntencao,
   processarConsultaBula,
 } from "../lib/bula-chatbot-engine.ts";
@@ -146,3 +147,72 @@ test("portais oficiais ANVISA estão devidamente cadastrados", () => {
   assert.ok(PORTAIS_OFICIAIS_ANVISA.cosmeticosRegularizados.url);
   assert.ok(PORTAIS_OFICIAIS_ANVISA.dadosAbertosGov.url);
 });
+
+test("busca reversa por problemas e sintomas clínicos na Seção 1 das bulas oficiais", () => {
+  const febre = buscarMedicamentosPorProblema("febre e calafrios");
+  assert.ok(febre);
+  assert.equal(febre.problema.chave, "febre");
+  assert.ok(febre.medicamentos.some((m) => m.id === "paracetamol"));
+  assert.ok(febre.medicamentos.some((m) => m.id === "dipirona"));
+
+  const dorCabeca = buscarMedicamentosPorProblema("estou com dor de cabeça e enxaqueca");
+  assert.ok(dorCabeca);
+  assert.equal(dorCabeca.problema.chave, "dor_cabeca");
+  assert.ok(dorCabeca.medicamentos.some((m) => m.id === "paracetamol"));
+  assert.ok(dorCabeca.medicamentos.some((m) => m.id === "dipirona"));
+  assert.ok(dorCabeca.medicamentos.some((m) => m.id === "ibuprofeno"));
+
+  const tosse = buscarMedicamentosPorProblema("tosse com catarro e peito cheio");
+  assert.ok(tosse);
+  assert.equal(tosse.problema.chave, "tosse_catarro");
+  assert.ok(tosse.medicamentos.some((m) => m.id === "guaco"));
+
+  const azia = buscarMedicamentosPorProblema("azia e má digestão");
+  assert.ok(azia);
+  assert.equal(azia.problema.chave, "azia_acidez");
+  assert.ok(azia.medicamentos.some((m) => m.id === "antiacido"));
+  assert.ok(azia.medicamentos.some((m) => m.id === "omeprazol"));
+
+  const colica = buscarMedicamentosPorProblema("cólica menstrual forte");
+  assert.ok(colica);
+  assert.equal(colica.problema.chave, "colica");
+  assert.ok(colica.medicamentos.some((m) => m.id === "ibuprofeno"));
+  assert.ok(colica.medicamentos.some((m) => m.id === "paracetamol"));
+});
+
+test("processa consulta por problema reforçando consulta médica obrigatória e risco de interações", () => {
+  const resposta = processarConsultaBula("Quais remédios dizem na bula para febre?");
+  assert.equal(resposta.tipo, "consulta_problema");
+  assert.match(resposta.conteudoLiteral, /ALERTA SANITÁRIO OBRIGATÓRIO/);
+  assert.match(resposta.conteudoLiteral, /NUNCA TOME MEDICAMENTOS SEM CONSULTAR UM MÉDICO OU FARMACÊUTICO/);
+  assert.match(resposta.conteudoLiteral, /INTERAÇÕES MEDICAMENTOSAS GRAVES/);
+  assert.match(resposta.conteudoLiteral, /CONTRAINDICAÇÕES CRÍTICAS/);
+  assert.match(resposta.conteudoLiteral, /MASCARAMENTO DE DOENÇAS/);
+  assert.match(resposta.conteudoLiteral, /PARACETAMOL 750 MG/);
+  assert.match(resposta.conteudoLiteral, /DIPIRONA MONOIDRATADA/);
+  assert.match(resposta.conteudoLiteral, /Item 1 - Indicação Literal/);
+  assert.match(resposta.conteudoLiteral, /Item 3/);
+  assert.match(resposta.conteudoLiteral, /Item 10/);
+  assert.ok(resposta.medicamentosRelacionados && resposta.medicamentosRelacionados.length >= 2);
+  assert.ok(resposta.linkFonteOficial, "deve apontar para fonte oficial ANVISA");
+});
+
+test("processa consulta de tosse com catarro com alerta sobre cumarinas e anticoagulantes", () => {
+  const resposta = processarConsultaBula("Estou com tosse com catarro o que diz a bula?");
+  assert.equal(resposta.tipo, "consulta_problema");
+  assert.match(resposta.conteudoLiteral, /XAROPE DE GUACO/);
+  assert.match(resposta.conteudoLiteral, /cumarinas/i);
+  assert.match(resposta.conteudoLiteral, /anticoagulantes/i);
+  assert.match(resposta.conteudoLiteral, /NUNCA TOME MEDICAMENTOS SEM CONSULTAR/);
+  assert.match(resposta.conteudoLiteral, /INTERAÇÕES MEDICAMENTOSAS GRAVES/);
+});
+
+test("processa consulta de azia e queimação com aviso de intervalo para outros fármacos", () => {
+  const resposta = processarConsultaBula("azia e má digestão");
+  assert.equal(resposta.tipo, "consulta_problema");
+  assert.match(resposta.conteudoLiteral, /ANTIÁCIDO MASTIGÁVEL/);
+  assert.match(resposta.conteudoLiteral, /OMEPRAZOL 20 MG/);
+  assert.match(resposta.conteudoLiteral, /intervalo de pelo menos 2 horas/i);
+  assert.match(resposta.conteudoLiteral, /NUNCA TOME MEDICAMENTOS/);
+});
+
