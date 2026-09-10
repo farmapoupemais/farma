@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { CookieConsentBanner } from "@/components/cookie-consent-banner";
 import { WhatsAppFloatingButton } from "@/components/whatsapp-floating-button";
+import { BulaFloatingChatbot } from "@/components/bula-floating-chatbot";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://farmapoupemais.netlify.app"),
@@ -82,6 +83,7 @@ export default function RootLayout({
         {children}
         <CookieConsentBanner />
         <WhatsAppFloatingButton />
+        <BulaFloatingChatbot />
       </body>
     </html>
   );
