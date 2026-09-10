@@ -5330,9 +5330,9 @@ body { background: var(--paper); color: var(--ink); font-family: Inter, ui-sans-
 
 .bula-floating-trigger-btn {
   position: fixed;
-  bottom: 88px;
+  bottom: 94px;
   right: 24px;
-  z-index: 9974;
+  z-index: 9998;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -5397,7 +5397,7 @@ body { background: var(--paper); color: var(--ink); font-family: Inter, ui-sans-
   position: fixed;
   bottom: 24px;
   right: 24px;
-  z-index: 9999;
+  z-index: 10005;
   width: 410px;
   max-width: calc(100vw - 32px);
   height: 620px;
@@ -5794,9 +5794,10 @@ body { background: var(--paper); color: var(--ink); font-family: Inter, ui-sans-
 /* Responsividade Mobile */
 @media (max-width: 640px) {
   .bula-floating-trigger-btn {
-    bottom: 82px;
-    right: 16px;
-    padding: 5px 12px 5px 6px;
+    bottom: 148px;
+    right: 14px;
+    padding: 6px 12px 6px 6px;
+    z-index: 9998;
   }
   
   .bula-chat-window {
