@@ -106,6 +106,14 @@ export const PROBLEMAS_E_SINTOMAS: DefinicaoProblemaSintoma[] = [
       "Atenção: A dor de dente geralmente decorre de infecção ou cárie profunda que exige avaliação do cirurgião-dentista. O uso de analgésicos apenas mascara o problema e não combate infecções bacterianas."
   },
   {
+    chave: "dor_garganta",
+    termoPrincipal: "Dor de Garganta e Inflamação",
+    padroes: ["dor de garganta", "garganta doendo", "garganta inflamada", "garganta arranhando", "inflamacao na garganta"],
+    medicamentosIds: ["ibuprofeno", "paracetamol"],
+    alertaEspecificoInteracoes:
+      "Atenção: A dor de garganta pode ser causada por infecções bacterianas ou virais. Analgésicos apenas aliviam a dor e não curam infecções bacterianas que necessitam de antibióticos com receita médica. Havendo febre persistente ou placas de pus, consulte um médico imediatamente."
+  },
+  {
     chave: "colica",
     termoPrincipal: "Cólicas Menstruais e Espasmos Dolorosos",
     padroes: ["colica", "colica menstrual", "colicas", "dor menstrual"],
@@ -223,57 +231,9 @@ export const PROBLEMAS_E_SINTOMAS: DefinicaoProblemaSintoma[] = [
     medicamentosIds: ["protetor_fps50"],
     alertaEspecificoInteracoes:
       "Atenção: Protetores solares ajudam a prevenir queimaduras, mas não protegem contra insolação térmica. A reaplicação a cada 2 a 3 horas ou após nadar ou suar intensamente é estritamente necessária para manter a eficácia declarada."
-  },
-  {
-    chave: "pele_seca",
-    termoPrincipal: "Pele Seca, Ressecamento Intenso e Barreira Danificada",
-    padroes: ["pele seca", "pele ressecada", "ressecamento", "pele aspera", "coceira por ressecamento", "hidratacao corporal"],
-    medicamentosIds: ["hidratante_ceramidas"],
-    alertaEspecificoInteracoes:
-      "Atenção: Loções hidratantes com ceramidas restauram a barreira cutânea. Havendo fissuras com sinais de infecção (pus, calor e rubor), o uso cosmético deve ser suspenso e o paciente deve consultar um médico dermatologista."
-  },
-  {
-    chave: "oleosidade_poros",
-    termoPrincipal: "Controle de Oleosidade Facial e Poros Dilatados",
-    padroes: ["oleosidade", "poros dilatados", "pele oleosa", "brilho excessivo", "viço", "manchas superficiais"],
-    medicamentosIds: ["serum_niacinamida"],
-    alertaEspecificoInteracoes:
-      "Atenção: Faça um teste de contato antes do primeiro uso. Não aplique concomitantemente no mesmo horário com ácidos esfoliantes de alta concentração para evitar dermatite de contato."
   }
 ];
 
-const PALAVRAS_IGNORADAS = new Set([
-  "para",
-  "como",
-  "onde",
-  "qual",
-  "quais",
-  "remedio",
-  "remedios",
-  "medicamento",
-  "medicamentos",
-  "bula",
-  "bulas",
-  "tomar",
-  "usar",
-  "servir",
-  "serve",
-  "estou",
-  "sinto",
-  "minha",
-  "meu",
-  "sobre",
-  "quando",
-  "tenho",
-  "dizer",
-  "dizem",
-  "pessoa",
-  "posso",
-  "queria",
-  "saber",
-  "deles",
-  "delas"
-]);
 
 /**
  * Normaliza o texto removendo diacríticos, pontuação e múltiplos espaços.
@@ -405,13 +365,43 @@ export function detectarTentativaPrescricaoOuDiagnostico(textoNorm: string): boo
 }
 
 /**
+ * Detecta quando o usuário pergunta sobre aparência, estética ou cosmética visual,
+ * instruindo o bot a não comentar sobre aparência e apenas oferecer ajuda de saúde/bulas.
+ */
+export function detectarPerguntaAparencia(textoNorm: string): boolean {
+  const padroesAparencia = [
+    "aparencia",
+    "estetica",
+    "beleza",
+    "rugas",
+    "antirrugas",
+    "anti rugas",
+    "linhas de expressao",
+    "rejuvenescimento",
+    "rejuvenescer",
+    "celulite",
+    "estrias",
+    "clarear a pele",
+    "clareamento",
+    "ficar bonito",
+    "ficar bonita",
+    "emagrecer",
+    "emagrecimento",
+    "perder peso rapido",
+    "maquiagem"
+  ];
+
+  return padroesAparencia.some((padrao) => textoNorm.includes(padrao));
+}
+
+/**
  * Busca quais medicamentos possuem indicação descrita na Seção 1 da bula oficial
  * registrada na ANVISA para o problema ou sintoma relatado pelo usuário.
  */
 export function buscarMedicamentosPorProblema(texto: string): ResultadoProblema | null {
   const textoNorm = normalizarTexto(texto);
 
-  // 1. Busca no mapeamento padronizado de problemas/sintomas clínicos
+  // Busca no mapeamento padronizado de problemas/sintomas clínicos
   for (const def of PROBLEMAS_E_SINTOMAS) {
     const match = def.padroes.some((padrao) => {
       const padraoNorm = normalizarTexto(padrao);
@@ -423,32 +413,6 @@ export function buscarMedicamentosPorProblema(texto: string): ResultadoProblema 
       if (medicamentos.length > 0) {
         return { problema: def, medicamentos };
       }
-    }
-  }
-
-  // 2. Busca dinâmica nos termos literais da Seção 1 (Indicações) das bulas
-  const palavrasRelevantes = textoNorm
-    .split(" ")
-    .filter((palavra) => palavra.length >= 4 && !PALAVRAS_IGNORADAS.has(palavra));
-
-  for (const palavra of palavrasRelevantes) {
-    const medsCorrespondentes = BULAS_DATABASE.filter((bula) => {
-      const indicacoesNorm = normalizarTexto(bula.secoes.indicacoes);
-      return indicacoesNorm.includes(palavra);
-    });
-
-    if (medsCorrespondentes.length > 0) {
-      return {
-        problema: {
-          chave: `busca_${palavra}`,
-          termoPrincipal: palavra.charAt(0).toUpperCase() + palavra.slice(1),
-          padroes: [palavra],
-          medicamentosIds: medsCorrespondentes.map((m) => m.id),
-          alertaEspecificoInteracoes:
-            "Atenção: Consulte a bula oficial e não utilize nenhum medicamento sem a prévia avaliação e diagnóstico do seu médico ou farmacêutico."
-        },
-        medicamentos: medsCorrespondentes
-      };
     }
   }
 
@@ -623,9 +587,6 @@ export function classificarIntencao(texto: string): IntencaoBula {
   return "DESCONHECIDA";
 }
 
-const AVISO_REGULATORIO_PADRAO =
-  "⚠️ Fonte Oficial: Bula do Paciente / Rotulagem aprovada pela ANVISA (RDC nº 47/2009 e RDC nº 752/2022). Informação estritamente literal não prescritiva. Não substitui consulta médica ou orientação presencial com o farmacêutico responsável.";
-
 /**
  * Monta a resposta para consultas focadas em um medicamento ou cosmético específico.
  */
@@ -708,38 +669,17 @@ function responderBulaMedicamento(medicamento: BulaOficial, mensagemUsuario: str
         `${medicamento.secoes.interacoes}`;
       break;
 
+    case "INDICACAO":
     default:
+      // "se dizer o nome de alguma remedio, trazer o que na bula diz que serve"
       secaoTitulo = isCosmetico
-        ? `Rotulagem Oficial ANVISA • ${medicamento.nomeComercial} (${medicamento.registroAnvisa})`
-        : `Bula Oficial • ${medicamento.nomeComercial} (${medicamento.registroAnvisa})`;
+        ? "1. INDICAÇÃO E FINALIDADE (Rótulo Oficial ANVISA RDC nº 752/2022)"
+        : "1. PARA QUE ESTE MEDICAMENTO É INDICADO?";
       conteudoLiteral =
-        `Apresentação Oficial: ${medicamento.apresentacao}\n` +
-        `Princípio Ativo: ${medicamento.principioAtivo}\n` +
-        `Categoria / Classe: ${medicamento.classeTerapeutica}\n\n` +
-        `O que você deseja consultar no texto oficial registrado na ANVISA para este ${isCosmetico ? "cosmético" : "medicamento"}? Selecione uma das seções abaixo ou digite sua dúvida:`;
+        `${medicamento.secoes.indicacoes}\n\n` +
+        `⚠️ AVISO IMPORTANTE: Não tome medicamentos por conta própria. Consulte sempre um médico ou farmacêutico para orientar a dosagem adequada e avaliar contraindicações e interações.`;
       break;
   }
-
-  const nomeCurto = medicamento.nomeComercial.split(" ")[0];
-
-  const sugestoesRapidas = isCosmetico
-    ? [
-        `Para que serve ${nomeCurto}?`,
-        `Como usar ${nomeCurto}?`,
-        `Precauções ${nomeCurto}`,
-        `Reações ${nomeCurto}`,
-        `${nomeCurto} na gravidez`,
-        `Rotulagem completa ${nomeCurto}`
-      ]
-    : [
-        `Para que serve ${nomeCurto}?`,
-        `Como tomar ${nomeCurto}?`,
-        `Contraindicações ${nomeCurto}`,
-        `Interações ${nomeCurto}`,
-        `Efeitos colaterais ${nomeCurto}`,
-        `${nomeCurto} na gravidez`,
-        `Bula completa ${nomeCurto}`
-      ];
 
   const rodapeRegulatorio = isCosmetico
     ? `Fonte Oficial: Consulta de Cosméticos da ANVISA (${medicamento.registroAnvisa}) • RDC nº 752/2022. Texto literal do registro sanitário.`
@@ -752,29 +692,30 @@ function responderBulaMedicamento(medicamento: BulaOficial, mensagemUsuario: str
     conteudoLiteral,
     rodapeRegulatorio,
     linkFonteOficial: medicamento.linkFonteOficial,
-    nomeFonteOficial: medicamento.nomeFonteOficial,
-    sugestoesRapidas
+    nomeFonteOficial: medicamento.nomeFonteOficial
   };
 }
 
 /**
- * Monta a resposta para consultas de sintomas ou problemas, citando quais medicamentos
- * possuem a indicação em sua bula oficial registrada na ANVISA (Item 1), e reforçando com máxima
- * firmeza que a automedicação é vedada e que existem graves interações e contraindicações.
+ * Monta a resposta para consultas de sintomas ou problemas:
+ * - Indica a procura de um médico.
+ * - Traz os remédios que na bula oficial dizem tratar (Item 1).
+ * - Reforça que podem ter outras causas e só o médico sabe.
  */
 function responderConsultaProblema(resultado: ResultadoProblema): RespostaChatbot {
   const { problema, medicamentos } = resultado;
 
   let texto =
     `⚠️ ALERTA SANITÁRIO OBRIGATÓRIO (ANVISA / CFM / CFF):\n` +
-    `As informações a seguir foram extraídas ESTRITAMENTE do Item 1 ("Para que este medicamento é indicado?") das bulas oficiais de pacientes aprovadas pela ANVISA.\n\n` +
-    `🛑 NUNCA TOME MEDICAMENTOS SEM CONSULTAR UM MÉDICO OU FARMACÊUTICO HABILITADO!\n` +
-    `A automedicação é extremamente perigosa pelos seguintes motivos comprovados nas bulas:\n` +
-    `• INTERAÇÕES MEDICAMENTOSAS GRAVES: Combinar medicamentos entre si, com álcool ou com outros fármacos pode anular o efeito do tratamento ou provocar toxicidade severa (lesão hepática, hemorragias digestivas graves, arritmias ou queda perigosa da pressão arterial).\n` +
-    `• CONTRAINDICAÇÕES CRÍTICAS: Medicamentos indicados para um sintoma podem ser contraindicados para quem tem pressão alta, diabetes, histórico de úlceras gástricas, insuficiência renal ou hepática, asma ou para gestantes e lactantes.\n` +
-    `• MASCARAMENTO DE DOENÇAS: Aliviar sintomas sem acompanhamento médico pode atrasar o diagnóstico de condições clínicas graves que requerem intervenção imediata.\n\n` +
+    `Se você está sentindo este sintoma, o primeiro passo é PROCURAR UM MÉDICO para avaliação adequada.\n\n` +
+    `🛑 ATENÇÃO: O que você está sentindo PODE TER OUTRAS CAUSAS DIVERSAS, e SOMENTE O MÉDICO SABE diagnosticar a causa exata e determinar o tratamento correto.\n` +
+    `NUNCA TOME MEDICAMENTOS SEM CONSULTAR UM MÉDICO OU FARMACÊUTICO!\n\n` +
+    `A automedicação traz sérios riscos à sua saúde:\n` +
+    `• INTERAÇÕES MEDICAMENTOSAS GRAVES: Combinar remédios entre si, com bebidas alcoólicas ou com remédios contínuos pode anular o efeito ou provocar toxicidade severa (lesão no fígado, estômago, rins e pressão arterial).\n` +
+    `• CONTRAINDICAÇÕES CRÍTICAS: Remédios comuns podem ser perigosos para quem tem pressão alta, diabetes, gastrite, problemas renais ou hepáticos, ou na gravidez.\n` +
+    `• MASCARAMENTO DE DOENÇAS: Aliviar sintomas por conta própria pode mascarar causas mais graves que somente o médico poderá diagnosticar e tratar.\n\n` +
     `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-    `📋 REMÉDIOS COM INDICAÇÃO NA BULA OFICIAL ANVISA PARA: ${problema.termoPrincipal.toUpperCase()}\n` +
+    `📋 REMÉDIOS QUE NA BULA OFICIAL (ANVISA) DIZEM TRATAR: ${problema.termoPrincipal.toUpperCase()}\n` +
     `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
   if (problema.alertaEspecificoInteracoes) {
@@ -782,9 +723,8 @@ function responderConsultaProblema(resultado: ResultadoProblema): RespostaChatbo
   }
 
   for (const med of medicamentos) {
-    const isCosmetico = med.tipoItem === "cosmetico";
     texto +=
-      `${isCosmetico ? "🧴" : "💊"} ${med.nomeComercial.toUpperCase()} (${med.principioAtivo})\n` +
+      `${med.nomeComercial.toUpperCase()} (${med.principioAtivo})\n` +
       `• Registro Sanitário ANVISA: ${med.registroAnvisa}\n` +
       `• Categoria / Classe: ${med.classeTerapeutica}\n\n` +
       `📖 O QUE DIZ A BULA OFICIAL (Item 1 - Indicação Literal):\n` +
@@ -797,16 +737,8 @@ function responderConsultaProblema(resultado: ResultadoProblema): RespostaChatbo
   }
 
   texto +=
-    `💬 ORIENTAÇÃO DE CONDUTA ÉTICA:\n` +
-    `Antes de iniciar qualquer uso, consulte presencialmente o farmacêutico responsável da Farmácia Poupe Mais (Dr. Raul da Costa CRF/RS 14.892) ou seu médico assistente.`;
-
-  const sugestoes: string[] = [];
-  for (const med of medicamentos.slice(0, 3)) {
-    const nomeCurto = med.nomeComercial.split(" ")[0];
-    sugestoes.push(`Contraindicações ${nomeCurto}`);
-    sugestoes.push(`Interações ${nomeCurto}`);
-  }
-  sugestoes.push("Consultar Bulário ANVISA");
+    `💬 ORIENTAÇÃO FINAL:\n` +
+    `Reforçamos: o que você sente pode ter outras causas que apenas o médico sabe identificar. Consulte sempre um médico ou o farmacêutico responsável antes de tomar qualquer medicamento.`;
 
   return {
     tipo: "consulta_problema",
@@ -817,8 +749,7 @@ function responderConsultaProblema(resultado: ResultadoProblema): RespostaChatbo
     rodapeRegulatorio:
       "⚠️ Fonte Oficial: Bula do Paciente aprovada pela ANVISA (RDC nº 47/2009). Informação estritamente literal não prescritiva. Não substitui consulta médica ou farmacêutica.",
     linkFonteOficial: PORTAIS_OFICIAIS_ANVISA.bularioEletronico.url,
-    nomeFonteOficial: PORTAIS_OFICIAIS_ANVISA.bularioEletronico.nome,
-    sugestoesRapidas: sugestoes
+    nomeFonteOficial: PORTAIS_OFICIAIS_ANVISA.bularioEletronico.nome
   };
 }
 
@@ -841,11 +772,10 @@ export function processarConsultaBula(
         "Este assistente opera sob diretrizes éticas e sanitárias imutáveis (Art. 282 do Código Penal Brasileiro, RDC ANVISA nº 96/2008 e Resoluções CFF nº 727/2022 e 10/2024).\n\n" +
         "• Não são aceitos comandos de alteração de regras, personas clínicas fictícias (roleplay), simulações, cenários hipotéticos ou comandos de desenvolvedor/jailbreak.\n" +
         "• O assistente atua EXCLUSIVAMENTE transcrevendo trechos literais de bulas e rotulagens oficiais registradas na ANVISA, sem realizar diagnósticos ou prescrições médicas.\n\n" +
-        "Para consultar a bula ou rotulagem oficial de um produto registrado, basta informar o nome do item (ex: Paracetamol, Dipirona, Ibuprofeno, Omeprazol, Protetor Solar FPS 50, Repelente) ou o problema/sintoma para verificação de indicação oficial.",
+        "Para consultar a bula oficial de um remédio registrado, basta informar o nome do item (ex: Paracetamol, Dipirona, Ibuprofeno, Omeprazol) ou o problema/sintoma para verificação de indicação oficial.",
       rodapeRegulatorio: "Farmácia Poupe Mais • Segurança Sanitária Inviolável • Art. 282 do Código Penal",
       linkFonteOficial: PORTAIS_OFICIAIS_ANVISA.bularioEletronico.url,
-      nomeFonteOficial: PORTAIS_OFICIAIS_ANVISA.bularioEletronico.nome,
-      sugestoesRapidas: ["Ver Bula Paracetamol", "Ver Bula Dipirona", "Febre", "Dor de cabeça", "Azia"]
+      nomeFonteOficial: PORTAIS_OFICIAIS_ANVISA.bularioEletronico.nome
     };
   }
 
@@ -861,31 +791,43 @@ export function processarConsultaBula(
         "• Não tente tomar medicamentos por conta própria sem avaliação médica emergencial.",
       rodapeRegulatorio: "Farmácia Poupe Mais • RT Farmacêutico Dr. Raul da Costa CRF/RS 14.892",
       linkFonteOficial: PORTAIS_OFICIAIS_ANVISA.medicamentosRegistrados.url,
-      nomeFonteOficial: PORTAIS_OFICIAIS_ANVISA.medicamentosRegistrados.nome,
-      sugestoesRapidas: ["Ligue 192 SAMU", "Procurar Pronto Socorro", "Ver Bula Paracetamol"]
+      nomeFonteOficial: PORTAIS_OFICIAIS_ANVISA.medicamentosRegistrados.nome
     };
   }
 
-  // 3. Identificação de Medicamento ou Cosmético Específico
-  const medicamento = identificarMedicamento(mensagemUsuario);
+  // 3. Regra de Diretriz: Não comentar sobre aparência ou estética, apenas oferecer ajuda de saúde/bulas
+  if (detectarPerguntaAparencia(textoNorm)) {
+    return {
+      tipo: "bloqueio_regulatorio",
+      conteudoLiteral:
+        "Não posso responder a isso, por não constar em minhas diretrizes.\n\n" +
+        "Não comento sobre questões de estética ou aparência. Estou aqui exclusivamente para oferecer ajuda sobre remédios e saúde com base nas bulas oficiais aprovadas pela ANVISA:\n\n" +
+        "• Se você estiver sentindo algo, diga o que você sente (para eu indicar os remédios que na bula oficial dizem tratar, reforçando a necessidade de buscar um médico);\n" +
+        "• Se quiser saber sobre um remédio, diga o nome dele (para eu trazer o que a bula oficial diz que serve).",
+      rodapeRegulatorio: "Farmácia Poupe Mais • Diretrizes de Atendimento e Consulta a Bulas ANVISA",
+      linkFonteOficial: PORTAIS_OFICIAIS_ANVISA.bularioEletronico.url,
+      nomeFonteOficial: PORTAIS_OFICIAIS_ANVISA.bularioEletronico.nome
+    };
+  }
 
-  // Se o usuário especificou um medicamento conhecido
+  // 4. Identificação de Medicamento Específico ("se dizer o nome de algum remédio")
+  const medicamento = identificarMedicamento(mensagemUsuario);
   if (medicamento) {
     return responderBulaMedicamento(medicamento, mensagemUsuario);
   }
 
-  // Se o usuário tem um medicamento ativo e não mencionou um sintoma/problema diferente
-  if (medicamentoAtivo && !buscarMedicamentosPorProblema(mensagemUsuario)) {
-    return responderBulaMedicamento(medicamentoAtivo, mensagemUsuario);
-  }
-
-  // 4. Verificação de Busca Reversa por Problema/Sintoma ("quais remédios dizem na bula o problema da pessoa")
+  // 5. Verificação de Busca Reversa por Problema/Sintoma ("se a pessoa dizer se sente algo")
   const resultadoProblema = buscarMedicamentosPorProblema(mensagemUsuario);
   if (resultadoProblema) {
     return responderConsultaProblema(resultadoProblema);
   }
 
-  // 5. Prescrição direta arbitrária sem sintoma reconhecido
+  // Se o usuário tem um medicamento ativo e fez uma pergunta sobre ele
+  if (medicamentoAtivo) {
+    return responderBulaMedicamento(medicamentoAtivo, mensagemUsuario);
+  }
+
+  // 6. Prescrição direta arbitrária sem sintoma reconhecido
   if (detectarTentativaPrescricaoDireta(textoNorm)) {
     return {
       tipo: "bloqueio_regulatorio",
@@ -897,32 +839,36 @@ export function processarConsultaBula(
         "• Para consultar a bula de um remédio específico, informe o nome (ex: Paracetamol, Dipirona, Ibuprofeno, Omeprazol).",
       rodapeRegulatorio: "Farmácia Poupe Mais • RT Farmacêutico Dr. Raul da Costa CRF/RS 14.892",
       linkFonteOficial: PORTAIS_OFICIAIS_ANVISA.medicamentosRegistrados.url,
-      nomeFonteOficial: PORTAIS_OFICIAIS_ANVISA.medicamentosRegistrados.nome,
-      sugestoesRapidas: ["Febre", "Dor de cabeça", "Azia e Queimação", "Tosse com catarro", "Bula Paracetamol"]
+      nomeFonteOficial: PORTAIS_OFICIAIS_ANVISA.medicamentosRegistrados.nome
     };
   }
 
-  // 6. Mensagem de Ajuda e Seleção de Medicamento ou Sintoma
+  // 7. Saudações comuns (apenas oferecer ajuda)
+  const saudacoes = ["oi", "ola", "ola tudo bem", "bom dia", "boa tarde", "boa noite", "ajuda", "preciso de ajuda"];
+  if (saudacoes.includes(textoNorm)) {
+    return {
+      tipo: "ajuda_geral",
+      conteudoLiteral:
+        "Olá! Como posso ajudar você hoje?\n\n" +
+        "Estou aqui para ajudar com informações das bulas oficiais de remédios aprovadas pela ANVISA:\n\n" +
+        "• Se você está sentindo algo, diga o que você sente (ex: 'estou com dor de cabeça', 'febre', 'azia', 'tosse'), e eu indicarei os remédios que na bula oficial dizem tratar, reforçando a procura de um médico pois podem haver outras causas que só ele sabe identificar.\n\n" +
+        "• Se você quer saber sobre um remédio, diga o nome dele (ex: 'Dipirona', 'Paracetamol', 'Omeprazol', 'Ibuprofeno'), e eu trarei o que a bula diz para que ele serve.",
+      rodapeRegulatorio: "Farmácia Poupe Mais • Diretrizes de Atendimento e Consulta a Bulas ANVISA",
+      linkFonteOficial: PORTAIS_OFICIAIS_ANVISA.bularioEletronico.url,
+      nomeFonteOficial: PORTAIS_OFICIAIS_ANVISA.bularioEletronico.nome
+    };
+  }
+
+  // 8. Para qualquer pergunta fora desse contexto ("se a pergunta for algo diferente, fora desse contexto, dizer que não pode responder isso, por não constar em suas diretrizes")
   return {
-    tipo: "selecao_medicamento",
+    tipo: "bloqueio_regulatorio",
     conteudoLiteral:
-      "Olá! Sou o Assistente de Consulta a Bulas e Rotulagens Oficiais (ANVISA) da Farmácia Poupe Mais.\n\n" +
-      "Para garantir sua segurança sanitária, reproduzo EXATAMENTE os textos literais aprovados e registrados na ANVISA (Bula do Paciente RDC nº 47/2009 e Rotulagem de Cosméticos RDC nº 752/2022), sem realizar diagnósticos ou prescrever tratamentos.\n\n" +
-      "Você pode consultar de duas formas:\n" +
-      "1. Digite o NOME DO MEDICAMENTO (ex: Paracetamol, Dipirona, Ibuprofeno, Omeprazol, Protetor Solar, Repelente);\n" +
-      "2. Digite o PROBLEMA OU SINTOMA (ex: Febre, Dor de cabeça, Azia, Tosse com catarro, Cólica) para ver quais remédios dizem na bula oficial a indicação para a sua queixa e quais as contraindicações e riscos de interações.",
-    rodapeRegulatorio: AVISO_REGULATORIO_PADRAO,
+      "Não posso responder a isso, por não constar em minhas diretrizes.\n\n" +
+      "Estou aqui exclusivamente para ajudar com orientações baseadas nas bulas oficiais de remédios aprovadas pela ANVISA:\n\n" +
+      "• Se você está sentindo algo, diga o que você sente (ex: 'estou com dor de cabeça', 'febre', 'azia', 'tosse'), e eu indicarei quais remédios na bula oficial dizem tratar, reforçando que somente o médico sabe a verdadeira causa.\n\n" +
+      "• Se você quer saber sobre um remédio, diga o nome dele (ex: 'Dipirona', 'Paracetamol', 'Omeprazol', 'Ibuprofeno'), e eu trarei o que a bula diz para que ele serve.",
+    rodapeRegulatorio: "Farmácia Poupe Mais • Diretrizes de Atendimento e Consulta a Bulas ANVISA",
     linkFonteOficial: PORTAIS_OFICIAIS_ANVISA.bularioEletronico.url,
-    nomeFonteOficial: PORTAIS_OFICIAIS_ANVISA.bularioEletronico.nome,
-    sugestoesRapidas: [
-      "Febre",
-      "Dor de cabeça",
-      "Azia e Queimação",
-      "Tosse com catarro",
-      "Cólica menstrual",
-      "Paracetamol",
-      "Dipirona",
-      "Ibuprofeno"
-    ]
+    nomeFonteOficial: PORTAIS_OFICIAIS_ANVISA.bularioEletronico.nome
   };
 }

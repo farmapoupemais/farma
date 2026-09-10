@@ -216,3 +216,44 @@ test("processa consulta de azia e queimação com aviso de intervalo para outros
   assert.match(resposta.conteudoLiteral, /NUNCA TOME MEDICAMENTOS/);
 });
 
+test("ao informar nome de remédio, traz diretamente para que serve segundo a bula", () => {
+  const resposta = processarConsultaBula("Dipirona");
+  assert.equal(resposta.tipo, "resposta_bula");
+  assert.ok(resposta.medicamento);
+  assert.equal(resposta.medicamento.id, "dipirona");
+  assert.match(resposta.conteudoLiteral, /1\. PARA QUE ESTE MEDICAMENTO É INDICADO\?/);
+  assert.match(resposta.conteudoLiteral, /analgésico.*antitérmico/i);
+});
+
+test("ao relatar sintoma, indica médico e reforça que podem ter outras causas e só médico sabe", () => {
+  const resposta = processarConsultaBula("Estou com dor de cabeça forte");
+  assert.equal(resposta.tipo, "consulta_problema");
+  assert.match(resposta.conteudoLiteral, /PROCURAR UM MÉDICO/i);
+  assert.match(resposta.conteudoLiteral, /PODE TER OUTRAS CAUSAS/i);
+  assert.match(resposta.conteudoLiteral, /SOMENTE O MÉDICO SABE/i);
+  assert.match(resposta.conteudoLiteral, /REMÉDIOS QUE NA BULA OFICIAL.*DIZEM TRATAR/i);
+});
+
+test("não responde perguntas sobre estética ou aparência, declarando diretrizes", () => {
+  const resposta = processarConsultaBula("Como melhorar a aparência da pele e tirar rugas?");
+  assert.match(resposta.conteudoLiteral, /Não posso responder a isso, por não constar em minhas diretrizes/);
+  assert.match(resposta.conteudoLiteral, /Não comento sobre questões de estética ou aparência/);
+});
+
+test("declara que não pode responder perguntas fora do contexto por diretrizes", () => {
+  const perguntasFora = [
+    "Qual a previsão do tempo para amanhã?",
+    "Quem ganhou o jogo de futebol ontem?",
+    "Me ensine uma receita de bolo de chocolate",
+    "Quanto custa a taxa de entrega em Porto Alegre?",
+  ];
+
+  for (const pergunta of perguntasFora) {
+    const resposta = processarConsultaBula(pergunta);
+    assert.match(
+      resposta.conteudoLiteral,
+      /Não posso responder a isso, por não constar em minhas diretrizes/
+    );
+  }
+});
+
