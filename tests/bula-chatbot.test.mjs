@@ -216,22 +216,26 @@ test("processa consulta de azia e queimação com aviso de intervalo para outros
   assert.match(resposta.conteudoLiteral, /NUNCA TOME MEDICAMENTOS/);
 });
 
-test("ao informar nome de remédio, traz diretamente para que serve segundo a bula", () => {
+test("ao informar nome de remédio, traz o que serve e embaixo coloca os efeitos colaterais descritos", () => {
   const resposta = processarConsultaBula("Dipirona");
   assert.equal(resposta.tipo, "resposta_bula");
   assert.ok(resposta.medicamento);
   assert.equal(resposta.medicamento.id, "dipirona");
   assert.match(resposta.conteudoLiteral, /1\. PARA QUE ESTE MEDICAMENTO É INDICADO\?/);
   assert.match(resposta.conteudoLiteral, /analgésico.*antitérmico/i);
+  assert.match(resposta.conteudoLiteral, /EFEITOS COLATERAIS DESCRITOS NA BULA OFICIAL \(Item 8\)/i);
+  assert.match(resposta.conteudoLiteral, /hipotensão/i);
+  assert.match(resposta.conteudoLiteral, /agranulocitose/i);
 });
 
-test("ao relatar sintoma, indica médico e reforça que podem ter outras causas e só médico sabe", () => {
+test("ao relatar sintoma, indica médico, reforça causas e traz remédios com efeitos colaterais descritos embaixo", () => {
   const resposta = processarConsultaBula("Estou com dor de cabeça forte");
   assert.equal(resposta.tipo, "consulta_problema");
   assert.match(resposta.conteudoLiteral, /PROCURAR UM MÉDICO/i);
   assert.match(resposta.conteudoLiteral, /PODE TER OUTRAS CAUSAS/i);
   assert.match(resposta.conteudoLiteral, /SOMENTE O MÉDICO SABE/i);
   assert.match(resposta.conteudoLiteral, /REMÉDIOS QUE NA BULA OFICIAL.*DIZEM TRATAR/i);
+  assert.match(resposta.conteudoLiteral, /EFEITOS COLATERAIS DESCRITOS NA BULA \(Item 8\)/i);
 });
 
 test("não responde perguntas sobre estética ou aparência, declarando diretrizes", () => {
@@ -255,5 +259,13 @@ test("declara que não pode responder perguntas fora do contexto por diretrizes"
       /Não posso responder a isso, por não constar em minhas diretrizes/
     );
   }
+});
+
+test("ao consultar posologia ou indicação de medicamento, inclui embaixo os efeitos colaterais descritos na bula", () => {
+  const resposta = processarConsultaBula("Como tomar o paracetamol?");
+  assert.equal(resposta.tipo, "resposta_bula");
+  assert.match(resposta.conteudoLiteral, /6\. COMO DEVO USAR ESTE MEDICAMENTO\?/);
+  assert.match(resposta.conteudoLiteral, /EFEITOS COLATERAIS DESCRITOS NA BULA OFICIAL \(Item 8\)/);
+  assert.match(resposta.conteudoLiteral, /hepatotoxicidade/i);
 });
 

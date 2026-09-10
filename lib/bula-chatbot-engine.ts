@@ -594,6 +594,17 @@ function responderBulaMedicamento(medicamento: BulaOficial, mensagemUsuario: str
   const intencao = classificarIntencao(mensagemUsuario);
   const isCosmetico = medicamento.tipoItem === "cosmetico";
 
+  const blocoEfeitosColaterais = isCosmetico
+    ? `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `⚠️ PRECAUÇÕES E POSSÍVEIS REAÇÕES DESCRITAS NO RÓTULO (Item 8):\n` +
+      `"${medicamento.secoes.reacoesAdversas.replace(/^8\..*?\n/, "").trim()}"`
+    : `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `⚠️ EFEITOS COLATERAIS DESCRITOS NA BULA OFICIAL (Item 8):\n` +
+      `"${medicamento.secoes.reacoesAdversas.replace(/^8\..*?\n/, "").trim()}"`;
+
+  const avisoMedicoFarmaceutico =
+    `\n\n⚠️ AVISO IMPORTANTE: Não tome medicamentos por conta própria. Consulte sempre um médico ou farmacêutico para orientar a dosagem adequada e avaliar contraindicações e interações.`;
+
   let secaoTitulo = "";
   let conteudoLiteral = "";
 
@@ -602,56 +613,76 @@ function responderBulaMedicamento(medicamento: BulaOficial, mensagemUsuario: str
       secaoTitulo = isCosmetico
         ? "1. INDICAÇÃO E FINALIDADE (Rótulo Oficial ANVISA RDC nº 752/2022)"
         : "1. PARA QUE ESTE MEDICAMENTO É INDICADO?";
-      conteudoLiteral = medicamento.secoes.indicacoes;
+      conteudoLiteral =
+        `${medicamento.secoes.indicacoes}` +
+        blocoEfeitosColaterais +
+        avisoMedicoFarmaceutico;
       break;
 
     case "POSOLOGIA":
       secaoTitulo = isCosmetico
         ? "6. MODO DE USO (Rotulagem Oficial ANVISA RDC nº 752/2022)"
         : "6. COMO DEVO USAR ESTE MEDICAMENTO? (Posologia da Bula)";
-      conteudoLiteral = medicamento.secoes.posologia;
+      conteudoLiteral =
+        `${medicamento.secoes.posologia}` +
+        blocoEfeitosColaterais +
+        avisoMedicoFarmaceutico;
       break;
 
     case "CONTRAINDICACAO":
       secaoTitulo = isCosmetico
         ? "3. RESTRIÇÕES DE USO E PRECAUÇÕES"
         : "3. QUANDO NÃO DEVO USAR ESTE MEDICAMENTO?";
-      conteudoLiteral = medicamento.secoes.contraindicacoes;
+      conteudoLiteral =
+        `${medicamento.secoes.contraindicacoes}` +
+        blocoEfeitosColaterais +
+        avisoMedicoFarmaceutico;
       break;
 
     case "GRAVIDEZ_LACTACAO":
       secaoTitulo = isCosmetico
         ? "4. USO EM GESTANTES E LACTANTES (Registro ANVISA)"
         : "4. ADVERTÊNCIAS - GRAVIDEZ E AMAMENTAÇÃO";
-      conteudoLiteral = medicamento.secoes.gravidezLactacao;
+      conteudoLiteral =
+        `${medicamento.secoes.gravidezLactacao}` +
+        blocoEfeitosColaterais +
+        avisoMedicoFarmaceutico;
       break;
 
     case "REACOES_ADVERSAS":
       secaoTitulo = isCosmetico
         ? "8. PRECAUÇÕES E POSSÍVEIS REAÇÕES INDESEJADAS"
-        : "8. QUAIS OS MALES QUE ESTE MEDICAMENTO PODE ME CAUSAR? (Reações Adversas)";
-      conteudoLiteral = medicamento.secoes.reacoesAdversas;
+        : "8. QUAIS OS MALES QUE ESTE MEDICAMENTO PODE ME CAUSAR? (Reações Adversas e Efeitos Colaterais)";
+      conteudoLiteral =
+        `${medicamento.secoes.reacoesAdversas}\n\n` +
+        `⚠️ Em caso de eventos adversos ou reações inesperadas, suspenda o uso imediatamente e procure auxílio médico ou informe o farmacêutico responsável.`;
       break;
 
     case "SUPERDOSE":
       secaoTitulo = isCosmetico
         ? "9. EM CASO DE INGESTÃO OU ACIDENTE"
         : "9. O QUE FAZER EM CASO DE SUPERDOSAGEM?";
-      conteudoLiteral = medicamento.secoes.superdose;
+      conteudoLiteral =
+        `${medicamento.secoes.superdose}` +
+        blocoEfeitosColaterais;
       break;
 
     case "INTERACOES":
       secaoTitulo = isCosmetico
         ? "10. COMPATIBILIDADE E ASSOCIAÇÃO COM OUTROS PRODUTOS"
         : "10. INTERAÇÕES MEDICAMENTOSAS DA BULA";
-      conteudoLiteral = medicamento.secoes.interacoes;
+      conteudoLiteral =
+        `${medicamento.secoes.interacoes}` +
+        blocoEfeitosColaterais;
       break;
 
     case "ARMAZENAMENTO":
       secaoTitulo = isCosmetico
         ? "5. CONSERVAÇÃO E CUIDADOS (Registro ANVISA)"
         : "5. ONDE E COMO GUARDAR ESTE MEDICAMENTO?";
-      conteudoLiteral = medicamento.secoes.armazenamento;
+      conteudoLiteral =
+        `${medicamento.secoes.armazenamento}` +
+        blocoEfeitosColaterais;
       break;
 
     case "BULA_COMPLETA":
@@ -669,15 +700,15 @@ function responderBulaMedicamento(medicamento: BulaOficial, mensagemUsuario: str
         `${medicamento.secoes.interacoes}`;
       break;
 
-    case "INDICACAO":
     default:
       // "se dizer o nome de alguma remedio, trazer o que na bula diz que serve"
       secaoTitulo = isCosmetico
         ? "1. INDICAÇÃO E FINALIDADE (Rótulo Oficial ANVISA RDC nº 752/2022)"
         : "1. PARA QUE ESTE MEDICAMENTO É INDICADO?";
       conteudoLiteral =
-        `${medicamento.secoes.indicacoes}\n\n` +
-        `⚠️ AVISO IMPORTANTE: Não tome medicamentos por conta própria. Consulte sempre um médico ou farmacêutico para orientar a dosagem adequada e avaliar contraindicações e interações.`;
+        `${medicamento.secoes.indicacoes}` +
+        blocoEfeitosColaterais +
+        avisoMedicoFarmaceutico;
       break;
   }
 
@@ -700,6 +731,7 @@ function responderBulaMedicamento(medicamento: BulaOficial, mensagemUsuario: str
  * Monta a resposta para consultas de sintomas ou problemas:
  * - Indica a procura de um médico.
  * - Traz os remédios que na bula oficial dizem tratar (Item 1).
+ * - Traz os efeitos colaterais descritos na bula oficial (Item 8).
  * - Reforça que podem ter outras causas e só o médico sabe.
  */
 function responderConsultaProblema(resultado: ResultadoProblema): RespostaChatbot {
@@ -729,6 +761,8 @@ function responderConsultaProblema(resultado: ResultadoProblema): RespostaChatbo
       `• Categoria / Classe: ${med.classeTerapeutica}\n\n` +
       `📖 O QUE DIZ A BULA OFICIAL (Item 1 - Indicação Literal):\n` +
       `"${med.secoes.indicacoes.replace(/^1\..*?\n/, "").trim()}"\n\n` +
+      `⚠️ EFEITOS COLATERAIS DESCRITOS NA BULA (Item 8):\n` +
+      `"${med.secoes.reacoesAdversas.replace(/^8\..*?\n/, "").trim()}"\n\n` +
       `⚠️ PRINCIPAIS CONTRAINDICAÇÕES DA BULA (Item 3):\n` +
       `"${med.secoes.contraindicacoes.replace(/^3\..*?\n/, "").trim()}"\n\n` +
       `⚠️ INTERAÇÕES PERIGOSAS DESCRITAS NA BULA (Item 10):\n` +
@@ -852,7 +886,7 @@ export function processarConsultaBula(
         "Olá! Como posso ajudar você hoje?\n\n" +
         "Estou aqui para ajudar com informações das bulas oficiais de remédios aprovadas pela ANVISA:\n\n" +
         "• Se você está sentindo algo, diga o que você sente (ex: 'estou com dor de cabeça', 'febre', 'azia', 'tosse'), e eu indicarei os remédios que na bula oficial dizem tratar, reforçando a procura de um médico pois podem haver outras causas que só ele sabe identificar.\n\n" +
-        "• Se você quer saber sobre um remédio, diga o nome dele (ex: 'Dipirona', 'Paracetamol', 'Omeprazol', 'Ibuprofeno'), e eu trarei o que a bula diz para que ele serve.",
+        "• Se você quer saber sobre um remédio, diga o nome dele (ex: 'Dipirona', 'Paracetamol', 'Omeprazol', 'Ibuprofeno'), e eu trarei o que a bula diz para que ele serve e os efeitos colaterais descritos.",
       rodapeRegulatorio: "Farmácia Poupe Mais • Diretrizes de Atendimento e Consulta a Bulas ANVISA",
       linkFonteOficial: PORTAIS_OFICIAIS_ANVISA.bularioEletronico.url,
       nomeFonteOficial: PORTAIS_OFICIAIS_ANVISA.bularioEletronico.nome
@@ -866,7 +900,7 @@ export function processarConsultaBula(
       "Não posso responder a isso, por não constar em minhas diretrizes.\n\n" +
       "Estou aqui exclusivamente para ajudar com orientações baseadas nas bulas oficiais de remédios aprovadas pela ANVISA:\n\n" +
       "• Se você está sentindo algo, diga o que você sente (ex: 'estou com dor de cabeça', 'febre', 'azia', 'tosse'), e eu indicarei quais remédios na bula oficial dizem tratar, reforçando que somente o médico sabe a verdadeira causa.\n\n" +
-      "• Se você quer saber sobre um remédio, diga o nome dele (ex: 'Dipirona', 'Paracetamol', 'Omeprazol', 'Ibuprofeno'), e eu trarei o que a bula diz para que ele serve.",
+      "• Se você quer saber sobre um remédio, diga o nome dele (ex: 'Dipirona', 'Paracetamol', 'Omeprazol', 'Ibuprofeno'), e eu trarei o que a bula diz para que ele serve e os efeitos colaterais descritos.",
     rodapeRegulatorio: "Farmácia Poupe Mais • Diretrizes de Atendimento e Consulta a Bulas ANVISA",
     linkFonteOficial: PORTAIS_OFICIAIS_ANVISA.bularioEletronico.url,
     nomeFonteOficial: PORTAIS_OFICIAIS_ANVISA.bularioEletronico.nome
