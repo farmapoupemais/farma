@@ -8,7 +8,7 @@
  * 4. Intercepta e bloqueia ativamente qualquer tentativa de obter orientação médica ou prescrição direta.
  */
 
-import { BULAS_DATABASE, BulaOficial, PORTAIS_OFICIAIS_ANVISA } from "./bulas-data.ts";
+import { BULAS_DATABASE, BulaOficial, PORTAIS_OFICIAIS_ANVISA } from "./bulas-data";
 
 export type IntencaoBula =
   | "INDICACAO"

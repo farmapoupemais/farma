@@ -195,7 +195,7 @@ export default function PrivacyPage() {
                   <th style={{ padding: "10px 12px" }}>Fundamento Legal / Regulatório</th>
                 </tr>
               </thead>
-              <tbody style={{ divideY: "1px solid #e2ece7" }}>
+              <tbody className="divide-y divide-[#e2ece7]">
                 <tr>
                   <td style={{ padding: "10px 12px", fontWeight: "bold" }}>Receitas de Medicamentos Controlados</td>
                   <td style={{ padding: "10px 12px" }}>5 (cinco) anos</td>

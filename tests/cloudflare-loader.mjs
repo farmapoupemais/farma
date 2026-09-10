@@ -6,15 +6,33 @@ const stubUrl = new URL("./cloudflare-workers-stub.mjs", import.meta.url).href;
 
 export async function resolve(specifier, context, nextResolve) {
   if (specifier === "cloudflare:workers") return { url: stubUrl, shortCircuit: true };
-  const resolved = await nextResolve(specifier, context);
-  if (resolved.url.endsWith(".ts") || resolved.url.endsWith(".tsx")) {
-    return {
-      ...resolved,
-      format: "module",
-      shortCircuit: true,
-    };
+  try {
+    const resolved = await nextResolve(specifier, context);
+    if (resolved.url.endsWith(".ts") || resolved.url.endsWith(".tsx")) {
+      return {
+        ...resolved,
+        format: "module",
+        shortCircuit: true,
+      };
+    }
+    return resolved;
+  } catch (err) {
+    if (specifier.startsWith(".") && !specifier.endsWith(".ts") && !specifier.endsWith(".tsx")) {
+      for (const ext of [".ts", ".tsx", "/index.ts", "/index.tsx"]) {
+        try {
+          const resolved = await nextResolve(specifier + ext, context);
+          return {
+            ...resolved,
+            format: "module",
+            shortCircuit: true,
+          };
+        } catch {
+          // continuar tentando próxima extensão
+        }
+      }
+    }
+    throw err;
   }
-  return resolved;
 }
 
 export async function load(url, context, nextLoad) {

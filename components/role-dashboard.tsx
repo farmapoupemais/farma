@@ -102,6 +102,8 @@ export type AuditLog = {
   created_at: string;
 };
 
+export type FormOpenState = "product" | "banner" | "discount" | "role" | null;
+
 function StatusPill({ children }: { children: React.ReactNode }) {
   const label = String(children).toLowerCase();
   const tone =
@@ -1160,8 +1162,8 @@ function CatalogView({
   setCategoryFilter: (c: string) => void;
   statusFilter: string;
   setStatusFilter: (s: string) => void;
-  formOpen: string | null;
-  setFormOpen: (f: string | null) => void;
+  formOpen: FormOpenState;
+  setFormOpen: (f: FormOpenState) => void;
   editingProduct: AdminProduct | null;
   setEditingProduct: (p: AdminProduct | null) => void;
   onQuickStock: (id: string, delta: number) => void;
@@ -2115,8 +2117,8 @@ function MarketingView({
 }: {
   banners: AdminBanner[];
   discounts: AdminDiscount[];
-  formOpen: string | null;
-  setFormOpen: (f: string | null) => void;
+  formOpen: FormOpenState;
+  setFormOpen: (f: FormOpenState) => void;
   onToggleBanner: (id: string, st: boolean) => void;
   onDeleteBanner: (id: string) => void;
   onToggleDiscount: (id: string, st: boolean) => void;
@@ -2292,8 +2294,8 @@ function TeamView({
 }: {
   team: TeamMember[];
   auditLogs: AuditLog[];
-  formOpen: string | null;
-  setFormOpen: (f: string | null) => void;
+  formOpen: FormOpenState;
+  setFormOpen: (f: FormOpenState) => void;
   onUpdateRole: (email: string, role: string) => void;
   onRevokeRole: (email: string) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>, ep: string) => void;

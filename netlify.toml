@@ -1,6 +1,10 @@
 [build]
-  command = "npx next build"
+  command = "npm run build"
   publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NPM_FLAGS = "--no-audit"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"

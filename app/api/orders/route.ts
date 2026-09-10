@@ -31,6 +31,7 @@ type OrderPayload = {
   fulfillment?: unknown;
   coupon?: unknown;
   prescriptionId?: unknown;
+  payment_method?: unknown;
   address?: OrderAddressInput | null;
   guestEmail?: unknown;
 };
