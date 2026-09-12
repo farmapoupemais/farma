@@ -19,7 +19,7 @@ export type DataConsentPreferences = {
   geolocation: boolean; // CEP e tele-entrega expressa em 90 min
   pharmacotherapy: boolean; // Lembretes e perfil de uso contínuo (Art. 11)
   telemetry: boolean; // Telemetria e diagnóstico técnico
-  communications: boolean; // Alertas de receita e WhatsApp
+  communications: boolean; // Alertas de pedidos e WhatsApp
   protocol: string; // Identificador unívoco do consentimento
   decidedAt: string; // Timestamp ISO
 };
@@ -244,7 +244,7 @@ export function CookieConsentBanner() {
               <div className="bg-[#f0fdf4] border border-emerald-200 rounded-xl p-3.5 text-xs text-[#005a34] leading-relaxed flex items-start gap-2.5">
                 <CheckCircle2 size={18} className="text-[#00874e] flex-shrink-0 mt-0.5" />
                 <div>
-                  <strong>Cláusula Pétrea de Vedação Comercial (Art. 11, § 4º da LGPD):</strong> Seus dados de saúde e prescrições médicas <strong>nunca serão vendidos ou repassados</strong> a operadoras de planos de saúde, bancos, seguradoras ou terceiros anunciantes.
+                  <strong>Cláusula Pétrea de Vedação Comercial (Art. 11, § 4º da LGPD):</strong> Seus dados de saúde e histórico de atendimento <strong>nunca serão vendidos ou repassados</strong> a operadoras de planos de saúde, bancos, seguradoras ou terceiros anunciantes.
                 </div>
               </div>
 
@@ -307,9 +307,9 @@ export function CookieConsentBanner() {
                     <span className="cookie-badge-optional">DADOS DE SAÚDE (ART. 11)</span>
                   </div>
                   <p>
-                    Armazenamento consentido de receitas anteriores para habilitar lembretes programados de reposição de medicamentos de uso contínuo (hipertensão, diabetes, colesterol) antes do término da caixa, prevenindo interrupções terapêuticas.
+                    Lembretes programados de reposição para itens e medicamentos de uso contínuo antes do término da embalagem, prevenindo interrupções no seu cuidado diário.
                     <br />
-                    <em>Base Legal: Consentimento Específico e Destacado para Dados Sensíveis (Art. 11, I da LGPD).</em>
+                    <em>Base Legal: Consentimento Específico e Destacado para Dados de Saúde (Art. 11, I da LGPD).</em>
                   </p>
                 </div>
                 <label className="cookie-toggle">
@@ -348,18 +348,18 @@ export function CookieConsentBanner() {
                 </label>
               </div>
 
-              {/* 5. Alertas de Receita e Tele-Entrega via WhatsApp */}
+              {/* 5. Alertas de Pedido e Tele-Entrega via WhatsApp */}
               <div className="cookie-category-box">
                 <div className="cookie-category-info">
                   <div className="cookie-category-title-row">
                     <div className="flex items-center gap-2">
                       <MessageSquare size={16} className="text-[#00874e]" />
-                      <strong>5. Notificações de Saúde e Alertas via WhatsApp / E-mail</strong>
+                      <strong>5. Notificações de Pedidos e Alertas via WhatsApp / E-mail</strong>
                     </div>
                     <span className="cookie-badge-optional">OPCIONAL</span>
                   </div>
                   <p>
-                    Envio de aviso telemático quando sua receita médica for conferida e aprovada pelo farmacêutico em 15 minutos, além do link de rastreamento do motoboy em trânsito.
+                    Envio de confirmação de pedidos, status de separação pela farmácia e link de rastreamento da entrega em tempo real.
                     <br />
                     <em>Base Legal: Consentimento (Art. 7º, I da LGPD).</em>
                   </p>

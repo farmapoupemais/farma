@@ -5,7 +5,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getVisibleProducts } from "@/lib/products-repository";
 
-export const metadata: Metadata = { title: "Catálogo", description: "Medicamentos isentos de prescrição, dermocosméticos, vitaminas e cuidados para toda a família." };
+export const metadata: Metadata = { title: "Catálogo", description: "Medicamentos, dermocosméticos, vitaminas e cuidados para toda a família." };
 export const dynamic = "force-dynamic";
 
 export default async function CatalogPage({ searchParams }: { searchParams: Promise<{ q?: string; categoria?: string; ofertas?: string }> }) {

@@ -111,7 +111,7 @@ export const PROBLEMAS_E_SINTOMAS: DefinicaoProblemaSintoma[] = [
     padroes: ["dor de garganta", "garganta doendo", "garganta inflamada", "garganta arranhando", "inflamacao na garganta"],
     medicamentosIds: ["ibuprofeno", "paracetamol"],
     alertaEspecificoInteracoes:
-      "Atenção: A dor de garganta pode ser causada por infecções bacterianas ou virais. Analgésicos apenas aliviam a dor e não curam infecções bacterianas que necessitam de antibióticos com receita médica. Havendo febre persistente ou placas de pus, consulte um médico imediatamente."
+      "Atenção: A dor de garganta pode ser causada por infecções bacterianas ou virais. Analgésicos apenas aliviam a dor e não curam causas infecciosas que necessitam de avaliação médica direta. Havendo febre persistente ou placas de pus, consulte um médico imediatamente."
   },
   {
     chave: "colica",

@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Farmácia Poupe Mais | Cuidado de verdade e economia",
   description:
-    "Medicamentos isentos de prescrição, dermocosméticos, vitaminas e cuidados para toda a família com entrega ou retirada.",
+    "Medicamentos, dermocosméticos, vitaminas e cuidados diários com entrega expressa ou retirada em loja em até 30 minutos.",
 };
 
 export default async function HomePage() {
@@ -32,7 +32,7 @@ export default async function HomePage() {
             </div>
             <h1>Sua saúde, no seu ritmo: economia de verdade em medicamentos essenciais.</h1>
             <p>
-              Medicamentos para dor, febre, pressão alta e uso contínuo com até 70% de desconto e tele-entrega expressa em Porto Alegre e Região.
+              Medicamentos para dor, febre, pressão alta e uso contínuo com até 70% de desconto e tele-entrega expressa em Porto Alegre e região.
             </p>
             <div className="hero-card-actions">
               <Link href="/catalogo?categoria=Medicamentos&ofertas=1" className="hero-btn-accent">
@@ -51,18 +51,18 @@ export default async function HomePage() {
 
           {/* Cards Laterais: Urgência Médica & Tele-Entrega WhatsApp */}
           <div className="hero-side-cards">
-            {/* Card Lateral 1: Envio de Receita Médica */}
-            <div className="hero-side-card prescription-highlight">
+            {/* Card Lateral 1: Retirada Rápida em Loja */}
+            <div className="hero-side-card pickup-highlight">
               <div className="side-card-top">
-                <span className="side-badge-red">Urgência Farmacêutica</span>
-                <span className="side-icon-box red"><Icon name="document" size={20} /></span>
+                <span className="side-badge-blue">Frete Grátis</span>
+                <span className="side-icon-box blue"><Icon name="store" size={20} /></span>
               </div>
-              <h3>Possui Receita Médica?</h3>
+              <h3>Compre e Retire em 30 Min</h3>
               <p>
-                Envie foto pelo celular ou arquivo digital ICP-Brasil. Farmacêutico de plantão confere e aprova em 15 min.
+                Faça seu pedido online com economia e retire sem custo na Farmácia Poupe Mais mais próxima de você.
               </p>
-              <Link href="/receita" className="side-card-link red">
-                Enviar Receita Agora →
+              <Link href="/lojas" className="side-card-link blue">
+                Encontrar Lojas para Retirada →
               </Link>
             </div>
 
@@ -205,7 +205,7 @@ export default async function HomePage() {
               </div>
             </Link>
 
-            {/* Bento Card 4: Farmácia Ágil e Sem Burocracia */}
+            {/* Bento Card 4: Ofertas Especiais & Pronta Entrega */}
             <Link
               href="/catalogo?ofertas=1"
               className="bento-card bento-card-wide"
@@ -219,11 +219,11 @@ export default async function HomePage() {
                 <div className="bento-icon-wrapper">
                   <Icon name="spark" size={28} />
                 </div>
-                <h3 className="bento-title">Produtos Isentos de Receita (MIPs)</h3>
+                <h3 className="bento-title">Ofertas Especiais & Pronta Entrega</h3>
                 <p className="bento-description">
-                  Compre com rapidez analgésicos, antialérgicos, dermocosméticos e vitaminas sem necessidade de retenção de receita médica. Entrega expressa ou retirada em até 30 min.
+                  Economize em analgésicos, antitérmicos, cuidados diários, dermocosméticos e vitaminas com preços baixos e envio imediato. Entrega expressa ou retirada em até 30 minutos.
                 </p>
-                <span className="bento-action">Aproveitar ofertas imediatas →</span>
+                <span className="bento-action">Aproveitar super ofertas →</span>
               </div>
             </Link>
 
@@ -289,12 +289,12 @@ export default async function HomePage() {
 
         {/* Split Promos Section */}
         <section className="page-shell split-promos">
-          <article className="promo-card promo-prescription">
+          <article className="promo-card promo-delivery">
             <div>
-              <span className="eyebrow">Compra 100% simplificada</span>
-              <h2>Produtos sem burocracia</h2>
+              <span className="eyebrow">Compra 100% rápida e segura</span>
+              <h2>Pronta entrega para você</h2>
               <p>
-                Compre medicamentos isentos de prescrição, vitaminas e itens de cuidado diário com entrega rápida e sem retenção de receita.
+                Medicamentos, vitaminas, cuidados diários e dermocosméticos com tele-entrega expressa e retirada rápida em nossas lojas.
               </p>
               <Link href="/catalogo" className="button button-light">
                 Ver catálogo completo

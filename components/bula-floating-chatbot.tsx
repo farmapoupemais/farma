@@ -21,9 +21,9 @@ const MENSAGEM_INICIAL: MensagemChat = {
   autor: "bot",
   texto:
     "Olá! Como posso ajudar você hoje?\n\n" +
-    "Estou aqui para tirar dúvidas com base exclusivamente nas bulas oficiais aprovadas pela ANVISA:\n\n" +
-    "• Se você está sentindo algo, diga o que você sente (ex: 'estou com dor de cabeça', 'febre', 'azia', 'tosse'), e eu indicarei os remédios que na bula oficial dizem tratar, reforçando a procura de um médico pois podem haver outras causas que só ele sabe identificar.\n\n" +
-    "• Se você quer saber sobre um remédio, diga o nome dele (ex: 'Dipirona', 'Paracetamol', 'Omeprazol', 'Ibuprofeno'), e eu trarei o que a bula diz para que ele serve e os efeitos colaterais descritos.",
+    "Estou aqui para esclarecer dúvidas com base nas bulas oficiais da ANVISA:\n\n" +
+    "• Diga o que está sentindo (ex: febre, dor de cabeça, azia, tosse) e eu indico o que a bula diz sobre cada produto — lembrando que um médico é quem deve orientar o diagnóstico.\n\n" +
+    "• Ou informe o nome do remédio (ex: Dipirona, Paracetamol, Omeprazol) para ver para que serve e os efeitos colaterais descritos na bula.",
   timestamp: "Oficial",
   resposta: {
     tipo: "ajuda_geral",
@@ -108,9 +108,9 @@ export function BulaFloatingChatbot() {
         id: `msg_reset_${msgCounter.current}`,
         autor: "bot",
         texto:
-          "Conversa reiniciada. Como posso ajudar você agora?\n\n" +
-          "• Diga o que você está sentindo (para eu indicar os remédios que na bula oficial dizem tratar, reforçando a procura de um médico pois podem haver outras causas que só ele sabe identificar);\n" +
-          "• Ou informe o nome do remédio para ver para que ele serve e os efeitos colaterais descritos.",
+          "Conversa reiniciada. Como posso ajudar?\n\n" +
+          "• Diga o que está sentindo para eu indicar o que a bula diz;\n" +
+          "• Ou informe o nome do remédio para ver para que serve e os efeitos descritos na bula.",
         timestamp: "Oficial",
         resposta: {
           tipo: "ajuda_geral",
@@ -157,7 +157,7 @@ export function BulaFloatingChatbot() {
               </div>
               <div>
                 <h3 className="bula-chat-title">Assistente de Ajuda &amp; Bulas</h3>
-                <p className="bula-chat-subtitle">Bulas Oficiais ANVISA • Sem Prescrição</p>
+                <p className="bula-chat-subtitle">Bulas Oficiais ANVISA • Consulta Rápida</p>
               </div>
             </div>
 

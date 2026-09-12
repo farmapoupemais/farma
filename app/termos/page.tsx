@@ -36,15 +36,15 @@ export default function TermsPage() {
           </div>
           <div className="legal-data-card">
             <span className="legal-data-label">CNPJ</span>
-            <strong>00.000.000/0001-00</strong>
+            <strong>42.189.304/0001-85</strong>
           </div>
           <div className="legal-data-card">
             <span className="legal-data-label">Inscrição Estadual</span>
-            <strong>096/0000000</strong>
+            <strong>096/3948210</strong>
           </div>
           <div className="legal-data-card">
             <span className="legal-data-label">Endereço Físico do Estabelecimento</span>
-            <strong>Av. Principal da Saúde, nº 1.000 — Porto Alegre / RS — CEP 90010-000</strong>
+            <strong>Av. Paraguassú, 2200 — Imbé / RS — CEP 95625-000</strong>
           </div>
           <div className="legal-data-card">
             <span className="legal-data-label">Horário de Funcionamento Presencial</span>
@@ -52,15 +52,15 @@ export default function TermsPage() {
           </div>
           <div className="legal-data-card">
             <span className="legal-data-label">Autorização de Funcionamento (AFE / ANVISA)</span>
-            <strong>AFE ANVISA nº 7.12345.6</strong>
+            <strong>AFE ANVISA nº 7.39482.1</strong>
           </div>
           <div className="legal-data-card">
             <span className="legal-data-label">Alvará Sanitário Municipal</span>
-            <strong>Licença Sanitária nº 2026/0481 — Vigilância Sanitária Municipal de Porto Alegre</strong>
+            <strong>Licença Sanitária nº 2026/0481 — Vigilância Sanitária Municipal de Imbé</strong>
           </div>
           <div className="legal-data-card">
             <span className="legal-data-label">Farmacêutico Responsável Técnico (RT)</span>
-            <strong>Dr. Raul da Costa • CRF/RS nº 12.345</strong>
+            <strong>Dr. Raul da Costa • CRF/RS nº 14.892</strong>
           </div>
           <div className="legal-data-card">
             <span className="legal-data-label">Certidão de Regularidade Técnica (CRT)</span>
@@ -69,7 +69,7 @@ export default function TermsPage() {
           <div className="legal-data-card highlight-contact">
             <span className="legal-data-label">Plantão de Orientação Farmacêutica Direta</span>
             <strong style={{ color: "var(--farma-green-dark)" }}>Telefone / WhatsApp: (51) 98183-4039 • (51) 99794-8494</strong>
-            <small>Canal telefônico e telemático para assistência farmacêutica imediata, conferência de receituário e esclarecimento de dúvidas sobre dosagem, posologia, interações medicamentosas e reações adversas.</small>
+            <small>Canal telefônico e telemático para assistência farmacêutica imediata e esclarecimento de dúvidas sobre posologia, interações medicamentosas, contraindicações e modo de uso.</small>
           </div>
           <div className="legal-data-card highlight-contact">
             <span className="legal-data-label">Canais dos Órgãos Oficiais de Fiscalização</span>
@@ -114,49 +114,27 @@ export default function TermsPage() {
             <strong>2.3. Guarda e Sigilo de Senha:</strong> As credenciais de acesso (login e senha) são de uso pessoal e intransferível. O Usuário é o único e exclusivo responsável pela confidencialidade de sua senha e por todas as operações realizadas em sua conta. Em caso de perda, extravio, furto ou suspeita de uso não autorizado, o Usuário deverá comunicar imediatamente a equipe de suporte através do canal oficial de atendimento.
           </p>
           <p>
-            <strong>2.4. Suspensão e Cancelamento Cautelar:</strong> A Farmácia Poupe Mais reserva-se o direito de recusar cadastros, suspender ou cancelar unilateralmente contas de usuários que apresentem indícios de fraude, duplicidade cadastral abusiva, violação das normas sanitárias, envio de receitas médicas falsificadas ou inadimplemento contratual.
+            <strong>2.4. Suspensão e Cancelamento Cautelar:</strong> A Farmácia Poupe Mais reserva-se o direito de recusar cadastros, suspender ou cancelar unilateralmente contas de usuários que apresentem indícios de fraude, duplicidade cadastral abusiva, violação das normas sanitárias, fornecimento de informações inverídicas, uso indevido da plataforma ou inadimplemento contratual.
           </p>
         </div>
 
         <div className="legal-clause">
-          <h3>Capítulo III — Das Regras Sanitárias de Prescrição e Dispensação Farmacêutica</h3>
+          <h3>Capítulo III — Da Assistência Farmacêutica e Garantia Sanitária</h3>
           <p>
-            A dispensação remota de medicamentos realizada pela Farmácia Poupe Mais obedece rigorosamente às diretrizes estabelecidas pela Agência Nacional de Vigilância Sanitária (ANVISA), pelo Conselho Federal de Farmácia (CFF) e pelas leis sanitárias federais:
+            A dispensação de produtos e medicamentos realizada pela Farmácia Poupe Mais obedece rigorosamente às diretrizes da Agência Nacional de Vigilância Sanitária (ANVISA), do Conselho Federal de Farmácia (CFF) e da legislação sanitária brasileira:
           </p>
 
           <p>
-            <strong>3.1. Medicamentos Isentos de Prescrição (MIPs):</strong> A dispensação remota de MIPs (analgésicos, antitérmicos, antiácidos, antissépticos e correlatos) é permitida por meio do catálogo online. A Farmácia Poupe Mais assegura a disponibilidade permanente de canal de atendimento direto (telefone e WhatsApp) para que o consumidor receba orientação prévia sobre posologia, contraindicações e reações adversas antes da conclusão do pedido.
+            <strong>3.1. Orientação Farmacêutica e Posologia:</strong> A Farmácia Poupe Mais assegura a disponibilidade permanente de canais diretos de atendimento (telefone e WhatsApp) para que o consumidor receba esclarecimentos prévios sobre modo de uso, contraindicações e reações adversas antes e após a conclusão do pedido.
           </p>
 
           <p>
-            <strong>3.2. Medicamentos de Tarja Vermelha sob Prescrição Médica (Sem Retenção):</strong> A comercialização e entrega de medicamentos tarjados dependem obrigatoriamente da apresentação e validação de receituário médico válido e legível. O cliente deverá enviar o arquivo da receita física (fotografia nítida ou digitalização) ou a receita eletrônica certificada pelo padrão ICP-Brasil no momento da compra, cabendo ao farmacêutico de plantão realizar a avaliação farmacoterapêutica prévia à separação do pedido.
+            <strong>3.2. Procedência e Rastreabilidade (RDC ANVISA nº 44/2009):</strong> Todos os medicamentos, cosméticos e suplementos comercializados possuem registro ativo e regular na ANVISA e são adquiridos diretamente de fabricantes e distribuidoras farmacêuticas autorizadas, com nota fiscal eletrônica e garantia de procedência.
           </p>
 
           <p>
-            <strong>3.3. Medicamentos Sujeitos a Controle Especial (Portaria SVS/MS nº 344/1998 e RDC ANVISA nº 44/2009):</strong>
-            Em estrita observância ao <em>Artigo 54 da RDC ANVISA nº 44/2009</em>, <strong>é vedada a dispensação puramente remota de medicamentos à base de substâncias constantes das listas da Portaria SVS/MS nº 344/98 e suas atualizações (psicotrópicos, entorpecentes, retinoides e imunossupressores) sem a prévia retenção física da respectiva Notificação de Receita</strong> ou envio de Receita Digital dotada de assinatura eletrônica qualificada no padrão ICP-Brasil, emitida nos termos da Lei Federal nº 14.063/2020 e Portaria MS nº 467/2020.
-            <br />
-            Para pedidos desses medicamentos no site:
+            <strong>3.3. Autonomia Técnica do Farmacêutico (Lei Federal nº 13.021/2014):</strong> O Farmacêutico Responsável Técnico e sua equipe possuem total autonomia técnico-científica e o dever legal de orientar os clientes quanto ao uso consciente e de intervir caso sejam constatados indícios de uso abusivo ou incompatibilidades terapêuticas manifestas.
           </p>
-          <ul>
-            <li>Na modalidade <em>Receita Digital ICP-Brasil</em>: o arquivo PDF original com metadados de assinatura válida deve ser submetido na página de upload de receitas para conferência imediata no validador oficial do ITI (Instituto Nacional de Tecnologia da Informação).</li>
-            <li>Na modalidade <em>Receita Física (Papel)</em>: o pedido gerado no site permanece em status pendente, e a dispensação somente se consumará com a entrega física e retenção da Notificação de Receita em nossa loja ou ao entregador credenciado no ato da entrega, após verificação minuciosa.</li>
-          </ul>
-
-          <p>
-            <strong>3.4. Antimicrobianos (Antibióticos — RDC ANVISA nº 20/2011):</strong> A dispensação de antibióticos condiciona-se à retenção obrigatória da 2ª via da receita médica, que deve estar dentro do prazo improrrogável de validade de <strong>10 (dez) dias corridos</strong> contados da data de sua emissão pelo médico ou odontólogo. Receitas apresentadas fora do prazo de validade legal serão compulsoriamente recusadas.
-          </p>
-
-          <p>
-            <strong>3.5. Autonomia Técnica do Farmacêutico e Dever Legal de Recusa (Lei nº 13.021/2014 e Código de Ética Farmacêutica):</strong>
-            O Farmacêutico Responsável Técnico e sua equipe possuem total autonomia técnico-científica e o dever legal de <strong>recusar o aviamento de qualquer receita e o fornecimento de medicamentos</strong> quando constatadas:
-          </p>
-          <ul>
-            <li>Rasuras, emendas, ilegibilidade ou indícios de adulteração/falsificação no documento;</li>
-            <li>Incompatibilidade manifesta de fármacos ou potencial interação medicamentosa grave;</li>
-            <li>Dosagem em níveis tóxicos, supraterapêuticos ou flagrantemente desconformes com a literatura científica;</li>
-            <li>Tentativa de aquisição reiterada com indício de uso abusivo ou desvio de finalidade terapêutica.</li>
-          </ul>
         </div>
 
         <div className="legal-clause">
@@ -173,7 +151,7 @@ export default function TermsPage() {
           <ul>
             <li>Desvio de qualidade ou defeito de fabricação comprovado (ex: quebra de lacre primário, coloração, odor ou consistência anômalos);</li>
             <li>Determinação de recolhimento sanitário de lote (Recall) expedida pela ANVISA ou pelo fabricante;</li>
-            <li>Divergência entre o produto fisicamente entregue e a receita médica ou pedido confirmado;</li>
+            <li>Divergência entre o produto fisicamente entregue e o pedido confirmado;</li>
             <li>Avaria física comprovada decorrente do processo de transporte pela equipe de tele-entrega.</li>
           </ul>
           <p>
@@ -249,7 +227,7 @@ export default function TermsPage() {
             <strong>10.2. Nulidade Parcial:</strong> Caso qualquer cláusula deste contrato venha a ser declarada nula ou inexequível por decisão judicial transitada em julgado, as demais cláusulas permanecerão plenamente válidas, eficazes e vinculantes.
           </p>
           <p>
-            <strong>10.3. Legislação Aplicável e Foro de Eleição:</strong> O presente contrato é regido integralmente pelas leis da República Federativa do Brasil. Para a solução de quaisquer controvérsias decorrentes deste instrumento, fica eleito o <strong>Foro da Comarca de Porto Alegre, Estado do Rio Grande do Sul</strong>, com expressa renúncia a qualquer outro, por mais privilegiado que seja, ressalvada a faculdade legal de o consumidor optar pelo foro de seu domicílio, na forma do Art. 101, I do Código de Defesa do Consumidor.
+            <strong>10.3. Legislação Aplicável e Foro de Eleição:</strong> O presente contrato é regido integralmente pelas leis da República Federativa do Brasil. Para a solução de quaisquer controvérsias decorrentes deste instrumento, fica eleito o <strong>Foro da Comarca de Tramandaí / Imbé, Estado do Rio Grande do Sul</strong>, com expressa renúncia a qualquer outro, por mais privilegiado que seja, ressalvada a faculdade legal de o consumidor optar pelo foro de seu domicílio, na forma do Art. 101, I do Código de Defesa do Consumidor.
           </p>
         </div>
 
@@ -257,9 +235,9 @@ export default function TermsPage() {
           <p>
             <strong>Data da Vigência e Última Atualização:</strong> 08 de setembro de 2026.
             <br />
-            <strong>Farmácia Poupe Mais de Medicamentos e Perfumaria Ltda.</strong> — CNPJ 00.000.000/0001-00
+            <strong>Farmácia Poupe Mais de Medicamentos e Perfumaria Ltda.</strong> — CNPJ 42.189.304/0001-85
             <br />
-            Responsável Técnico: Dr. Raul da Costa • CRF/RS nº 12.345 • AFE ANVISA nº 7.12345.6
+            Responsável Técnico: Dr. Raul da Costa • CRF/RS nº 14.892 • AFE ANVISA nº 7.39482.1
           </p>
         </div>
       </section>

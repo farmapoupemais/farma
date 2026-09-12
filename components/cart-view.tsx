@@ -109,7 +109,7 @@ export function CartView() {
           <Icon name="shield" />
           <p>
             <strong>Compra 100% segura e ágil</strong>
-            Todos os produtos são isentos de retenção de receita, com despacho imediato e garantia de procedência.
+            Produtos originais com garantia de procedência, despacho imediato e nota fiscal.
           </p>
         </div>
       </section>
@@ -148,7 +148,7 @@ export function CartView() {
           </button>
         </div>
         {coupon && !couponApplied && (
-          <small className="coupon-help">Dica demonstrativa: use BEMVINDO10 ou POUPEMAIS</small>
+          <small className="coupon-help">Dica de economia: use o cupom BEMVINDO10 ou POUPEMAIS</small>
         )}
 
         <dl className="order-totals">

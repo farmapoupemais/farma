@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     template: "%s | Farmácia Poupe Mais",
   },
   description:
-    "Medicamentos com desconto popular, dermocosméticos, cuidados diários e produtos isentos de receita médica com entrega rápida em 30 minutos.",
+    "Medicamentos com desconto popular, dermocosméticos, vitaminas e cuidados diários com entrega rápida em até 30 minutos.",
   openGraph: {
     title: "Farmácia Poupe Mais",
     description: "Cuidado de verdade. Economia todos os dias.",
@@ -37,16 +37,16 @@ const pharmacySchema = {
   name: "Farmácia Poupe Mais",
   image: "https://farmapoupemais.netlify.app/og.png",
   url: "https://farmapoupemais.netlify.app",
-  telephone: "+55-11-3000-0000",
+  telephone: "+55-51-98183-4039",
   priceRange: "$$",
   currenciesAccepted: "BRL",
   paymentAccepted: "Cash, Credit Card, Pix, Boleto",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "Av. Principal da Saúde, 1000",
-    addressLocality: "São Paulo",
-    addressRegion: "SP",
-    postalCode: "01000-000",
+    streetAddress: "Av. Paraguassú, 2200",
+    addressLocality: "Imbé",
+    addressRegion: "RS",
+    postalCode: "95625-000",
     addressCountry: "BR",
   },
   openingHoursSpecification: [

@@ -29,7 +29,7 @@ export default function PrivacyPage() {
           <div className="legal-data-card">
             <span className="legal-data-label">Controlador dos Dados Pessoais</span>
             <strong>Farmácia Poupe Mais de Medicamentos e Perfumaria Ltda.</strong>
-            <small>CNPJ: 00.000.000/0001-00 • Sede: Av. Principal da Saúde, nº 1.000 — Porto Alegre / RS</small>
+            <small>CNPJ: 42.189.304/0001-85 • Sede: Av. Paraguassú, 2200 — Imbé / RS — CEP 95625-000</small>
           </div>
           <div className="legal-data-card">
             <span className="legal-data-label">Encarregado pelo Tratamento de Dados (DPO)</span>
@@ -62,7 +62,7 @@ export default function PrivacyPage() {
           </p>
           <ul>
             <li><strong>Dado Pessoal (Art. 5º, I):</strong> Informação relacionada a pessoa natural identificada ou identificável (ex: nome, CPF, RG, endereço residencial, telefone, e-mail).</li>
-            <li><strong>Dado Pessoal Sensível (Art. 5º, II):</strong> Dado pessoal sobre origem racial ou étnica, convicção religiosa, opinião política, filiação a sindicato ou a organização de caráter religioso, filosófico ou político, <em>dado referente à saúde ou à vida sexual</em>, dado genético ou biométrico, quando vinculado a uma pessoa natural. No contexto desta farmácia, abrangem receitas médicas, laudos, posologias, medicamentos em uso e atendimentos farmacêuticos.</li>
+            <li><strong>Dado Pessoal Sensível (Art. 5º, II):</strong> Dado pessoal sobre origem racial ou étnica, convicção religiosa, opinião política, filiação a sindicato ou a organização de caráter religioso, filosófico ou político, <em>dado referente à saúde ou à vida sexual</em>, dado genético ou biométrico, quando vinculado a uma pessoa natural. No contexto desta farmácia, abrangem posologias, histórico de medicamentos adquiridos e atendimentos de orientação farmacêutica.</li>
             <li><strong>Titular (Art. 5º, V):</strong> Pessoa natural a quem se referem os dados pessoais que são objeto de tratamento (o cliente, paciente ou usuário do site).</li>
             <li><strong>Controlador (Art. 5º, VI):</strong> Pessoa natural ou jurídica a quem competem as decisões referentes ao tratamento de dados pessoais (a Farmácia Poupe Mais).</li>
             <li><strong>Operador (Art. 5º, VII):</strong> Pessoa natural ou jurídica que realiza o tratamento de dados pessoais em nome do controlador (ex: gateways de pagamento e operadoras de entrega).</li>
@@ -103,9 +103,9 @@ export default function PrivacyPage() {
               <em>Finalidades:</em> Identificação inequívoca do comprador, emissão obrigatória de Nota Fiscal de Consumidor Eletrônica (NFC-e / NF-e) perante a Secretaria da Fazenda Estadual, faturamento e cumprimento da roteirização de tele-entrega expressa.
             </li>
             <li>
-              <strong>2. Dados Pessoais Sensíveis de Saúde (Art. 5º, II e Art. 11 da LGPD):</strong> Prescrições médicas (físicas ou digitais), CRM/UF do profissional médico ou odontológico prescritor, dosagens, princípios ativos, posologia, medicamentos de uso contínuo, registros de aferição e registros de orientação farmacêutica.
+              <strong>2. Dados Pessoais Sensíveis de Saúde (Art. 5º, II e Art. 11 da LGPD):</strong> Histórico de consultas informativas sobre bulas, registros de atendimento com o farmacêutico responsável, preferências de cuidados e produtos de saúde de uso frequente.
               <br />
-              <em>Finalidades:</em> Dispensação segura e orientada de medicamentos, conferência técnico-farmacêutica prévia (Art. 13 da Lei nº 13.021/2014), escrituração obrigatória no Sistema Nacional de Gerenciamento de Produtos Controlados (SNGPC/ANVISA) e guarda sanitária de receituários retidos conforme Portaria SVS/MS nº 344/1998 e RDC ANVISA nº 20/2011.
+              <em>Finalidades:</em> Assistência farmacêutica personalizada, esclarecimento sobre posologia, recomendações de cuidados diários e dispensação orientada de produtos de saúde e bem-estar (Art. 13 da Lei nº 13.021/2014 e RDC ANVISA nº 44/2009).
             </li>
             <li>
               <strong>3. Dados Financeiros e de Pagamento:</strong> Dados de cartão de crédito e débito são coletados diretamente em ambiente seguro do gateway de pagamento com certificação PCI-DSS Nível 1 e criptografia de ponta a ponta. <em>A Farmácia Poupe Mais não armazena em seus servidores o número completo do cartão nem o código verificador (CVV).</em>
@@ -131,7 +131,7 @@ export default function PrivacyPage() {
             </li>
             <li>
               <strong>Cumprimento de Obrigação Legal ou Regulatória (Art. 7º, II e Art. 11, II, &quot;a&quot; da LGPD):</strong>
-              Atendimento compulsório às resoluções e portarias da ANVISA (RDC nº 44/2009, RDC nº 20/2011, Portaria nº 344/1998), escrituração no SNGPC, emissão e guarda de documentos fiscais perante a Receita Federal e Secretaria da Fazenda do RS, e cumprimento do Art. 15 do Marco Civil da Internet.
+              Atendimento compulsório às resoluções e boas práticas farmacêuticas da ANVISA (RDC nº 44/2009), escrituração de dispensações regulatórias, emissão e guarda de documentos fiscais perante a Receita Federal e Secretaria da Fazenda do RS, e cumprimento do Art. 15 do Marco Civil da Internet.
             </li>
             <li>
               <strong>Execução de Contrato e Procedimentos Preliminares (Art. 7º, V da LGPD):</strong>
@@ -155,7 +155,7 @@ export default function PrivacyPage() {
               Compromisso Institucional e Cláusula Pétrea — Art. 11, § 4º da Lei nº 13.709/2018
             </h4>
             <p style={{ margin: "0 0 10px", fontSize: "var(--text-sm)", color: "#7f1d1d", lineHeight: 1.6 }}>
-              <strong>É TERMINANTEMENTE VEDADA</strong> a comercialização, aluguel, compartilhamento, cessão onerosa ou gratuita de quaisquer dados pessoais sensíveis de saúde de nossos clientes e pacientes — incluindo históricos de receituários médicos, diagnósticos clínicos, posologias e medicamentos adquiridos — com:
+              <strong>É TERMINANTEMENTE VEDADA</strong> a comercialização, aluguel, compartilhamento, cessão onerosa ou gratuita de quaisquer dados pessoais sensíveis de saúde de nossos clientes e pacientes — incluindo diagnósticos relatados, posologias e medicamentos adquiridos — com:
             </p>
             <ul style={{ margin: "0", paddingLeft: "20px", fontSize: "var(--text-sm)", color: "#7f1d1d" }}>
               <li>Operadoras de planos privados de assistência à saúde e seguradoras médicas;</li>
@@ -176,7 +176,7 @@ export default function PrivacyPage() {
           <ul>
             <li><strong>Autoridades Sanitárias e Fiscais:</strong> ANVISA, Vigilância Sanitária Municipal, Conselho Regional de Farmácia (CRF/RS), Receita Federal e Secretaria Estadual da Fazenda, exclusivamente nos limites da lei e no âmbito de auditorias regulatórias obrigatórias.</li>
             <li><strong>Operadores de Pagamento e Antifraude:</strong> Gateways de pagamento homologados com certificação PCI-DSS, para processamento de pagamentos criptografados.</li>
-            <li><strong>Operadores Logísticos e Entregadores Credenciados:</strong> Compartilhamento restrito ao nome do destinatário, endereço de entrega e telefone de contato, sendo expressamente proibido aos entregadores o acesso a diagnósticos médicos ou detalhes clínicos da prescrição.</li>
+            <li><strong>Operadores Logísticos e Entregadores Credenciados:</strong> Compartilhamento restrito ao nome do destinatário, endereço de entrega e telefone de contato, sendo expressamente proibido aos entregadores o acesso a diagnósticos de saúde ou detalhes de dispensação.</li>
             <li><strong>Autoridades Judiciais ou Policiais:</strong> Exclusivamente mediante apresentação de mandado judicial fundamentado ou requisição formal legalmente amparada.</li>
           </ul>
         </div>
@@ -197,14 +197,9 @@ export default function PrivacyPage() {
               </thead>
               <tbody className="divide-y divide-[#e2ece7]">
                 <tr>
-                  <td style={{ padding: "10px 12px", fontWeight: "bold" }}>Receitas de Medicamentos Controlados</td>
+                  <td style={{ padding: "10px 12px", fontWeight: "bold" }}>Registros de Assistência Farmacêutica e Atendimento</td>
                   <td style={{ padding: "10px 12px" }}>5 (cinco) anos</td>
-                  <td style={{ padding: "10px 12px" }}>Portaria SVS/MS nº 344/1998 e RDC ANVISA nº 44/2009</td>
-                </tr>
-                <tr>
-                  <td style={{ padding: "10px 12px", fontWeight: "bold" }}>Receitas de Antimicrobianos (Antibióticos)</td>
-                  <td style={{ padding: "10px 12px" }}>2 (dois) anos</td>
-                  <td style={{ padding: "10px 12px" }}>RDC ANVISA nº 20/2011, Artigo 14</td>
+                  <td style={{ padding: "10px 12px" }}>RDC ANVISA nº 44/2009 e Lei nº 13.021/2014</td>
                 </tr>
                 <tr>
                   <td style={{ padding: "10px 12px", fontWeight: "bold" }}>Dados Cadastrais e Notas Fiscais Eletrônicas</td>
@@ -259,7 +254,7 @@ export default function PrivacyPage() {
           </p>
           <ul>
             <li>Criptografia de ponta a ponta nas transmissões de rede via protocolo TLS 1.3 com chaves seguras;</li>
-            <li>Isolamento de receitas médicas e documentos sensíveis em repositórios criptografados com acesso restrito a farmacêuticos habilitados;</li>
+            <li>Isolamento de dados cadastrais e registros de atendimento em repositórios criptografados com acesso restrito;</li>
             <li>Controle rigoroso de privilégios de acesso baseado em papéis (Role-Based Access Control - RBAC);</li>
             <li>Trilhas de auditoria imutáveis com registros de hash criptográfico (padrão <code>AUD-XXXXX-XF</code>) para cada visualização, aprovação ou estorno;</li>
             <li>Testes periódicos de vulnerabilidade e varreduras automatizadas de segurança.</li>

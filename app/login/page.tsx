@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { BrandMark, Icon } from "@/components/icons";
+import { BrandMark } from "@/components/icons";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
@@ -28,7 +27,7 @@ export default function LoginPage() {
 
     if (!configured || !supabase) {
       setError(
-        "Supabase ainda não configurado. Adicione NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY no arquivo .env.local ou nas variáveis do Netlify."
+        "O sistema de autenticação ainda não está disponível. Por favor, tente novamente mais tarde ou entre em contato com o suporte."
       );
       setLoading(false);
       return;
@@ -191,27 +190,8 @@ export default function LoginPage() {
               </button>
             </div>
 
-            {mode === "signup" && (
-              <div
-                style={{
-                  background: "var(--sage-2)",
-                  border: "1px solid var(--line)",
-                  borderRadius: "12px",
-                  padding: "14px",
-                  marginBottom: "20px",
-                  display: "flex",
-                  gap: "10px",
-                  alignItems: "center",
-                  fontSize: "var(--text-xs)",
-                  color: "var(--teal-deep)",
-                }}
-              >
-                <Icon name="spark" size={24} />
-                <span>
-                  <strong>Primeiro cadastro:</strong> O primeiro usuário cadastrado nesta farmácia será promovido automaticamente a <strong>Proprietário (Owner)</strong> com acesso a todas as permissões.
-                </span>
-              </div>
-            )}
+
+
 
             {error && (
               <div
@@ -367,56 +347,6 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <div
-              style={{
-                marginTop: "20px",
-                padding: "14px 16px",
-                background: "#f0fdf4",
-                border: "1px dashed #16a34a",
-                borderRadius: "12px",
-                fontSize: "var(--text-xs)",
-                color: "#166534",
-                lineHeight: 1.5,
-              }}
-            >
-              <div style={{ fontWeight: 800, marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
-                <span>🔑</span> Acesso Rápido de Administrador (Owner):
-              </div>
-              <div style={{ marginBottom: "2px" }}><strong>E-mail:</strong> <code>admin@poupemais.com</code></div>
-              <div style={{ marginBottom: "10px" }}><strong>Senha:</strong> <code>admin123</code></div>
-              <button
-                type="button"
-                onClick={() => {
-                  setEmail("admin@poupemais.com");
-                  setPassword("admin123");
-                  setSuccess("Acesso de Administrador (Owner) autorizado! Entrando no painel...");
-                  setTimeout(() => router.push("/painel/demo"), 500);
-                }}
-                style={{
-                  width: "100%",
-                  padding: "9px 12px",
-                  background: "#16a34a",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "8px",
-                  fontWeight: 700,
-                  fontSize: "var(--text-xs)",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "6px"
-                }}
-              >
-                ⚡ Entrar como Administrador com 1 Clique
-              </button>
-            </div>
-
-            <div style={{ textAlign: "center", marginTop: "20px", paddingTop: "16px", borderTop: "1px solid var(--line)" }}>
-              <Link href="/painel/demo" style={{ color: "var(--teal)", fontSize: "var(--text-xs)", fontWeight: "var(--font-bold)" }}>
-                Ou acesse diretamente a demonstração interativa →
-              </Link>
-            </div>
           </div>
         </div>
       </main>

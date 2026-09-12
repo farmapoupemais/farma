@@ -7,7 +7,6 @@ import {
   MapPin,
   User,
   ShoppingBasket,
-  FileText,
   Menu,
   X,
   Sparkles,
@@ -135,7 +134,7 @@ export function SiteHeader() {
             <PhoneCall size={14} className="animate-pulse text-yellow-400" />
             <span>TELE-ENTREGA EXPRESSA: (51) 98183-4039 • (51) 99794-8494</span>
             <span className="hidden lg:inline text-white/80 font-normal text-[11px] ml-2">
-              (Entrega em até 90 min em Porto Alegre e Região)
+              (Entrega em até 90 min em Porto Alegre e região)
             </span>
           </div>
 
@@ -148,12 +147,8 @@ export function SiteHeader() {
               Serviços Farmacêuticos
             </Link>
             <span>•</span>
-            <Link href="/receita" className="hover:text-yellow-300 transition-colors">
-              Como Enviar Receita
-            </Link>
-            <span>•</span>
             <span className="flex items-center gap-1 text-emerald-200">
-              <Clock size={12} /> Farmacêutico até 22:30
+              <Clock size={12} /> Plantão até 22h30
             </span>
           </div>
         </div>
@@ -282,11 +277,8 @@ export function SiteHeader() {
                       ))}
                     </div>
 
-                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-500">
-                      <span>Dica: Busque pelo sintoma (ex: febre, dor, azia)</span>
-                      <Link href="/receita" className="text-red-600 font-bold hover:underline">
-                        Possui receita médica? Clique aqui
-                      </Link>
+                    <div className="pt-3 border-t border-gray-100 mt-2 text-[11px] text-gray-500">
+                      <span>Dica: busque pelo sintoma (ex: febre, dor, azia)</span>
                     </div>
                   </div>
                 )}
@@ -294,22 +286,8 @@ export function SiteHeader() {
             )}
           </div>
 
-          {/* AÇÕES DA CONTA, ENVIO DE RECEITA E CESTA */}
+          {/* AÇÕES DA CONTA E CESTA */}
           <div className="flex items-center gap-3 sm:gap-5 flex-shrink-0">
-            {/* BOTÃO DE DESTAQUE: ENVIO DE RECEITA (Diferencial Panvel/Raia) */}
-            <Link
-              href="/receita"
-              className="flex items-center gap-2 py-1.5 px-3 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 font-bold transition-all shadow-xs group"
-              title="Envie foto da sua receita médica física ou arquivo digital ICP-Brasil"
-            >
-              <div className="w-8 h-8 rounded-lg bg-red-600 text-white flex items-center justify-center group-hover:scale-105 transition-transform shadow-sm">
-                <FileText size={18} />
-              </div>
-              <div className="hidden sm:block text-left leading-tight">
-                <span className="block text-xs font-black text-red-800">Enviar Receita</span>
-                <span className="block text-[10px] text-red-600 font-medium">Aprovação em 15 min</span>
-              </div>
-            </Link>
 
             {/* Minha Conta */}
             <Link
@@ -435,15 +413,15 @@ export function SiteHeader() {
                         </ul>
                       </div>
 
-                      {/* Coluna 2: Prescrição & Genéricos */}
+                      {/* Coluna 2: Medicamentos & Cuidados */}
                       <div>
                         <div className="text-xs font-black text-[#005a34] uppercase tracking-wider pb-2 border-b border-emerald-100 mb-3 flex items-center gap-1.5">
-                          <span>📋</span> Prescrição & Contínuo
+                          <span>💊</span> Medicamentos & Cuidados
                         </div>
                         <ul className="space-y-2 text-xs text-gray-600">
                           <li>
                             <Link href="/catalogo?categoria=Medicamentos&q=continuo" className="hover:text-[#00874e] hover:font-bold transition-all block font-semibold text-gray-800">
-                              Uso Contínuo (Pressão/Diabetes)
+                              Uso Contínuo (Pressão / Diabetes)
                             </Link>
                           </li>
                           <li>
@@ -452,13 +430,13 @@ export function SiteHeader() {
                             </Link>
                           </li>
                           <li>
-                            <Link href="/catalogo?categoria=Medicamentos&q=antibiotico" className="hover:text-[#00874e] hover:font-bold transition-all block">
-                              Antimicrobianos (Com Receita)
+                            <Link href={`/catalogo?categoria=${encodeURIComponent("Primeiros socorros")}`} className="hover:text-[#00874e] hover:font-bold transition-all block">
+                              Primeiros Socorros & Curativos
                             </Link>
                           </li>
                           <li>
-                            <Link href="/receita" className="hover:text-red-700 text-red-600 font-black block pt-1">
-                              + Enviar Receita Médica →
+                            <Link href="/catalogo?categoria=Medicamentos" className="hover:text-[#00874e] text-[#005a34] font-bold block pt-1">
+                              Ver Todos os Medicamentos →
                             </Link>
                           </li>
                         </ul>
@@ -602,21 +580,6 @@ export function SiteHeader() {
                   <X size={20} />
                 </button>
               </div>
-
-              {/* Botão Envio de Receita em Destaque Mobile */}
-              <Link
-                href="/receita"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-3 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 font-bold mb-5 shadow-xs"
-              >
-                <div className="w-9 h-9 rounded-lg bg-red-600 text-white flex items-center justify-center">
-                  <FileText size={18} />
-                </div>
-                <div>
-                  <span className="block text-xs font-black">Enviar Receita Médica</span>
-                  <span className="block text-[10px] text-red-600">Aprovação em até 15 min</span>
-                </div>
-              </Link>
 
               {/* Navegação por Categorias e Sintomas */}
               <div className="space-y-4">
@@ -783,9 +746,9 @@ export function SiteHeader() {
           <Search size={20} />
           <span>Buscar</span>
         </Link>
-        <Link href="/receita" className="text-red-600 font-bold">
-          <FileText size={20} />
-          <span>Receita</span>
+        <Link href="/lojas">
+          <MapPin size={20} />
+          <span>Lojas</span>
         </Link>
         <Link href="/catalogo?ofertas=1">
           <Sparkles size={20} className="text-red-500" />

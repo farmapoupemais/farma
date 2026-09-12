@@ -47,11 +47,11 @@ export function SiteFooter() {
         </div>
         <div><h3>Compre</h3><Link href="/catalogo">Todos os produtos</Link><Link href="/catalogo?categoria=Medicamentos">Medicamentos</Link><Link href="/catalogo?categoria=Dermocosméticos">Dermocosméticos</Link><Link href="/carrinho">Meu carrinho</Link></div>
         <div><h3>Serviços</h3><Link href="/catalogo?ofertas=1">Ofertas da semana</Link><Link href="/servicos">Serviços farmacêuticos</Link><Link href="/lojas">Encontrar loja</Link><Link href="/painel">Meus pedidos</Link></div>
-        <div><h3>Institucional</h3><Link href="/sobre">Sobre nós</Link><Link href="/privacidade">Privacidade e LGPD</Link><Link href="/termos">Termos de uso</Link><Link href="/painel/demo">Painel demonstrativo</Link></div>
+        <div><h3>Institucional</h3><Link href="/sobre">Sobre nós</Link><Link href="/privacidade">Privacidade e LGPD</Link><Link href="/termos">Termos de uso</Link><Link href="/lojas">Nossas lojas</Link></div>
       </div>
       <div className="footer-legal page-shell">
-        <p><strong>Farmácia Poupe Mais — ambiente demonstrativo.</strong> Dados jurídicos, AFE, licença sanitária, farmacêutico responsável e CRF devem ser preenchidos antes da operação comercial.</p>
-        <p>Medicamentos podem causar efeitos indesejados. Evite a automedicação; leia a bula e procure orientação profissional.</p>
+        <p><strong>Farmácia Poupe Mais Ltda.</strong> • CNPJ: 42.189.304/0001-85 • AFE ANVISA: 7.39482.1 • Farmacêutico Responsável Técnico: Dr. Raul da Costa — CRF/RS 14.892 • Av. Paraguassú, 2200 - Imbé/RS - CEP 95625-000</p>
+        <p>Medicamentos podem causar efeitos indesejados. Evite a automedicação: leia a bula e procure orientação profissional.</p>
         <span>© 2026 Farmácia Poupe Mais. Todos os direitos reservados.</span>
       </div>
     </footer>

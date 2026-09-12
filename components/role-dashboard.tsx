@@ -1227,7 +1227,7 @@ function CatalogView({
             <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "var(--text-xl)", fontWeight: "var(--font-bold)", margin: 0, color: "var(--teal-deep)" }}>
               Catálogo Geral de Produtos e Estoque
             </h2>
-            <small style={{ color: "var(--muted)" }}>Produtos 100% isentos de prescrição (MIPs, cosméticos e higiene) com gestão de ID, código de barras, fotos e cores.</small>
+            <small style={{ color: "var(--muted)" }}>Produtos de saúde, medicamentos MIPs, cosméticos e higiene com gestão de ID, código de barras, fotos e cores.</small>
           </div>
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
             <div style={{ display: "flex", background: "var(--sage-2)", borderRadius: "8px", padding: "2px" }}>

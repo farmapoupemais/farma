@@ -115,7 +115,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                   <li><strong>Código de Barras (EAN-13):</strong> <code>{product.barcode || generateEan(product.id)}</code></li>
                   <li><strong>Categoria:</strong> {product.category}</li>
                   <li><strong>Marca / Fabricante:</strong> {product.brand}</li>
-                  <li><strong>Dispensação:</strong> Isento de Prescrição / Não exige retenção de receita</li>
+                  <li><strong>Disponibilidade:</strong> Pronta entrega com envio imediato</li>
                 </ul>
               </div>
               <p style={{ marginTop: "1rem" }}>
