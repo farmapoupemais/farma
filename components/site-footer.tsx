@@ -52,7 +52,10 @@ export function SiteFooter() {
       <div className="footer-legal page-shell">
         <p><strong>Farmácia Poupe Mais Ltda.</strong> • CNPJ: 42.189.304/0001-85 • AFE ANVISA: 7.39482.1 • Farmacêutico Responsável Técnico: Dr. Raul da Costa — CRF/RS 14.892 • Av. Paraguassú, 2200 - Imbé/RS - CEP 95625-000</p>
         <p>Medicamentos podem causar efeitos indesejados. Evite a automedicação: leia a bula e procure orientação profissional.</p>
-        <span>© 2026 Farmácia Poupe Mais. Todos os direitos reservados.</span>
+        <div className="footer-bottom-row">
+          <span>© 2026 Farmácia Poupe Mais. Todos os direitos reservados.</span>
+          <span className="footer-dev-credit">Desenvolvimento: <strong>Raul Grings</strong></span>
+        </div>
       </div>
     </footer>
   );

@@ -262,6 +262,11 @@ input[type="checkbox"], input[type="radio"] {
 .footer-legal { padding: 24px 0 32px; border-top: 1px solid rgba(255,255,255,.1); color: #8faaa2; font-size: var(--text-3xs); line-height: 1.6; }
 .footer-legal p { margin: 0 0 5px; }
 .footer-legal span { display: block; margin-top: 15px; }
+.footer-bottom-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 15px; }
+.footer-bottom-row span { display: inline; margin-top: 0; }
+.footer-dev-credit { color: #8faaa2; font-size: var(--text-3xs); opacity: 0.85; transition: opacity 0.2s; }
+.footer-dev-credit:hover { opacity: 1; color: #fff; }
+.footer-dev-credit strong { color: #a9c2ba; font-weight: 600; }
 
 /* Shared inner pages */
 .inner-main { min-height: 60vh; }
